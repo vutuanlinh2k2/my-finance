@@ -10,6 +10,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -20,6 +21,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
+import { ThemeToggle } from '@/components/theme-toggle'
 import {
   Collapsible,
   CollapsibleContent,
@@ -42,7 +44,7 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={currentPath === '/'}>
                   <Link to="/">
-                    <House weight="duotone" className="text-primary" />
+                    <House weight="duotone" />
                     <span>Dashboard</span>
                   </Link>
                 </SidebarMenuButton>
@@ -52,7 +54,7 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
-                      <CurrencyCircleDollar weight="duotone" className="text-chart-3" />
+                      <CurrencyCircleDollar weight="duotone" />
                       <span>Earnings/Spendings</span>
                       <CaretDown className="ml-auto size-3.5! text-muted-foreground transition-transform group-data-[state=open]/collapsible:rotate-180" />
                     </SidebarMenuButton>
@@ -65,7 +67,7 @@ export function AppSidebar() {
                           isActive={currentPath === '/calendar'}
                         >
                           <Link to="/calendar">
-                            <CalendarDots weight="duotone" className="text-chart-2" />
+                            <CalendarDots weight="duotone" />
                             <span>Calendar</span>
                           </Link>
                         </SidebarMenuSubButton>
@@ -76,7 +78,7 @@ export function AppSidebar() {
                           isActive={currentPath === '/reports'}
                         >
                           <Link to="/reports">
-                            <ChartBar weight="duotone" className="text-chart-4" />
+                            <ChartBar weight="duotone" />
                             <span>Reports</span>
                           </Link>
                         </SidebarMenuSubButton>
@@ -89,6 +91,9 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t border-sidebar-border">
+        <ThemeToggle />
+      </SidebarFooter>
     </Sidebar>
   )
 }
