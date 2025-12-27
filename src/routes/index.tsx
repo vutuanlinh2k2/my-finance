@@ -1,11 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute("/")({ component: App })
+export const Route = createFileRoute('/')({ component: DashboardPage })
 
-function App() {
+function DashboardPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-4xl font-bold">My Finance</h1>
+    <div>
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <p className="mt-2 text-muted-foreground">
+        Welcome to your personal finance dashboard.
+      </p>
     </div>
   )
 }
