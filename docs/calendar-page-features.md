@@ -7,6 +7,7 @@ This document outlines the features for the Calendar page. Each feature will be 
 ## Layout Overview
 
 The page consists of:
+
 - **Header**: Page title (left) and action buttons (right)
 - **Body**: Two-column layout with calendar (left, 2/3 width) and transaction list (right, 1/3 width)
 
@@ -17,10 +18,12 @@ The page consists of:
 ### 1. Page Header
 
 **Page Title**
+
 - Position: Top-left
 - Display: "Calendar" or similar heading
 
 **Action Buttons** (Top-right, left to right)
+
 - "Manage Tags" button
 - "Add Transaction" button
 
@@ -31,6 +34,7 @@ The page consists of:
 Triggered by clicking the "Manage Tags" button.
 
 **Modal Content:**
+
 - List of all tags, separated by category:
   - Expense tags
   - Income tags
@@ -51,6 +55,7 @@ Triggered by clicking the "Manage Tags" button.
 Triggered by clicking the "Add Transaction" button.
 
 **Form Fields:**
+
 - Transaction type selector (Expense / Income)
 - Title (text input, required)
 - Date (date picker, required)
@@ -58,6 +63,7 @@ Triggered by clicking the "Add Transaction" button.
 - Tag (dropdown, optional) - options filtered based on selected transaction type
 
 **Actions:**
+
 - Submit to create transaction
 - Cancel to close modal
 
@@ -68,11 +74,13 @@ Triggered by clicking the "Add Transaction" button.
 Position: Left side of body (2/3 width)
 
 **Month Navigator**
+
 - Position: Top of calendar section
 - Controls: Previous/Next month buttons with current month/year display
 - Allows navigation month by month
 
 **Monthly Summary**
+
 - Position: Below month navigator
 - Displays three values for the selected month:
   - Total Income
@@ -80,6 +88,7 @@ Position: Left side of body (2/3 width)
   - Balance (Income - Expenses)
 
 **Calendar Grid**
+
 - Displays all days of the selected month
 - Each day cell shows:
   - Date number
@@ -95,9 +104,11 @@ Position: Left side of body (2/3 width)
 Position: Right side of body (1/3 width)
 
 **Header:**
+
 - Display selected date
 
 **Transaction List:**
+
 - Shows all transactions for the selected date
 - Each transaction item displays:
   - Transaction type indicator (expense/income)
@@ -109,11 +120,13 @@ Position: Right side of body (1/3 width)
     - Delete - removes transaction
 
 **Edit Transaction Modal:**
+
 - Same fields as Add Transaction modal
 - Pre-populated with existing transaction data
 - Save/Cancel actions
 
 **Layout Behavior:**
+
 - Height matches calendar section
 - Scrollable when content overflows
 - Empty state: Centered message when no transactions exist for selected date
@@ -123,6 +136,7 @@ Position: Right side of body (1/3 width)
 ## Database Schema (Reference)
 
 Tables needed:
+
 - `tags` - id, name, emoji, type (expense/income), user_id, created_at
 - `transactions` - id, title, amount, date, type (expense/income), tag_id (nullable), user_id, created_at
 

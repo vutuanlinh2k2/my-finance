@@ -19,8 +19,10 @@ function Toaster({ ...props }: ToasterProps) {
             'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
           cancelButton:
             'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
-          success: 'group-[.toaster]:border-emerald-500/30 group-[.toaster]:text-emerald-600 dark:group-[.toaster]:text-emerald-400',
-          error: 'group-[.toaster]:border-destructive/30 group-[.toaster]:text-destructive',
+          success:
+            'group-[.toaster]:border-emerald-500/30 group-[.toaster]:text-emerald-600 dark:group-[.toaster]:text-emerald-400',
+          error:
+            'group-[.toaster]:border-destructive/30 group-[.toaster]:text-destructive',
         },
       }}
       richColors

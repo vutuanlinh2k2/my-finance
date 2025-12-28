@@ -1,4 +1,3 @@
-import type React from 'react'
 import {
   HeadContent,
   Outlet,
@@ -6,17 +5,23 @@ import {
   createRootRoute,
   useMatch,
 } from '@tanstack/react-router'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import appCss from '../styles.css?url'
+import type React from 'react'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from '@/components/ui/sonner'
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/lib/auth'
 import { HeaderActions } from '@/components/header-actions'
-
-import appCss from '../styles.css?url'
+import { queryClient } from '@/lib/query-client'
 
 const themeScript = `
   (function() {
@@ -63,29 +68,31 @@ function RootComponent() {
   const isLoginPage = !!loginMatch
 
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <TooltipProvider>
-          {isLoginPage ? (
-            <Outlet />
-          ) : (
-            <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset>
-                <header className="flex h-12 shrink-0 items-center justify-between border-b px-4">
-                  <SidebarTrigger className="-ml-1" />
-                  <HeaderActions />
-                </header>
-                <main className="flex-1 p-4">
-                  <Outlet />
-                </main>
-              </SidebarInset>
-            </SidebarProvider>
-          )}
-        </TooltipProvider>
-        <Toaster position="top-right" />
-      </ThemeProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            {isLoginPage ? (
+              <Outlet />
+            ) : (
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                  <header className="flex h-12 shrink-0 items-center justify-between border-b px-4">
+                    <SidebarTrigger className="-ml-1" />
+                    <HeaderActions />
+                  </header>
+                  <main className="flex-1 p-4">
+                    <Outlet />
+                  </main>
+                </SidebarInset>
+              </SidebarProvider>
+            )}
+          </TooltipProvider>
+          <Toaster position="top-right" />
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }
 

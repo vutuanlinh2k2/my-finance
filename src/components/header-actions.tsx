@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Sun, Moon, Monitor, SignOut } from '@phosphor-icons/react'
+import { Monitor, Moon, SignOut, Sun } from '@phosphor-icons/react'
 import { useTheme } from '@/components/theme-provider'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'

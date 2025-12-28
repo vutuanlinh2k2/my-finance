@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { CaretDown, Check, SpinnerGap } from '@phosphor-icons/react'
+import type { Tag, TagType } from '@/lib/hooks/use-tags'
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Check, CaretDown } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
-import {
-  type TransactionType,
-  addTransaction,
-  formatDateToISO,
-} from '@/lib/transactions'
-import { type Tag, getTags } from '@/lib/tags'
+import { useTags } from '@/lib/hooks/use-tags'
+import { useCreateTransaction } from '@/lib/hooks/use-transactions'
+import { formatDateToISO } from '@/lib/api/transactions'
+
+type TransactionType = 'expense' | 'income'
 
 interface AddTransactionModalProps {
   open: boolean
@@ -31,23 +31,27 @@ export function AddTransactionModal({
   defaultDate,
   onSuccess,
 }: AddTransactionModalProps) {
+  const { data: tags = [] } = useTags()
+  const createMutation = useCreateTransaction()
+
   const [type, setType] = useState<TransactionType>('expense')
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState('')
   const [tagId, setTagId] = useState<string | null>(null)
-  const [tags, setTags] = useState<Tag[]>([])
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false)
 
-  // Load tags when modal opens
+  // Reset form when modal opens
   useEffect(() => {
     if (open) {
-      setTags(getTags())
-      // Reset form
       setType('expense')
       setTitle('')
       setAmount('')
-      setDate(defaultDate ? formatDateToISO(defaultDate) : formatDateToISO(new Date()))
+      setDate(
+        defaultDate
+          ? formatDateToISO(defaultDate)
+          : formatDateToISO(new Date()),
+      )
       setTagId(null)
     }
   }, [open, defaultDate])
@@ -69,7 +73,7 @@ export function AddTransactionModal({
     setAmount(cleaned)
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim()) {
       toast.error('Please enter a title')
       return
@@ -86,17 +90,21 @@ export function AddTransactionModal({
       return
     }
 
-    addTransaction({
-      title: title.trim(),
-      amount: numAmount,
-      date,
-      type,
-      tagId,
-    })
+    try {
+      await createMutation.mutateAsync({
+        title: title.trim(),
+        amount: numAmount,
+        date,
+        type,
+        tag_id: tagId,
+      })
 
-    toast.success('Transaction added successfully')
-    onOpenChange(false)
-    onSuccess?.()
+      toast.success('Transaction added successfully')
+      onOpenChange(false)
+      onSuccess?.()
+    } catch (error) {
+      toast.error('Failed to add transaction')
+    }
   }
 
   return (
@@ -116,7 +124,7 @@ export function AddTransactionModal({
                 'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
                 type === 'expense'
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               Expense
@@ -128,7 +136,7 @@ export function AddTransactionModal({
                 'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
                 type === 'income'
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               Income
@@ -143,6 +151,7 @@ export function AddTransactionModal({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Weekly Groceries"
               className="h-10 rounded-lg text-sm"
+              disabled={createMutation.isPending}
             />
           </div>
 
@@ -155,6 +164,7 @@ export function AddTransactionModal({
                 onChange={(e) => handleAmountChange(e.target.value)}
                 placeholder="0"
                 className="h-10 rounded-lg pr-7 text-sm"
+                disabled={createMutation.isPending}
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                 ₫
@@ -172,6 +182,7 @@ export function AddTransactionModal({
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 className="h-10 rounded-lg text-sm"
+                disabled={createMutation.isPending}
               />
             </div>
 
@@ -182,7 +193,8 @@ export function AddTransactionModal({
                 <button
                   type="button"
                   onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
-                  className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-sm transition-colors hover:bg-muted/50"
+                  disabled={createMutation.isPending}
+                  className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-sm transition-colors hover:bg-muted/50 disabled:opacity-50"
                 >
                   {selectedTag ? (
                     <span className="flex items-center gap-2">
@@ -196,7 +208,7 @@ export function AddTransactionModal({
                     weight="bold"
                     className={cn(
                       'size-4 text-muted-foreground transition-transform',
-                      isTagDropdownOpen && 'rotate-180'
+                      isTagDropdownOpen && 'rotate-180',
                     )}
                   />
                 </button>
@@ -235,13 +247,18 @@ export function AddTransactionModal({
                               }}
                               className={cn(
                                 'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted',
-                                tagId === tag.id && 'bg-primary/10'
+                                tagId === tag.id && 'bg-primary/10',
                               )}
                             >
                               <span>{tag.emoji}</span>
-                              <span className="flex-1 truncate text-left">{tag.name}</span>
+                              <span className="flex-1 truncate text-left">
+                                {tag.name}
+                              </span>
                               {tagId === tag.id && (
-                                <Check weight="bold" className="size-4 text-primary" />
+                                <Check
+                                  weight="bold"
+                                  className="size-4 text-primary"
+                                />
                               )}
                             </button>
                           ))}
@@ -256,11 +273,23 @@ export function AddTransactionModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={createMutation.isPending}
+          >
             Cancel
           </Button>
-          <Button onClick={handleSubmit} className="gap-2">
-            <Check weight="bold" className="size-4" />
+          <Button
+            onClick={handleSubmit}
+            className="gap-2"
+            disabled={createMutation.isPending}
+          >
+            {createMutation.isPending ? (
+              <SpinnerGap className="size-4 animate-spin" />
+            ) : (
+              <Check weight="bold" className="size-4" />
+            )}
             Save Transaction
           </Button>
         </DialogFooter>

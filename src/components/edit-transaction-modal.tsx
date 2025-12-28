@@ -1,23 +1,25 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { CaretDown, Check, SpinnerGap, Trash } from '@phosphor-icons/react'
+import type { Tag } from '@/lib/hooks/use-tags'
+import type { Transaction } from '@/lib/hooks/use-transactions'
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Check, CaretDown, Trash } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
+import { useTags } from '@/lib/hooks/use-tags'
 import {
-  type Transaction,
-  type TransactionType,
-  updateTransaction,
-  deleteTransaction,
-} from '@/lib/transactions'
-import { type Tag, getTags } from '@/lib/tags'
+  useDeleteTransaction,
+  useUpdateTransaction,
+} from '@/lib/hooks/use-transactions'
+
+type TransactionType = 'expense' | 'income'
 
 interface EditTransactionModalProps {
   open: boolean
@@ -32,25 +34,29 @@ export function EditTransactionModal({
   transaction,
   onSuccess,
 }: EditTransactionModalProps) {
+  const { data: tags = [] } = useTags()
+  const updateMutation = useUpdateTransaction()
+  const deleteMutation = useDeleteTransaction()
+
   const [type, setType] = useState<TransactionType>('expense')
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState('')
   const [tagId, setTagId] = useState<string | null>(null)
-  const [tags, setTags] = useState<Tag[]>([])
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
 
-  // Load tags and populate form when modal opens
+  const isPending = updateMutation.isPending || deleteMutation.isPending
+
+  // Populate form when modal opens
   useEffect(() => {
     if (open && transaction) {
-      setTags(getTags())
-      setType(transaction.type)
+      setType(transaction.type as TransactionType)
       setTitle(transaction.title)
       setAmount(String(transaction.amount))
       setDate(transaction.date)
-      setTagId(transaction.tagId)
-      setIsDeleting(false)
+      setTagId(transaction.tag_id)
+      setIsConfirmingDelete(false)
     }
   }, [open, transaction])
 
@@ -71,7 +77,7 @@ export function EditTransactionModal({
     setAmount(cleaned)
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!transaction) return
 
     if (!title.trim()) {
@@ -90,31 +96,46 @@ export function EditTransactionModal({
       return
     }
 
-    updateTransaction(transaction.id, {
-      title: title.trim(),
-      amount: numAmount,
-      date,
-      type,
-      tagId,
-    })
+    try {
+      await updateMutation.mutateAsync({
+        id: transaction.id,
+        updates: {
+          title: title.trim(),
+          amount: numAmount,
+          date,
+          type,
+          tag_id: tagId,
+        },
+      })
 
-    toast.success('Transaction updated successfully')
-    onOpenChange(false)
-    onSuccess?.()
+      toast.success('Transaction updated successfully')
+      onOpenChange(false)
+      onSuccess?.()
+    } catch (error) {
+      toast.error('Failed to update transaction')
+    }
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!transaction) return
 
-    if (!isDeleting) {
-      setIsDeleting(true)
+    if (!isConfirmingDelete) {
+      setIsConfirmingDelete(true)
       return
     }
 
-    deleteTransaction(transaction.id)
-    toast.success('Transaction deleted')
-    onOpenChange(false)
-    onSuccess?.()
+    try {
+      await deleteMutation.mutateAsync({
+        id: transaction.id,
+        date: transaction.date,
+      })
+
+      toast.success('Transaction deleted')
+      onOpenChange(false)
+      onSuccess?.()
+    } catch (error) {
+      toast.error('Failed to delete transaction')
+    }
   }
 
   if (!transaction) return null
@@ -132,11 +153,12 @@ export function EditTransactionModal({
             <button
               type="button"
               onClick={() => setType('expense')}
+              disabled={isPending}
               className={cn(
                 'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
                 type === 'expense'
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               Expense
@@ -144,11 +166,12 @@ export function EditTransactionModal({
             <button
               type="button"
               onClick={() => setType('income')}
+              disabled={isPending}
               className={cn(
                 'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
                 type === 'income'
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               Income
@@ -163,6 +186,7 @@ export function EditTransactionModal({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Weekly Groceries"
               className="h-10 rounded-lg text-sm"
+              disabled={isPending}
             />
           </div>
 
@@ -175,6 +199,7 @@ export function EditTransactionModal({
                 onChange={(e) => handleAmountChange(e.target.value)}
                 placeholder="0"
                 className="h-10 rounded-lg pr-7 text-sm"
+                disabled={isPending}
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                 ₫
@@ -192,6 +217,7 @@ export function EditTransactionModal({
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 className="h-10 rounded-lg text-sm"
+                disabled={isPending}
               />
             </div>
 
@@ -202,7 +228,8 @@ export function EditTransactionModal({
                 <button
                   type="button"
                   onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
-                  className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-sm transition-colors hover:bg-muted/50"
+                  disabled={isPending}
+                  className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-sm transition-colors hover:bg-muted/50 disabled:opacity-50"
                 >
                   {selectedTag ? (
                     <span className="flex items-center gap-2">
@@ -216,7 +243,7 @@ export function EditTransactionModal({
                     weight="bold"
                     className={cn(
                       'size-4 text-muted-foreground transition-transform',
-                      isTagDropdownOpen && 'rotate-180'
+                      isTagDropdownOpen && 'rotate-180',
                     )}
                   />
                 </button>
@@ -255,13 +282,18 @@ export function EditTransactionModal({
                               }}
                               className={cn(
                                 'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted',
-                                tagId === tag.id && 'bg-primary/10'
+                                tagId === tag.id && 'bg-primary/10',
                               )}
                             >
                               <span>{tag.emoji}</span>
-                              <span className="flex-1 truncate text-left">{tag.name}</span>
+                              <span className="flex-1 truncate text-left">
+                                {tag.name}
+                              </span>
                               {tagId === tag.id && (
-                                <Check weight="bold" className="size-4 text-primary" />
+                                <Check
+                                  weight="bold"
+                                  className="size-4 text-primary"
+                                />
                               )}
                             </button>
                           ))}
@@ -279,20 +311,38 @@ export function EditTransactionModal({
           <Button
             variant="ghost"
             onClick={handleDelete}
+            disabled={updateMutation.isPending}
             className={cn(
               'gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive',
-              isDeleting && 'bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground'
+              isConfirmingDelete &&
+                'bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground',
             )}
           >
-            <Trash weight="duotone" className="size-4" />
-            {isDeleting ? 'Click to confirm' : 'Delete'}
+            {deleteMutation.isPending ? (
+              <SpinnerGap className="size-4 animate-spin" />
+            ) : (
+              <Trash weight="duotone" className="size-4" />
+            )}
+            {isConfirmingDelete ? 'Click to confirm' : 'Delete'}
           </Button>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+            >
               Cancel
             </Button>
-            <Button onClick={handleSubmit} className="gap-2">
-              <Check weight="bold" className="size-4" />
+            <Button
+              onClick={handleSubmit}
+              className="gap-2"
+              disabled={isPending}
+            >
+              {updateMutation.isPending ? (
+                <SpinnerGap className="size-4 animate-spin" />
+              ) : (
+                <Check weight="bold" className="size-4" />
+              )}
               Save Changes
             </Button>
           </div>

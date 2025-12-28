@@ -1,27 +1,28 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useEffect, useState, useCallback } from 'react'
-import { useAuth } from '@/lib/auth'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react'
 import {
+  CalendarBlank,
   CaretLeft,
   CaretRight,
   Plus,
+  SpinnerGap,
   Tag,
-  CalendarBlank,
 } from '@phosphor-icons/react'
+import type { Transaction } from '@/lib/hooks/use-transactions'
+import { useAuth } from '@/lib/auth'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { formatCurrency, formatCompact } from '@/lib/currency'
+import { formatCompact, formatCurrency } from '@/lib/currency'
 import { ManageTagsModal } from '@/components/manage-tags-modal'
 import { AddTransactionModal } from '@/components/add-transaction-modal'
 import { EditTransactionModal } from '@/components/edit-transaction-modal'
+import { formatDateToISO } from '@/lib/api/transactions'
+import { useTags } from '@/lib/hooks/use-tags'
 import {
-  type Transaction,
-  getTransactionsByDate,
-  getMonthlyTotals,
-  getDailyTotals,
-  formatDateToISO,
-} from '@/lib/transactions'
-import { type Tag as TagType, getTags } from '@/lib/tags'
+  useDailyTotals,
+  useMonthlyTotals,
+  useTransactionsByDate,
+} from '@/lib/hooks/use-transactions'
 
 export const Route = createFileRoute('/calendar')({ component: CalendarPage })
 
@@ -52,58 +53,51 @@ const MONTH_NAMES = [
 const DAY_NAMES = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 
 function CalendarPage() {
-  const { user, loading } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
 
   // Calendar state
   const [currentDate, setCurrentDate] = useState(() => new Date())
-  const [selectedDate, setSelectedDate] = useState<Date | null>(() => new Date())
+  const [selectedDate, setSelectedDate] = useState<Date | null>(
+    () => new Date(),
+  )
 
   // Modal state
   const [isManageTagsOpen, setIsManageTagsOpen] = useState(false)
   const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false)
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null)
 
-  // Data state
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [monthlyTotals, setMonthlyTotals] = useState({ totalIncome: 0, totalExpenses: 0, balance: 0 })
-  const [dailyTotals, setDailyTotals] = useState<Map<number, { income: number; expense: number }>>(new Map())
-  const [tags, setTags] = useState<TagType[]>([])
+  const currentYear = currentDate.getFullYear()
+  const currentMonth = currentDate.getMonth()
+  const selectedDateISO = selectedDate ? formatDateToISO(selectedDate) : null
 
-  // Load data
-  const loadData = useCallback(() => {
-    const year = currentDate.getFullYear()
-    const month = currentDate.getMonth()
+  // React Query hooks
+  const { data: tags = [] } = useTags()
+  const { data: monthlyTotals, isLoading: isLoadingTotals } = useMonthlyTotals(
+    currentYear,
+    currentMonth,
+  )
+  const { data: dailyTotals, isLoading: isLoadingDaily } = useDailyTotals(
+    currentYear,
+    currentMonth,
+  )
+  const { data: transactions = [], isLoading: isLoadingTransactions } =
+    useTransactionsByDate(selectedDateISO)
 
-    // Load monthly totals
-    setMonthlyTotals(getMonthlyTotals(year, month))
+  const {
+    totalIncome = 0,
+    totalExpenses = 0,
+    balance = 0,
+  } = monthlyTotals || {}
 
-    // Load daily totals for calendar display
-    setDailyTotals(getDailyTotals(year, month))
+  // Redirect if not authenticated
+  if (!authLoading && !user) {
+    navigate({ to: '/login' })
+    return null
+  }
 
-    // Load transactions for selected date
-    if (selectedDate) {
-      setTransactions(getTransactionsByDate(formatDateToISO(selectedDate)))
-    }
-
-    // Load tags
-    setTags(getTags())
-  }, [currentDate, selectedDate])
-
-  // Reload data when month or selected date changes
-  useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  const { totalIncome, totalExpenses, balance } = monthlyTotals
-
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate({ to: '/login' })
-    }
-  }, [user, loading, navigate])
-
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
@@ -115,8 +109,6 @@ function CalendarPage() {
     return null
   }
 
-  const currentYear = currentDate.getFullYear()
-  const currentMonth = currentDate.getMonth()
   const daysInMonth = getDaysInMonth(currentYear, currentMonth)
   const firstDayOfMonth = getFirstDayOfMonth(currentYear, currentMonth)
 
@@ -133,7 +125,7 @@ function CalendarPage() {
   }
 
   // Generate calendar days
-  const calendarDays: (number | null)[] = []
+  const calendarDays: Array<number | null> = []
   for (let i = 0; i < firstDayOfMonth; i++) {
     calendarDays.push(null)
   }
@@ -155,7 +147,10 @@ function CalendarPage() {
             <Tag weight="duotone" className="size-4" />
             Manage Tags
           </Button>
-          <Button className="gap-2" onClick={() => setIsAddTransactionOpen(true)}>
+          <Button
+            className="gap-2"
+            onClick={() => setIsAddTransactionOpen(true)}
+          >
             <Plus weight="bold" className="size-4" />
             Add Transaction
           </Button>
@@ -198,12 +193,16 @@ function CalendarPage() {
                   Total Income
                 </span>
               </div>
-              <p
-                className="text-xl font-semibold tooltip-fast"
-                data-tooltip={formatCurrency(totalIncome)}
-              >
-                {formatCompact(totalIncome)}
-              </p>
+              {isLoadingTotals ? (
+                <div className="h-7 w-20 animate-pulse rounded bg-muted" />
+              ) : (
+                <p
+                  className="text-xl font-semibold tooltip-fast"
+                  data-tooltip={formatCurrency(totalIncome)}
+                >
+                  {formatCompact(totalIncome)}
+                </p>
+              )}
             </div>
             <div className="rounded-lg border border-border bg-background p-4">
               <div className="mb-1 flex items-center gap-2">
@@ -212,12 +211,16 @@ function CalendarPage() {
                   Total Expenses
                 </span>
               </div>
-              <p
-                className="text-xl font-semibold tooltip-fast"
-                data-tooltip={formatCurrency(totalExpenses)}
-              >
-                {formatCompact(totalExpenses)}
-              </p>
+              {isLoadingTotals ? (
+                <div className="h-7 w-20 animate-pulse rounded bg-muted" />
+              ) : (
+                <p
+                  className="text-xl font-semibold tooltip-fast"
+                  data-tooltip={formatCurrency(totalExpenses)}
+                >
+                  {formatCompact(totalExpenses)}
+                </p>
+              )}
             </div>
             <div className="rounded-lg border border-border bg-background p-4">
               <div className="mb-1 flex items-center gap-2">
@@ -226,12 +229,16 @@ function CalendarPage() {
                   Balance
                 </span>
               </div>
-              <p
-                className="text-xl font-semibold tooltip-fast"
-                data-tooltip={formatCurrency(balance)}
-              >
-                {formatCompact(balance)}
-              </p>
+              {isLoadingTotals ? (
+                <div className="h-7 w-20 animate-pulse rounded bg-muted" />
+              ) : (
+                <p
+                  className="text-xl font-semibold tooltip-fast"
+                  data-tooltip={formatCurrency(balance)}
+                >
+                  {formatCompact(balance)}
+                </p>
+              )}
             </div>
           </div>
 
@@ -263,7 +270,8 @@ function CalendarPage() {
                 const isFirstCol = index % 7 === 0
 
                 // Get daily totals for this day
-                const dayTotals = day !== null ? dailyTotals.get(day) : null
+                const dayTotals =
+                  day !== null && dailyTotals ? dailyTotals.get(day) : null
                 const hasIncome = dayTotals && dayTotals.income > 0
                 const hasExpense = dayTotals && dayTotals.expense > 0
 
@@ -275,7 +283,7 @@ function CalendarPage() {
                       !isFirstCol && 'border-l',
                       !isLastRow && 'border-b',
                       day !== null && 'cursor-pointer hover:bg-muted/50',
-                      isSelected && 'bg-primary/10'
+                      isSelected && 'bg-primary/10',
                     )}
                     onClick={() => day !== null && handleDateClick(day)}
                   >
@@ -284,31 +292,43 @@ function CalendarPage() {
                         <span
                           className={cn(
                             'text-sm',
-                            isSelected && 'font-semibold text-primary'
+                            isSelected && 'font-semibold text-primary',
                           )}
                         >
                           {day}
                         </span>
                         {/* Daily totals */}
                         <div className="mt-1 flex flex-col gap-0.5">
-                          {hasIncome && (
-                            <span
-                              className="text-xs font-medium text-emerald-600 tooltip-fast"
-                              data-tooltip={formatCurrency(dayTotals.income)}
-                            >
-                              +{formatCompact(dayTotals.income)}
-                            </span>
-                          )}
-                          {hasExpense && (
-                            <span
-                              className="text-xs font-medium text-rose-600 tooltip-fast"
-                              data-tooltip={formatCurrency(dayTotals.expense)}
-                            >
-                              -{formatCompact(dayTotals.expense)}
-                            </span>
-                          )}
-                          {!hasIncome && !hasExpense && (
-                            <span className="text-xs text-muted-foreground/50">--</span>
+                          {isLoadingDaily ? (
+                            <div className="h-4 w-12 animate-pulse rounded bg-muted" />
+                          ) : (
+                            <>
+                              {hasIncome && (
+                                <span
+                                  className="text-xs font-medium text-emerald-600 tooltip-fast"
+                                  data-tooltip={formatCurrency(
+                                    dayTotals.income,
+                                  )}
+                                >
+                                  +{formatCompact(dayTotals.income)}
+                                </span>
+                              )}
+                              {hasExpense && (
+                                <span
+                                  className="text-xs font-medium text-rose-600 tooltip-fast"
+                                  data-tooltip={formatCurrency(
+                                    dayTotals.expense,
+                                  )}
+                                >
+                                  -{formatCompact(dayTotals.expense)}
+                                </span>
+                              )}
+                              {!hasIncome && !hasExpense && (
+                                <span className="text-xs text-muted-foreground/50">
+                                  --
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
@@ -337,7 +357,11 @@ function CalendarPage() {
 
           {/* Transaction List */}
           <div className="flex flex-1 flex-col overflow-y-auto">
-            {transactions.length === 0 ? (
+            {isLoadingTransactions ? (
+              <div className="flex flex-1 items-center justify-center p-6">
+                <SpinnerGap className="size-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : transactions.length === 0 ? (
               <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
                 <div className="mb-4 flex size-16 items-center justify-center rounded-xl bg-muted">
                   <CalendarBlank
@@ -353,7 +377,7 @@ function CalendarPage() {
             ) : (
               <div className="flex flex-col">
                 {transactions.map((transaction) => {
-                  const tag = tags.find((t) => t.id === transaction.tagId)
+                  const tag = tags.find((t) => t.id === transaction.tag_id)
                   return (
                     <button
                       key={transaction.id}
@@ -368,7 +392,9 @@ function CalendarPage() {
                         <div>
                           <p className="font-medium">{transaction.title}</p>
                           <p className="text-xs text-muted-foreground">
-                            {transaction.type === 'income' ? 'Income' : 'Expense'}
+                            {transaction.type === 'income'
+                              ? 'Income'
+                              : 'Expense'}
                             {tag && ` • ${tag.name}`}
                           </p>
                         </div>
@@ -378,7 +404,7 @@ function CalendarPage() {
                           'font-semibold tooltip-fast',
                           transaction.type === 'income'
                             ? 'text-emerald-600'
-                            : 'text-rose-600'
+                            : 'text-rose-600',
                         )}
                         data-tooltip={formatCurrency(transaction.amount)}
                       >
@@ -417,7 +443,6 @@ function CalendarPage() {
         open={isAddTransactionOpen}
         onOpenChange={setIsAddTransactionOpen}
         defaultDate={selectedDate || undefined}
-        onSuccess={loadData}
       />
 
       {/* Edit Transaction Modal */}
@@ -425,7 +450,6 @@ function CalendarPage() {
         open={!!editingTransaction}
         onOpenChange={(open) => !open && setEditingTransaction(null)}
         transaction={editingTransaction}
-        onSuccess={loadData}
       />
     </div>
   )

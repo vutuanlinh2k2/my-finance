@@ -19,7 +19,10 @@
     "db:pull": "supabase db pull",
     "db:diff": "supabase db diff",
     "db:migration:new": "supabase migration new",
-    "db:types": "supabase gen types --local > src/types/database.ts"
+    "db:types": "supabase gen types --local > src/types/database.ts",
+    "db:seed-test": "tsx scripts/seed-test-data.ts",
+    "db:clean-test": "tsx scripts/clean-test-data.ts",
+    "test:e2e:setup": "pnpm db:clean-test && pnpm db:seed-test"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",
@@ -29,6 +32,7 @@
     "@supabase/supabase-js": "^2.89.0",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.7.0",
+    "@tanstack/react-query": "^5.90.13",
     "@tanstack/react-router": "^1.132.0",
     "@tanstack/react-router-devtools": "^1.132.0",
     "@tanstack/react-router-ssr-query": "^1.131.7",
@@ -64,6 +68,7 @@
     "jsdom": "^27.0.0",
     "prettier": "^3.5.3",
     "supabase": "^2.70.5",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
     "vitest": "^3.0.5",

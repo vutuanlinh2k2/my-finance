@@ -1,4 +1,4 @@
-import { Sun, Moon, Monitor } from '@phosphor-icons/react'
+import { Monitor, Moon, Sun } from '@phosphor-icons/react'
 import { useTheme } from '@/components/theme-provider'
 import {
   DropdownMenu,
@@ -8,8 +8,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
 } from '@/components/ui/sidebar'
 
 export function ThemeToggle() {
