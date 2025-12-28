@@ -9,6 +9,7 @@ import {
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { Toaster } from '@/components/ui/sonner'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -82,6 +83,7 @@ function RootComponent() {
             </SidebarProvider>
           )}
         </TooltipProvider>
+        <Toaster position="top-right" />
       </ThemeProvider>
     </AuthProvider>
   )

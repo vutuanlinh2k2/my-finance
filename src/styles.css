@@ -6,7 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-    --background: oklch(1 0 0);
+    --background: oklch(0.985 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
@@ -30,7 +30,7 @@
     --chart-4: oklch(0.56 0.15 49);
     --chart-5: oklch(0.47 0.12 46);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
+    --sidebar: oklch(1 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.67 0.16 58);
     --sidebar-primary-foreground: oklch(0.99 0.02 95);
@@ -126,4 +126,41 @@
   html {
     @apply font-sans;
     }
+}
+
+/* Fast tooltip - shows immediately on hover */
+.tooltip-fast {
+  position: relative;
+  cursor: default;
+}
+
+.tooltip-fast::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: oklch(0.2 0 0);
+  color: oklch(0.98 0 0);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-radius: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s, visibility 0.1s;
+  pointer-events: none;
+  z-index: 50;
+  margin-bottom: 4px;
+}
+
+.dark .tooltip-fast::after {
+  background: oklch(0.9 0 0);
+  color: oklch(0.15 0 0);
+}
+
+.tooltip-fast:hover::after {
+  opacity: 1;
+  visibility: visible;
 }

@@ -40,6 +40,31 @@ pnpm check            # Auto-fix linting + formatting
 ### Path Aliases
 - `@/*` maps to `./src/*` (configured in tsconfig.json)
 
+### Currency Formatting (VND)
+All money amounts must use the utilities from `@/lib/currency`:
+- `formatCompact(amount)` - Compact display: `500đ`, `150K`, `25M`, `1.5B`
+- `formatCurrency(amount)` - Full format: `25.000.000 ₫`
+
+**Rules:**
+- Always display amounts using `formatCompact()` for clean UI
+- Add fast tooltip with `formatCurrency()` to show full value on hover
+- Use `+` prefix for income, `-` prefix for expenses
+- No dot indicators for amounts in calendar cells
+
+**Example:**
+```tsx
+import { formatCurrency, formatCompact } from '@/lib/currency'
+
+<span
+  className="tooltip-fast text-emerald-600"
+  data-tooltip={formatCurrency(amount)}
+>
+  +{formatCompact(amount)}
+</span>
+```
+
+The `tooltip-fast` CSS class (defined in `src/styles.css`) shows tooltips instantly on hover.
+
 ## Key Patterns
 
 **Component with variants (CVA pattern):**
@@ -73,6 +98,15 @@ Use Playwright MCP for browser automation and testing:
 - E2E testing workflows
 - Debugging UI issues by taking snapshots and screenshots
 - Interacting with the running app (click, type, navigate)
+
+**Required Testing Workflow for New Components/Pages:**
+When creating new components or pages, you MUST:
+1. Open the browser using Playwright after implementation
+2. Perform rigorous testing to verify UI matches expectations
+3. Test all interactive elements (buttons, forms, modals, etc.)
+4. Verify all logic runs correctly (state changes, data flow, etc.)
+5. Make iterations to fix any issues discovered
+6. Only consider the task complete after verifying everything works in the browser
 
 ### Context7
 Use Context7 MCP to fetch up-to-date documentation:
