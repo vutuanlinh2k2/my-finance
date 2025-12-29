@@ -13,3 +13,6 @@
   # Supabase anon keys are intentionally public (security comes from RLS policies)
   # Allow this key to appear in build output without failing secrets scan
   SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_ANON_KEY,VITE_SUPABASE_URL"
+  # Skip postinstall scripts to prevent supabase CLI binary download failures
+  # The CLI is only needed for local development, not production builds
+  NPM_CONFIG_IGNORE_SCRIPTS = "true"
