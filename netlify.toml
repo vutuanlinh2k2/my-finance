@@ -1,0 +1,11 @@
+# Netlify configuration
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  command = "pnpm build"
+  publish = ".netlify"
+
+[build.environment]
+  # Supabase anon keys are intentionally public (security comes from RLS policies)
+  # Allow this key to appear in build output without failing secrets scan
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_ANON_KEY"
