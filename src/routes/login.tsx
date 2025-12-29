@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { SpinnerGap } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/lib/auth'
@@ -29,11 +30,7 @@ function LoginPage() {
   useEffect(() => {
     if (!loading && user) {
       // Redirect to the original location or home
-      if (redirect) {
-        window.location.href = redirect
-      } else {
-        navigate({ to: '/' })
-      }
+      navigate({ to: redirect || '/' })
     }
   }, [user, loading, navigate, redirect])
 
@@ -49,18 +46,14 @@ function LoginPage() {
       setIsSubmitting(false)
     } else {
       // Redirect to the original location or home
-      if (redirect) {
-        window.location.href = redirect
-      } else {
-        navigate({ to: '/' })
-      }
+      navigate({ to: redirect || '/' })
     }
   }
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-muted-foreground">Loading...</p>
+        <SpinnerGap className="size-8 animate-spin text-muted-foreground" />
       </div>
     )
   }

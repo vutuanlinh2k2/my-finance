@@ -1,22 +1,32 @@
-import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
-import { supabase } from '@/lib/supabase'
+import { Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { useAuth } from '@/lib/auth'
+import { PageLoading } from '@/components/page-loading'
 
 export const Route = createFileRoute('/_authenticated')({
-  beforeLoad: async ({ location }) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+  component: AuthenticatedLayout,
+})
 
-    if (!session) {
-      throw redirect({
+function AuthenticatedLayout() {
+  const { user, loading } = useAuth()
+  const navigate = useNavigate()
+  const location = Route.useMatch()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate({
         to: '/login',
         search: {
-          redirect: location.href,
+          redirect: location.pathname,
         },
       })
     }
+  }, [user, loading, navigate, location.pathname])
 
-    return { user: session.user }
-  },
-  component: () => <Outlet />,
-})
+  // Show loading while checking auth
+  if (loading || !user) {
+    return <PageLoading />
+  }
+
+  return <Outlet />
+}
