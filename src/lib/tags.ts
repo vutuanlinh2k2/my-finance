@@ -1,0 +1,36 @@
+// Common emojis for quick selection in tag creation
+export const EXPENSE_EMOJIS = [
+  '🏠',
+  '🛒',
+  '⚡',
+  '🚗',
+  '🎬',
+  '🍔',
+  '☕',
+  '👕',
+  '💊',
+  '✈️',
+  '📱',
+  '🎮',
+  '🏥',
+  '📚',
+  '🎁',
+  '💇',
+  '🐕',
+  '🏋️',
+  '🎵',
+  '🔧',
+]
+
+export const INCOME_EMOJIS = [
+  '💰',
+  '💼',
+  '📈',
+  '🎁',
+  '💵',
+  '🏦',
+  '💎',
+  '🎯',
+  '📊',
+  '🏆',
+]

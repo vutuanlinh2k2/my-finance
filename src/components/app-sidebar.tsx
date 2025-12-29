@@ -21,16 +21,17 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
-import { ThemeToggle } from '@/components/theme-toggle'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { useAuth } from '@/lib/auth'
 
 export function AppSidebar() {
   const routerState = useRouterState()
   const currentPath = routerState.location.pathname
+  const { user } = useAuth()
 
   return (
     <Sidebar>
@@ -92,7 +93,16 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border">
-        <ThemeToggle />
+        {user && (
+          <div className="flex items-center gap-3 p-3">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+              <span className="text-xs font-medium text-muted-foreground">
+                {user.email?.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <p className="truncate text-sm">{user.email}</p>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   )

@@ -9,13 +9,16 @@ type ThemeProviderContextProps = {
   mounted: boolean
 }
 
-const ThemeProviderContext = React.createContext<ThemeProviderContextProps | null>(null)
+const ThemeProviderContext =
+  React.createContext<ThemeProviderContextProps | null>(null)
 
 const THEME_STORAGE_KEY = 'theme'
 
 function getSystemTheme(): 'light' | 'dark' {
   if (typeof window === 'undefined') return 'light'
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light'
 }
 
 function getStoredTheme(): Theme {
@@ -41,7 +44,9 @@ function applyTheme(theme: Theme) {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = React.useState<Theme>('system')
-  const [resolvedTheme, setResolvedTheme] = React.useState<'light' | 'dark'>('light')
+  const [resolvedTheme, setResolvedTheme] = React.useState<'light' | 'dark'>(
+    'light',
+  )
   const [mounted, setMounted] = React.useState(false)
 
   // Sync with localStorage after mount to avoid hydration mismatch

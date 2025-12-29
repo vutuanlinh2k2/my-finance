@@ -11,3 +11,16 @@ count.txt
 .output
 .vinxi
 todos.json
+
+# Supabase
+supabase/.branches
+supabase/.temp
+
+# MCP configuration (contains project-specific refs)
+.mcp.json
+
+# Playwright MCP screenshots
+.playwright-mcp/
+
+# Local Netlify folder
+.netlify
