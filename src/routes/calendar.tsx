@@ -9,6 +9,7 @@ import {
   Tag,
 } from '@phosphor-icons/react'
 import type { Transaction } from '@/lib/hooks/use-transactions'
+import { PageLoading } from '@/components/page-loading'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -98,11 +99,7 @@ function CalendarPage() {
   }
 
   if (authLoading) {
-    return (
-      <div className="flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    )
+    return <PageLoading />
   }
 
   if (!user) {
@@ -160,7 +157,7 @@ function CalendarPage() {
       {/* Main Content */}
       <div className="flex gap-6">
         {/* Calendar Section - 2/3 width */}
-        <div className="flex-[2] rounded-xl border border-border bg-card p-6">
+        <div className="flex-2 rounded-xl border border-border bg-card p-6">
           {/* Month Navigator */}
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold">
@@ -279,7 +276,7 @@ function CalendarPage() {
                   <div
                     key={index}
                     className={cn(
-                      'min-h-[80px] border-border p-2',
+                      'min-h-20 border-border p-2',
                       !isFirstCol && 'border-l',
                       !isLastRow && 'border-b',
                       day !== null && 'cursor-pointer hover:bg-muted/50',

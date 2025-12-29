@@ -129,7 +129,7 @@ export function useDeleteTransaction() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, date }: { id: string; date: string }) =>
+    mutationFn: ({ id }: { id: string; date: string }) =>
       deleteTransaction(id),
     onSuccess: (_, variables) => {
       const [year, month] = variables.date.split('-').map(Number)

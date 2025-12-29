@@ -37,7 +37,7 @@ async function cleanTestData() {
   console.log(`Found test user: ${testUser.id}`)
 
   // Delete transactions first (due to foreign key constraint)
-  const { count: txCount } = await supabase
+  await supabase
     .from('transactions')
     .delete()
     .eq('user_id', testUser.id)
@@ -45,7 +45,7 @@ async function cleanTestData() {
   console.log(`Deleted transactions`)
 
   // Delete tags
-  const { count: tagCount } = await supabase
+  await supabase
     .from('tags')
     .delete()
     .eq('user_id', testUser.id)

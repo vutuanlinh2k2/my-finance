@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { CaretDown, Check, SpinnerGap } from '@phosphor-icons/react'
-import type { Tag, TagType } from '@/lib/hooks/use-tags'
 import {
   Dialog,
   DialogContent,
