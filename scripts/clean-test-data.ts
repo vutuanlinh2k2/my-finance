@@ -9,9 +9,15 @@
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || 'http://127.0.0.1:64321'
-const supabaseServiceKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseServiceKey) {
+  console.error(
+    'Error: SUPABASE_SERVICE_ROLE_KEY environment variable is required.',
+  )
+  console.error('Run `pnpm db:start` and copy the service_role key from the output.')
+  process.exit(1)
+}
 
 // Test user credentials - keep in sync with seed script
 const TEST_USER_EMAIL = 'test@example.com'

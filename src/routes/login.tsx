@@ -9,6 +9,20 @@ type LoginSearch = {
   redirect?: string
 }
 
+/**
+ * Validates redirect URL to prevent open redirect attacks.
+ * Only allows relative paths, rejects absolute URLs and protocol-relative URLs.
+ */
+function getSafeRedirect(url: string | undefined): string {
+  if (!url) return '/'
+  // Only allow relative paths starting with /
+  // Reject protocol-relative URLs (//) and URLs with protocols (http:, javascript:, etc.)
+  if (url.startsWith('/') && !url.startsWith('//') && !url.includes(':')) {
+    return url
+  }
+  return '/'
+}
+
 export const Route = createFileRoute('/login')({
   validateSearch: (search: Record<string, unknown>): LoginSearch => {
     return {
@@ -29,8 +43,7 @@ function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      // Redirect to the original location or home
-      navigate({ to: redirect || '/' })
+      navigate({ to: getSafeRedirect(redirect) })
     }
   }, [user, loading, navigate, redirect])
 
@@ -45,8 +58,7 @@ function LoginPage() {
       setFormError(signInError.message)
       setIsSubmitting(false)
     } else {
-      // Redirect to the original location or home
-      navigate({ to: redirect || '/' })
+      navigate({ to: getSafeRedirect(redirect) })
     }
   }
 
