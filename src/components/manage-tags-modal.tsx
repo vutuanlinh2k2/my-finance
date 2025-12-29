@@ -351,8 +351,7 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
                 </span>
               </div>
               <div
-                className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1"
-                style={{ maxHeight: '280px' }}
+                className="flex min-h-0 max-h-[280px] flex-1 flex-col gap-2 overflow-y-auto pr-1"
               >
                 {expenseTags.map((tag) => (
                   <TagItem
@@ -396,8 +395,7 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
                 </span>
               </div>
               <div
-                className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1"
-                style={{ maxHeight: '280px' }}
+                className="flex min-h-0 max-h-[280px] flex-1 flex-col gap-2 overflow-y-auto pr-1"
               >
                 {incomeTags.map((tag) => (
                   <TagItem

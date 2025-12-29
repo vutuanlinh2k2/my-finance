@@ -3,6 +3,16 @@ import { toast } from 'sonner'
 import { CaretDown, Check, SpinnerGap, Trash } from '@phosphor-icons/react'
 import type { Transaction, TransactionType } from '@/lib/hooks/use-transactions'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -41,7 +51,7 @@ export function EditTransactionModal({
   const [date, setDate] = useState('')
   const [tagId, setTagId] = useState<string | null>(null)
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false)
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const isPending = updateMutation.isPending || deleteMutation.isPending
 
@@ -53,7 +63,7 @@ export function EditTransactionModal({
       setAmount(String(transaction.amount))
       setDate(transaction.date)
       setTagId(transaction.tag_id)
-      setIsConfirmingDelete(false)
+      setIsDeleteDialogOpen(false)
     }
   }, [open, transaction])
 
@@ -119,11 +129,6 @@ export function EditTransactionModal({
   const handleDelete = async () => {
     if (!transaction) return
 
-    if (!isConfirmingDelete) {
-      setIsConfirmingDelete(true)
-      return
-    }
-
     try {
       await deleteMutation.mutateAsync({
         id: transaction.id,
@@ -131,6 +136,7 @@ export function EditTransactionModal({
       })
 
       toast.success('Transaction deleted')
+      setIsDeleteDialogOpen(false)
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
@@ -144,6 +150,7 @@ export function EditTransactionModal({
   if (!transaction) return null
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
@@ -313,20 +320,12 @@ export function EditTransactionModal({
         <DialogFooter className="flex-row justify-between sm:justify-between">
           <Button
             variant="ghost"
-            onClick={handleDelete}
-            disabled={updateMutation.isPending}
-            className={cn(
-              'gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive',
-              isConfirmingDelete &&
-                'bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground',
-            )}
+            onClick={() => setIsDeleteDialogOpen(true)}
+            disabled={isPending}
+            className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
-            {deleteMutation.isPending ? (
-              <SpinnerGap className="size-4 animate-spin" />
-            ) : (
-              <Trash weight="duotone" className="size-4" />
-            )}
-            {isConfirmingDelete ? 'Click to confirm' : 'Delete'}
+            <Trash weight="duotone" className="size-4" />
+            Delete
           </Button>
           <div className="flex gap-3">
             <Button
@@ -352,5 +351,33 @@ export function EditTransactionModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete "{transaction.title}"? This action
+            cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleteMutation.isPending}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={deleteMutation.isPending}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleteMutation.isPending ? (
+              <SpinnerGap className="size-4 animate-spin" />
+            ) : null}
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   )
 }
