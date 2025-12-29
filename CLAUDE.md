@@ -160,6 +160,25 @@ After making any database changes (migrations, RLS policies, functions, triggers
 - Trailing commas on all
 - Strict TypeScript with no unused locals/parameters
 
+## Code Cleanup
+
+**After making changes to any file or adding a new file, you MUST:**
+
+1. Review the file for unused variables, imports, and parameters
+2. Remove any unused code artifacts immediately
+3. Run `pnpm lint` to verify no unused variables remain
+4. Fix any lint errors related to unused code before considering the task complete
+
+**This applies to:**
+
+- Unused imports (including removed component imports)
+- Unused local variables and constants
+- Unused function parameters (prefix with `_` only if intentionally unused)
+- Unused type definitions
+- Dead code from refactoring
+
+**Never leave unused code in the codebase** - clean as you go.
+
 ## Git Commit Convention
 
 ### Pre-Commit Cleanup
