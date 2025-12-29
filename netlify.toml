@@ -3,7 +3,11 @@
 
 [build]
   command = "pnpm build"
-  publish = ".netlify"
+  publish = "dist/client"
+
+[dev]
+  command = "pnpm dev"
+  port = 3000
 
 [build.environment]
   # Supabase anon keys are intentionally public (security comes from RLS policies)
