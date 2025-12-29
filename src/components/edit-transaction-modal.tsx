@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { CaretDown, Check, SpinnerGap, Trash } from '@phosphor-icons/react'
-import type { Transaction } from '@/lib/hooks/use-transactions'
+import type { Transaction, TransactionType } from '@/lib/hooks/use-transactions'
 import {
   Dialog,
   DialogContent,
@@ -17,8 +17,6 @@ import {
   useDeleteTransaction,
   useUpdateTransaction,
 } from '@/lib/hooks/use-transactions'
-
-type TransactionType = 'expense' | 'income'
 
 interface EditTransactionModalProps {
   open: boolean
@@ -111,7 +109,10 @@ export function EditTransactionModal({
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
-      toast.error('Failed to update transaction')
+      console.error('Failed to update transaction:', error)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to update transaction',
+      )
     }
   }
 
@@ -133,7 +134,10 @@ export function EditTransactionModal({
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
-      toast.error('Failed to delete transaction')
+      console.error('Failed to delete transaction:', error)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to delete transaction',
+      )
     }
   }
 

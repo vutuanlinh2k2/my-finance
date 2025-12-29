@@ -4,36 +4,56 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/lib/auth'
 
+type LoginSearch = {
+  redirect?: string
+}
+
 export const Route = createFileRoute('/login')({
+  validateSearch: (search: Record<string, unknown>): LoginSearch => {
+    return {
+      redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
+    }
+  },
   component: LoginPage,
 })
 
 function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { signIn, user, loading } = useAuth()
   const navigate = useNavigate()
+  const { redirect } = Route.useSearch()
 
   useEffect(() => {
     if (!loading && user) {
-      navigate({ to: '/' })
+      // Redirect to the original location or home
+      if (redirect) {
+        window.location.href = redirect
+      } else {
+        navigate({ to: '/' })
+      }
     }
-  }, [user, loading, navigate])
+  }, [user, loading, navigate, redirect])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
+    setFormError(null)
     setIsSubmitting(true)
 
-    const { error } = await signIn(email, password)
+    const { error: signInError } = await signIn(email, password)
 
-    if (error) {
-      setError(error.message)
+    if (signInError) {
+      setFormError(signInError.message)
       setIsSubmitting(false)
     } else {
-      navigate({ to: '/' })
+      // Redirect to the original location or home
+      if (redirect) {
+        window.location.href = redirect
+      } else {
+        navigate({ to: '/' })
+      }
     }
   }
 
@@ -86,9 +106,9 @@ function LoginPage() {
             />
           </div>
 
-          {error && (
+          {formError && (
             <div className="rounded-none border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
+              {formError}
             </div>
           )}
 

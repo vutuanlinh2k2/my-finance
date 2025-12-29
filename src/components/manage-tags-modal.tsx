@@ -270,7 +270,10 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
       toast.success(`Tag "${editedTag?.name}" updated`)
       setEditingId(null)
     } catch (error) {
-      toast.error('Failed to update tag')
+      console.error('Failed to update tag:', error)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to update tag',
+      )
     }
   }
 
@@ -288,7 +291,10 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
       await deleteMutation.mutateAsync(id)
       toast.success(`Tag "${deletedTag?.name}" deleted`)
     } catch (error) {
-      toast.error('Failed to delete tag')
+      console.error('Failed to delete tag:', error)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to delete tag',
+      )
     } finally {
       setDeletingId(null)
     }
@@ -301,7 +307,10 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
       await createMutation.mutateAsync({ name, emoji, type })
       toast.success(`Tag "${name}" added`)
     } catch (error) {
-      toast.error('Failed to add tag')
+      console.error('Failed to add tag:', error)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to add tag',
+      )
     } finally {
       setAddingType(null)
     }

@@ -130,14 +130,11 @@ export async function deleteTransaction(id: string): Promise<void> {
 }
 
 /**
- * Calculate monthly totals (income, expenses, balance)
+ * Calculate monthly totals from an array of transactions (pure function)
  */
-export async function fetchMonthlyTotals(
-  year: number,
-  month: number,
-): Promise<MonthlyTotals> {
-  const transactions = await fetchTransactionsByMonth(year, month)
-
+export function calculateMonthlyTotals(
+  transactions: Array<Transaction>,
+): MonthlyTotals {
   const totalIncome = transactions
     .filter((t) => t.type === 'income')
     .reduce((sum, t) => sum + t.amount, 0)
@@ -154,17 +151,15 @@ export async function fetchMonthlyTotals(
 }
 
 /**
- * Calculate daily totals for calendar grid display
+ * Calculate daily totals from an array of transactions (pure function)
  */
-export async function fetchDailyTotals(
-  year: number,
-  month: number,
-): Promise<DailyTotalsMap> {
-  const transactions = await fetchTransactionsByMonth(year, month)
+export function calculateDailyTotals(
+  transactions: Array<Transaction>,
+): DailyTotalsMap {
   const dailyTotals = new Map<number, { income: number; expense: number }>()
 
   for (const t of transactions) {
-    const day = parseInt(t.date.split('-')[2], 10)
+    const day = new Date(t.date).getDate()
     const current = dailyTotals.get(day) || { income: 0, expense: 0 }
 
     if (t.type === 'income') {

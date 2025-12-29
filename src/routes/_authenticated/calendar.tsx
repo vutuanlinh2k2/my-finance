@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import {
   CalendarBlank,
@@ -9,8 +9,6 @@ import {
   Tag,
 } from '@phosphor-icons/react'
 import type { Transaction } from '@/lib/hooks/use-transactions'
-import { PageLoading } from '@/components/page-loading'
-import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
@@ -25,7 +23,9 @@ import {
   useTransactionsByDate,
 } from '@/lib/hooks/use-transactions'
 
-export const Route = createFileRoute('/calendar')({ component: CalendarPage })
+export const Route = createFileRoute('/_authenticated/calendar')({
+  component: CalendarPage,
+})
 
 // Helper functions for calendar
 function getDaysInMonth(year: number, month: number) {
@@ -54,9 +54,6 @@ const MONTH_NAMES = [
 const DAY_NAMES = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 
 function CalendarPage() {
-  const { user, loading: authLoading } = useAuth()
-  const navigate = useNavigate()
-
   // Calendar state
   const [currentDate, setCurrentDate] = useState(() => new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(
@@ -91,20 +88,6 @@ function CalendarPage() {
     totalExpenses = 0,
     balance = 0,
   } = monthlyTotals || {}
-
-  // Redirect if not authenticated
-  if (!authLoading && !user) {
-    navigate({ to: '/login' })
-    return null
-  }
-
-  if (authLoading) {
-    return <PageLoading />
-  }
-
-  if (!user) {
-    return null
-  }
 
   const daysInMonth = getDaysInMonth(currentYear, currentMonth)
   const firstDayOfMonth = getFirstDayOfMonth(currentYear, currentMonth)

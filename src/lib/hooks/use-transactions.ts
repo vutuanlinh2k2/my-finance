@@ -9,10 +9,10 @@ import type {
 } from '@/lib/api/transactions'
 import { queryKeys } from '@/lib/query-keys'
 import {
+  calculateDailyTotals,
+  calculateMonthlyTotals,
   createTransaction,
   deleteTransaction,
-  fetchDailyTotals,
-  fetchMonthlyTotals,
   fetchTransactionsByDate,
   fetchTransactionsByMonth,
   updateTransaction,
@@ -41,21 +41,25 @@ export function useTransactionsByMonth(year: number, month: number) {
 
 /**
  * Hook to fetch monthly totals (income, expenses, balance)
+ * Derives data from cached transactions to avoid duplicate fetches
  */
 export function useMonthlyTotals(year: number, month: number) {
   return useQuery({
-    queryKey: queryKeys.totals.monthly(year, month),
-    queryFn: () => fetchMonthlyTotals(year, month),
+    queryKey: queryKeys.transactions.byMonth(year, month),
+    queryFn: () => fetchTransactionsByMonth(year, month),
+    select: calculateMonthlyTotals,
   })
 }
 
 /**
  * Hook to fetch daily totals for calendar grid display
+ * Derives data from cached transactions to avoid duplicate fetches
  */
 export function useDailyTotals(year: number, month: number) {
   return useQuery({
-    queryKey: queryKeys.totals.daily(year, month),
-    queryFn: () => fetchDailyTotals(year, month),
+    queryKey: queryKeys.transactions.byMonth(year, month),
+    queryFn: () => fetchTransactionsByMonth(year, month),
+    select: calculateDailyTotals,
   })
 }
 
@@ -72,17 +76,12 @@ export function useCreateTransaction() {
       const [year, month] = data.date.split('-').map(Number)
 
       // Invalidate relevant queries
+      // Note: totals are derived from transactions.byMonth via select, so no need to invalidate separately
       queryClient.invalidateQueries({
         queryKey: queryKeys.transactions.byDate(data.date),
       })
       queryClient.invalidateQueries({
         queryKey: queryKeys.transactions.byMonth(year, month - 1),
-      })
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.totals.monthly(year, month - 1),
-      })
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.totals.daily(year, month - 1),
       })
     },
   })
@@ -106,17 +105,12 @@ export function useUpdateTransaction() {
       const [year, month] = data.date.split('-').map(Number)
 
       // Invalidate relevant queries
+      // Note: totals are derived from transactions.byMonth via select, so no need to invalidate separately
       queryClient.invalidateQueries({
         queryKey: queryKeys.transactions.byDate(data.date),
       })
       queryClient.invalidateQueries({
         queryKey: queryKeys.transactions.byMonth(year, month - 1),
-      })
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.totals.monthly(year, month - 1),
-      })
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.totals.daily(year, month - 1),
       })
     },
   })
@@ -135,17 +129,12 @@ export function useDeleteTransaction() {
       const [year, month] = variables.date.split('-').map(Number)
 
       // Invalidate relevant queries
+      // Note: totals are derived from transactions.byMonth via select, so no need to invalidate separately
       queryClient.invalidateQueries({
         queryKey: queryKeys.transactions.byDate(variables.date),
       })
       queryClient.invalidateQueries({
         queryKey: queryKeys.transactions.byMonth(year, month - 1),
-      })
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.totals.monthly(year, month - 1),
-      })
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.totals.daily(year, month - 1),
       })
     },
   })

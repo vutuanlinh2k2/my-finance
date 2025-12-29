@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { CaretDown, Check, SpinnerGap } from '@phosphor-icons/react'
+import type { TransactionType } from '@/lib/hooks/use-transactions'
 import {
   Dialog,
   DialogContent,
@@ -11,11 +12,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { formatDateToISO } from '@/lib/api/transactions'
 import { useTags } from '@/lib/hooks/use-tags'
 import { useCreateTransaction } from '@/lib/hooks/use-transactions'
-import { formatDateToISO } from '@/lib/api/transactions'
-
-type TransactionType = 'expense' | 'income'
 
 interface AddTransactionModalProps {
   open: boolean
@@ -102,7 +101,10 @@ export function AddTransactionModal({
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
-      toast.error('Failed to add transaction')
+      console.error('Failed to add transaction:', error)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to add transaction',
+      )
     }
   }
 

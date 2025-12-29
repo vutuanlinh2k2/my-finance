@@ -113,13 +113,23 @@ export async function deleteTag(id: string): Promise<void> {
   }
 }
 
+// Cache key for tracking if default tags have been checked for this user
+const DEFAULT_TAGS_CHECKED_KEY = 'my-finance:default-tags-checked'
+
 /**
  * Ensure default tags exist for the current user.
  * This is a fallback for users created before the trigger was added.
+ * Uses localStorage to cache the check and avoid repeated DB queries.
  */
 export async function ensureDefaultTags(): Promise<void> {
   const { data: userData } = await supabase.auth.getUser()
   if (!userData.user) {
+    return
+  }
+
+  // Check if we've already verified tags for this user in this session
+  const cacheKey = `${DEFAULT_TAGS_CHECKED_KEY}:${userData.user.id}`
+  if (typeof window !== 'undefined' && localStorage.getItem(cacheKey)) {
     return
   }
 
@@ -137,5 +147,10 @@ export async function ensureDefaultTags(): Promise<void> {
     }))
 
     await supabase.from('tags').insert(tagsToInsert)
+  }
+
+  // Mark as checked for this user
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(cacheKey, 'true')
   }
 }
