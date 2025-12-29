@@ -89,6 +89,7 @@ export function useCreateTransaction() {
 
 /**
  * Hook to update an existing transaction
+ * Pass originalDate to properly invalidate cache when date changes
  */
 export function useUpdateTransaction() {
   const queryClient = useQueryClient()
@@ -100,18 +101,29 @@ export function useUpdateTransaction() {
     }: {
       id: string
       updates: UpdateTransactionInput
+      originalDate: string
     }) => updateTransaction(id, updates),
-    onSuccess: (data) => {
-      const [year, month] = data.date.split('-').map(Number)
+    onSuccess: (data, variables) => {
+      const [newYear, newMonth] = data.date.split('-').map(Number)
 
-      // Invalidate relevant queries
-      // Note: totals are derived from transactions.byMonth via select, so no need to invalidate separately
+      // Invalidate new date queries
       queryClient.invalidateQueries({
         queryKey: queryKeys.transactions.byDate(data.date),
       })
       queryClient.invalidateQueries({
-        queryKey: queryKeys.transactions.byMonth(year, month - 1),
+        queryKey: queryKeys.transactions.byMonth(newYear, newMonth - 1),
       })
+
+      // If date changed, also invalidate old date queries
+      if (variables.originalDate !== data.date) {
+        const [oldYear, oldMonth] = variables.originalDate.split('-').map(Number)
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.transactions.byDate(variables.originalDate),
+        })
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.transactions.byMonth(oldYear, oldMonth - 1),
+        })
+      }
     },
   })
 }

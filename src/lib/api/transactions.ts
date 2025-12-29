@@ -21,6 +21,22 @@ export interface MonthlyTotals {
 export type DailyTotalsMap = Map<number, { income: number; expense: number }>
 
 /**
+ * Count transactions using a specific tag
+ */
+export async function countTransactionsByTag(tagId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('transactions')
+    .select('*', { count: 'exact', head: true })
+    .eq('tag_id', tagId)
+
+  if (error) {
+    throw new Error(`Failed to count transactions: ${error.message}`)
+  }
+
+  return count ?? 0
+}
+
+/**
  * Fetch transactions for a specific date
  */
 export async function fetchTransactionsByDate(
@@ -159,7 +175,8 @@ export function calculateDailyTotals(
   const dailyTotals = new Map<number, { income: number; expense: number }>()
 
   for (const t of transactions) {
-    const day = new Date(t.date).getDate()
+    // Parse day directly from ISO string to avoid timezone issues
+    const day = parseInt(t.date.split('-')[2], 10)
     const current = dailyTotals.get(day) || { income: 0, expense: 0 }
 
     if (t.type === 'income') {

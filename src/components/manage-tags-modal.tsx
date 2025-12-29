@@ -6,8 +6,19 @@ import {
   SpinnerGap,
   Tag as TagIcon,
   Trash,
+  Warning,
 } from '@phosphor-icons/react'
 import type { Tag, TagType } from '@/lib/hooks/use-tags'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import {
   Dialog,
   DialogContent,
@@ -26,6 +37,7 @@ import {
   useUpdateTag,
 } from '@/lib/hooks/use-tags'
 import { EXPENSE_EMOJIS, INCOME_EMOJIS } from '@/lib/tags'
+import { countTransactionsByTag } from '@/lib/api/transactions'
 
 interface ManageTagsModalProps {
   open: boolean
@@ -249,6 +261,11 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [addingType, setAddingType] = useState<TagType | null>(null)
 
+  // Delete confirmation state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [tagToDelete, setTagToDelete] = useState<Tag | null>(null)
+  const [transactionCount, setTransactionCount] = useState(0)
+
   const expenseTags = tags.filter((t) => t.type === 'expense')
   const incomeTags = tags.filter((t) => t.type === 'income')
 
@@ -283,13 +300,35 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
     setEditEmoji('')
   }
 
-  const handleDelete = async (id: string) => {
-    const deletedTag = tags.find((t) => t.id === id)
+  const handleDeleteClick = async (id: string) => {
+    const tag = tags.find((t) => t.id === id)
+    if (!tag) return
+
     setDeletingId(id)
 
     try {
-      await deleteMutation.mutateAsync(id)
-      toast.success(`Tag "${deletedTag?.name}" deleted`)
+      const count = await countTransactionsByTag(id)
+      setTagToDelete(tag)
+      setTransactionCount(count)
+      setDeleteConfirmOpen(true)
+    } catch (error) {
+      console.error('Failed to check transaction count:', error)
+      toast.error('Failed to check tag usage')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!tagToDelete) return
+
+    setDeletingId(tagToDelete.id)
+
+    try {
+      await deleteMutation.mutateAsync(tagToDelete.id)
+      toast.success(`Tag "${tagToDelete.name}" deleted`)
+      setDeleteConfirmOpen(false)
+      setTagToDelete(null)
     } catch (error) {
       console.error('Failed to delete tag:', error)
       toast.error(
@@ -322,6 +361,7 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
@@ -358,7 +398,7 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
                     key={tag.id}
                     tag={tag}
                     onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    onDelete={handleDeleteClick}
                     isEditing={editingId === tag.id}
                     editName={editName}
                     editEmoji={editEmoji}
@@ -402,7 +442,7 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
                     key={tag.id}
                     tag={tag}
                     onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    onDelete={handleDeleteClick}
                     isEditing={editingId === tag.id}
                     editName={editName}
                     editEmoji={editEmoji}
@@ -431,5 +471,56 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            {transactionCount > 0 && (
+              <Warning weight="fill" className="size-5 text-amber-500" />
+            )}
+            Delete Tag
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {transactionCount > 0 ? (
+              <>
+                <span className="font-medium text-foreground">
+                  {tagToDelete?.emoji} {tagToDelete?.name}
+                </span>{' '}
+                is used by{' '}
+                <span className="font-medium text-foreground">
+                  {transactionCount} transaction{transactionCount > 1 ? 's' : ''}
+                </span>
+                . Deleting this tag will remove it from those transactions.
+              </>
+            ) : (
+              <>
+                Are you sure you want to delete{' '}
+                <span className="font-medium text-foreground">
+                  {tagToDelete?.emoji} {tagToDelete?.name}
+                </span>
+                ?
+              </>
+            )}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleteMutation.isPending}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirmDelete}
+            disabled={deleteMutation.isPending}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleteMutation.isPending && (
+              <SpinnerGap className="mr-2 size-4 animate-spin" />
+            )}
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }

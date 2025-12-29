@@ -54,10 +54,28 @@ export async function fetchTagsByType(type: TagType): Promise<Array<Tag>> {
   return data
 }
 
+const TAG_NAME_MAX_LENGTH = 50
+
+/**
+ * Validate tag name - must be 1-50 characters after trimming
+ */
+function validateTagName(name: string): string {
+  const trimmed = name.trim()
+  if (trimmed.length === 0) {
+    throw new Error('Tag name cannot be empty')
+  }
+  if (trimmed.length > TAG_NAME_MAX_LENGTH) {
+    throw new Error(`Tag name must be ${TAG_NAME_MAX_LENGTH} characters or less`)
+  }
+  return trimmed
+}
+
 /**
  * Create a new tag
  */
 export async function createTag(input: CreateTagInput): Promise<Tag> {
+  const validatedName = validateTagName(input.name)
+
   const { data: userData } = await supabase.auth.getUser()
   if (!userData.user) {
     throw new Error('User not authenticated')
@@ -67,7 +85,7 @@ export async function createTag(input: CreateTagInput): Promise<Tag> {
     .from('tags')
     .insert({
       user_id: userData.user.id,
-      name: input.name,
+      name: validatedName,
       emoji: input.emoji,
       type: input.type,
     })
@@ -88,9 +106,14 @@ export async function updateTag(
   id: string,
   updates: UpdateTagInput,
 ): Promise<Tag> {
+  const validatedUpdates = {
+    ...updates,
+    name: updates.name ? validateTagName(updates.name) : undefined,
+  }
+
   const { data, error } = await supabase
     .from('tags')
-    .update(updates)
+    .update(validatedUpdates)
     .eq('id', id)
     .select()
     .single()
