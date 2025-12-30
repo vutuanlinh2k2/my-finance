@@ -20,4 +20,7 @@ export const queryKeys = {
   subscriptions: {
     all: ['subscriptions'] as const,
   },
+  exchangeRate: {
+    usdVnd: ['exchangeRate', 'USD', 'VND'] as const,
+  },
 }

@@ -6,7 +6,7 @@
 | ------- | --------------------------- | ----------- |
 | Phase 1 | UI + localStorage mock data | Complete    |
 | Phase 2 | Supabase CRUD               | Complete    |
-| Phase 3 | Exchange Rate API           | Not Started |
+| Phase 3 | Exchange Rate API           | Complete    |
 | Phase 4 | Auto-Create Expense         | Not Started |
 
 ---
@@ -150,60 +150,82 @@ CREATE TABLE public.subscriptions (
 
 ---
 
-## Phase 3: Exchange Rate API (Accurate Calculations)
+## Phase 3: Exchange Rate API (Complete)
 
 ### Goal
 
 Real-time USD to VND conversion for accurate summary card calculations.
 
+### Summary
+
+All Phase 3 functionality has been implemented and tested:
+
+- Exchange rate fetched from exchangerate-api.com (free tier, 1,500 req/month)
+- Rate cached in localStorage with 24-hour TTL
+- Graceful fallback chain: cache → stale cache → default rate (25,000)
+- New "USD Rate" summary card displays current rate with source indicator
+- Tooltip shows rate details and last update time
+
 ### Success Criteria
 
-- [ ] Exchange rate fetched from reliable API
-- [ ] Rate cached to avoid excessive API calls
-- [ ] Graceful fallback when API fails
-- [ ] Summary cards show accurate converted amounts
-- [ ] Rate refreshed periodically (e.g., daily)
+- [x] Exchange rate fetched from reliable API
+- [x] Rate cached to avoid excessive API calls
+- [x] Graceful fallback when API fails
+- [x] Summary cards show accurate converted amounts
+- [x] Rate refreshed periodically (e.g., daily)
 
 ### Implementation Steps
 
 #### Step 1: Exchange Rate Service
 
-- [ ] Create `src/lib/api/exchange-rate.ts`
-- [ ] Choose API provider (exchangerate-api.com, fixer.io, or free alternative)
-- [ ] Implement `fetchExchangeRate()`
-- [ ] Implement caching strategy (localStorage with TTL)
+- [x] Create `src/lib/api/exchange-rate.ts`
+- [x] Choose API provider (exchangerate-api.com - free, no auth required)
+- [x] Implement `fetchExchangeRate()` with result metadata (source, lastUpdated)
+- [x] Implement caching strategy (localStorage with 24h TTL)
 
 #### Step 2: Integration
 
-- [ ] Create `src/lib/hooks/use-exchange-rate.ts`
-- [ ] Update summary card calculations to use real rate
-- [ ] Add loading state while fetching rate
-- [ ] Add error handling with fallback to last known rate
+- [x] Add exchange rate keys to `src/lib/query-keys.ts`
+- [x] Create `src/lib/hooks/use-exchange-rate.ts`
+- [x] Implement `useExchangeRate()` hook with React Query
+- [x] Implement `useExchangeRateValue()` convenience hook
+- [x] Update summary cards with new "USD Rate" card
+- [x] Add loading state while fetching rate
+- [x] Add "Offline" badge when using fallback rate
+- [x] Add tooltip showing rate details and update time
 
-#### Step 3: Testing
+#### Step 3: Update Subscriptions Page
 
-- [ ] Test rate fetching
-- [ ] Test cache hit/miss scenarios
-- [ ] Test fallback when API fails
-- [ ] Test summary card accuracy
+- [x] Replace `MOCK_EXCHANGE_RATE` with real hook
+- [x] Pass exchange rate info to summary cards
+- [x] Summary calculations use live rate
 
-### Files to Create/Modify
+#### Step 4: Testing
 
-| Action | File                                                          |
-| ------ | ------------------------------------------------------------- |
-| Create | `src/lib/api/exchange-rate.ts`                                |
-| Create | `src/lib/hooks/use-exchange-rate.ts`                          |
-| Modify | `src/components/subscriptions/subscription-summary-cards.tsx` |
-| Modify | `src/lib/subscriptions/utils.ts`                              |
+- [x] Test rate fetching from API
+- [x] Test cache behavior (valid cache returns immediately)
+- [x] Test fallback when API fails (uses stale cache or default)
+- [x] Test summary card displays correct rate
+- [x] Test tooltip shows rate source and update time
+- [x] Playwright testing
 
-### API Options
+### Files Created/Modified
 
-| Provider             | Free Tier            | Notes                      |
-| -------------------- | -------------------- | -------------------------- |
-| exchangerate-api.com | 1,500 requests/month | Simple, reliable           |
-| fixer.io             | 100 requests/month   | Popular, limited free      |
-| frankfurter.app      | Unlimited            | Open source, EUR base only |
-| Open Exchange Rates  | 1,000 requests/month | Good documentation         |
+| Action   | File                                                          |
+| -------- | ------------------------------------------------------------- |
+| Created  | `src/lib/api/exchange-rate.ts`                                |
+| Created  | `src/lib/hooks/use-exchange-rate.ts`                          |
+| Modified | `src/lib/query-keys.ts`                                       |
+| Modified | `src/components/subscriptions/subscription-summary-cards.tsx` |
+| Modified | `src/routes/_authenticated/subscriptions.tsx`                 |
+
+### API Details
+
+**Provider:** exchangerate-api.com (free tier)
+- Endpoint: `https://api.exchangerate-api.com/v4/latest/USD`
+- No authentication required
+- 1,500 requests/month (sufficient with 24h caching)
+- Returns all currency rates including VND
 
 ---
 

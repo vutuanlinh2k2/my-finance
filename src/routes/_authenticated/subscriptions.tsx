@@ -13,6 +13,7 @@ import {
   useSubscriptions,
   useUpdateSubscription,
 } from '@/lib/hooks/use-subscriptions'
+import { useExchangeRateValue } from '@/lib/hooks/use-exchange-rate'
 import { calculateSummaryTotals } from '@/lib/subscriptions'
 import { useTags } from '@/lib/hooks/use-tags'
 import { Button } from '@/components/ui/button'
@@ -34,9 +35,6 @@ import {
   SubscriptionsTable,
 } from '@/components/subscriptions'
 
-// TODO: Replace with real exchange rate API in Phase 3
-const MOCK_EXCHANGE_RATE = 24500
-
 export const Route = createFileRoute('/_authenticated/subscriptions')({
   component: SubscriptionsPage,
 })
@@ -44,6 +42,9 @@ export const Route = createFileRoute('/_authenticated/subscriptions')({
 function SubscriptionsPage() {
   // Subscriptions from Supabase
   const { data: subscriptions = [], isLoading } = useSubscriptions()
+
+  // Exchange rate for USD to VND conversion
+  const exchangeRate = useExchangeRateValue()
 
   // Mutations
   const createMutation = useCreateSubscription()
@@ -65,7 +66,7 @@ function SubscriptionsPage() {
   // Cast to the expected type since database type has compatible fields
   const summaryTotals = calculateSummaryTotals(
     subscriptions as Parameters<typeof calculateSummaryTotals>[0],
-    MOCK_EXCHANGE_RATE,
+    exchangeRate.rate,
   )
 
   // Check if any mutation is pending
@@ -173,6 +174,7 @@ function SubscriptionsPage() {
         totalMonthly={summaryTotals.totalMonthly}
         totalYearly={summaryTotals.totalYearly}
         isLoading={isLoading}
+        exchangeRate={exchangeRate}
       />
 
       {/* Table or Empty State */}
