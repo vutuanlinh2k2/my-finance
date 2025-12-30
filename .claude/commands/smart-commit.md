@@ -16,11 +16,13 @@ Thoroughly analyze all current changes, understand how they connect, and create 
 ### Phase 1: Gather All Changes
 
 1. **Get git status** to see all modified, added, and deleted files:
+
    ```bash
    git status --porcelain
    ```
 
 2. **Get the full diff** of all changes (staged and unstaged):
+
    ```bash
    git diff HEAD
    ```
@@ -55,6 +57,7 @@ Group related changes into logical commits based on:
 4. **Domain boundaries**: Separate UI changes from API changes from database changes
 
 Create a TodoWrite plan listing each proposed commit with:
+
 - Commit type (feat, fix, refactor, style, docs, test, chore)
 - Scope (component, module, or area affected)
 - Files to include
@@ -63,6 +66,7 @@ Create a TodoWrite plan listing each proposed commit with:
 ### Phase 4: User Confirmation
 
 Present the commit plan to the user showing:
+
 - Total number of proposed commits
 - For each commit:
   - The commit message (following conventional commits)
@@ -76,16 +80,19 @@ Ask the user to confirm or adjust the plan before proceeding.
 For each approved commit:
 
 1. **Reset staging area** (if needed):
+
    ```bash
    git reset HEAD
    ```
 
 2. **Stage only the relevant files**:
+
    ```bash
    git add <file1> <file2> ...
    ```
 
 3. **Create the commit** following the project's commit convention:
+
    ```bash
    git commit -m "$(cat <<'EOF'
    <type>(<scope>): <description>
@@ -107,6 +114,7 @@ For each approved commit:
 ### Phase 6: Summary
 
 After all commits are created, show:
+
 - Total commits created
 - List of all commit hashes and messages
 - Any files that were intentionally skipped and why
