@@ -61,15 +61,15 @@ Position: Below summary cards
 
 **Table Columns:**
 
-| Column | Description |
-|--------|-------------|
-| Title | Subscription name |
-| Tag | Associated expense tag (emoji + name) |
-| Type | "Monthly" or "Yearly" |
-| Price | Amount with currency indicator (e.g., "150,000 ₫" or "$9.99") |
-| Upcoming Due Date | Next payment date calculated from today |
-| Management Page | Link to external subscription management (icon/button) |
-| Actions | Edit and Delete icon buttons |
+| Column            | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| Title             | Subscription name                                             |
+| Tag               | Associated expense tag (emoji + name)                         |
+| Type              | "Monthly" or "Yearly"                                         |
+| Price             | Amount with currency indicator (e.g., "150,000 ₫" or "$9.99") |
+| Upcoming Due Date | Next payment date calculated from today                       |
+| Management Page   | Link to external subscription management (icon/button)        |
+| Actions           | Edit and Delete icon buttons                                  |
 
 **Upcoming Due Date Calculation:**
 
@@ -94,16 +94,16 @@ Triggered by clicking the "Add Subscription" button.
 
 **Form Fields:**
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| Title | Text input | Yes | Subscription name |
-| Tag | Dropdown | No | Expense tags only |
-| Currency | Select | Yes | VND or USD |
-| Amount | Number input | Yes | Cost per billing cycle |
-| Type | Select | Yes | Monthly or Yearly |
-| Day of Month | Select (1-31) | Yes | Recurring payment day |
-| Month | Select (1-12) | Conditional | Only shown when Type is "Yearly" |
-| Management URL | Text input | No | Link to manage subscription externally |
+| Field          | Type          | Required    | Notes                                  |
+| -------------- | ------------- | ----------- | -------------------------------------- |
+| Title          | Text input    | Yes         | Subscription name                      |
+| Tag            | Dropdown      | No          | Expense tags only                      |
+| Currency       | Select        | Yes         | VND or USD                             |
+| Amount         | Number input  | Yes         | Cost per billing cycle                 |
+| Type           | Select        | Yes         | Monthly or Yearly                      |
+| Day of Month   | Select (1-31) | Yes         | Recurring payment day                  |
+| Month          | Select (1-12) | Conditional | Only shown when Type is "Yearly"       |
+| Management URL | Text input    | No          | Link to manage subscription externally |
 
 **Conditional Logic:**
 
@@ -156,20 +156,20 @@ Triggered by clicking the Edit button on a subscription row.
 
 **New Table: `subscriptions`**
 
-| Column | Type | Notes |
-|--------|------|-------|
-| id | UUID | Primary key |
-| title | TEXT | Required |
-| tag_id | UUID | Nullable, FK to tags table |
-| currency | TEXT | 'VND' or 'USD' |
-| amount | NUMERIC | Cost per billing cycle |
-| type | TEXT | 'monthly' or 'yearly' |
-| day_of_month | INTEGER | 1-31 |
-| month_of_year | INTEGER | 1-12, nullable (only for yearly) |
-| management_url | TEXT | Nullable |
-| user_id | UUID | FK to auth.users |
-| created_at | TIMESTAMPTZ | Auto-generated |
-| last_payment_date | DATE | Nullable, updated when auto-expense created |
+| Column            | Type        | Notes                                       |
+| ----------------- | ----------- | ------------------------------------------- |
+| id                | UUID        | Primary key                                 |
+| title             | TEXT        | Required                                    |
+| tag_id            | UUID        | Nullable, FK to tags table                  |
+| currency          | TEXT        | 'VND' or 'USD'                              |
+| amount            | NUMERIC     | Cost per billing cycle                      |
+| type              | TEXT        | 'monthly' or 'yearly'                       |
+| day_of_month      | INTEGER     | 1-31                                        |
+| month_of_year     | INTEGER     | 1-12, nullable (only for yearly)            |
+| management_url    | TEXT        | Nullable                                    |
+| user_id           | UUID        | FK to auth.users                            |
+| created_at        | TIMESTAMPTZ | Auto-generated                              |
+| last_payment_date | DATE        | Nullable, updated when auto-expense created |
 
 **Existing Table Reference: `transactions`**
 
