@@ -5,6 +5,7 @@ import {
   ChartBar,
   CurrencyCircleDollar,
   House,
+  Repeat,
 } from '@phosphor-icons/react'
 
 import {
@@ -81,6 +82,17 @@ export function AppSidebar() {
                           <Link to="/reports">
                             <ChartBar weight="duotone" />
                             <span>Reports</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={currentPath === '/subscriptions'}
+                        >
+                          <Link to="/subscriptions">
+                            <Repeat weight="duotone" />
+                            <span>Subscriptions</span>
                           </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
