@@ -17,4 +17,7 @@ export const queryKeys = {
     daily: (year: number, month: number) =>
       ['totals', 'daily', year, month] as const,
   },
+  subscriptions: {
+    all: ['subscriptions'] as const,
+  },
 }
