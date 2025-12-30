@@ -15,7 +15,9 @@ if (!supabaseServiceKey) {
   console.error(
     'Error: SUPABASE_SERVICE_ROLE_KEY environment variable is required.',
   )
-  console.error('Run `pnpm db:start` and copy the service_role key from the output.')
+  console.error(
+    'Run `pnpm db:start` and copy the service_role key from the output.',
+  )
   process.exit(1)
 }
 
@@ -43,18 +45,12 @@ async function cleanTestData() {
   console.log(`Found test user: ${testUser.id}`)
 
   // Delete transactions first (due to foreign key constraint)
-  await supabase
-    .from('transactions')
-    .delete()
-    .eq('user_id', testUser.id)
+  await supabase.from('transactions').delete().eq('user_id', testUser.id)
 
   console.log(`Deleted transactions`)
 
   // Delete tags
-  await supabase
-    .from('tags')
-    .delete()
-    .eq('user_id', testUser.id)
+  await supabase.from('tags').delete().eq('user_id', testUser.id)
 
   console.log(`Deleted tags`)
 

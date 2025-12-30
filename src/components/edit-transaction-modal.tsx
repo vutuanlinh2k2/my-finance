@@ -152,160 +152,163 @@ export function EditTransactionModal({
 
   return (
     <>
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Edit Transaction</DialogTitle>
-        </DialogHeader>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Transaction</DialogTitle>
+          </DialogHeader>
 
-        <div className="flex flex-col gap-4">
-          {/* Transaction Type Selector */}
-          <div className="flex rounded-lg border border-border p-1">
-            <button
-              type="button"
-              onClick={() => setType('expense')}
-              disabled={isPending}
-              className={cn(
-                'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
-                type === 'expense'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              Expense
-            </button>
-            <button
-              type="button"
-              onClick={() => setType('income')}
-              disabled={isPending}
-              className={cn(
-                'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
-                type === 'income'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              Income
-            </button>
-          </div>
-
-          {/* Title Input */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium">Title</label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Weekly Groceries"
-              className="h-10 rounded-lg text-sm"
-              disabled={isPending}
-            />
-          </div>
-
-          {/* Amount Input */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium">Amount</label>
-            <div className="relative">
-              <Input
-                value={amount}
-                onChange={(e) => handleAmountChange(e.target.value)}
-                placeholder="0"
-                className="h-10 rounded-lg pr-7 text-sm"
+          <div className="flex flex-col gap-4">
+            {/* Transaction Type Selector */}
+            <div className="flex rounded-lg border border-border p-1">
+              <button
+                type="button"
+                onClick={() => setType('expense')}
                 disabled={isPending}
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                ₫
-              </span>
+                className={cn(
+                  'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
+                  type === 'expense'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                Expense
+              </button>
+              <button
+                type="button"
+                onClick={() => setType('income')}
+                disabled={isPending}
+                className={cn(
+                  'flex-1 rounded-md py-2 text-sm font-medium transition-colors',
+                  type === 'income'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                Income
+              </button>
             </div>
-          </div>
 
-          {/* Date and Tag Row */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Date Input */}
+            {/* Title Input */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium">Date</label>
+              <label className="mb-1.5 block text-sm font-medium">Title</label>
               <Input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Weekly Groceries"
                 className="h-10 rounded-lg text-sm"
                 disabled={isPending}
               />
             </div>
 
-            {/* Tag Dropdown */}
+            {/* Amount Input */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium">Tag</label>
-              <TagSelect
-                value={tagId}
-                onChange={setTagId}
-                tags={filteredTags}
-                disabled={isPending}
-              />
+              <label className="mb-1.5 block text-sm font-medium">Amount</label>
+              <div className="relative">
+                <Input
+                  value={amount}
+                  onChange={(e) => handleAmountChange(e.target.value)}
+                  placeholder="0"
+                  className="h-10 rounded-lg pr-7 text-sm"
+                  disabled={isPending}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                  ₫
+                </span>
+              </div>
+            </div>
+
+            {/* Date and Tag Row */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Date Input */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium">Date</label>
+                <Input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="h-10 rounded-lg text-sm"
+                  disabled={isPending}
+                />
+              </div>
+
+              {/* Tag Dropdown */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium">Tag</label>
+                <TagSelect
+                  value={tagId}
+                  onChange={setTagId}
+                  tags={filteredTags}
+                  disabled={isPending}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <DialogFooter className="flex-row justify-between sm:justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => setIsDeleteDialogOpen(true)}
-            disabled={isPending}
-            className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
-          >
-            <Trash weight="duotone" className="size-4" />
-            Delete
-          </Button>
-          <div className="flex gap-3">
+          <DialogFooter className="flex-row justify-between sm:justify-between">
             <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
+              variant="ghost"
+              onClick={() => setIsDeleteDialogOpen(true)}
               disabled={isPending}
+              className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
+              <Trash weight="duotone" className="size-4" />
+              Delete
+            </Button>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                className="gap-2"
+                disabled={isPending}
+              >
+                {updateMutation.isPending ? (
+                  <SpinnerGap className="size-4 animate-spin" />
+                ) : (
+                  <Check weight="bold" className="size-4" />
+                )}
+                Save Changes
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{transaction.title}"? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
               Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              className="gap-2"
-              disabled={isPending}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {updateMutation.isPending ? (
+              {deleteMutation.isPending ? (
                 <SpinnerGap className="size-4 animate-spin" />
-              ) : (
-                <Check weight="bold" className="size-4" />
-              )}
-              Save Changes
-            </Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete "{transaction.title}"? This action
-            cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteMutation.isPending}>
-            Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleDelete}
-            disabled={deleteMutation.isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {deleteMutation.isPending ? (
-              <SpinnerGap className="size-4 animate-spin" />
-            ) : null}
-            Delete
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  </>
+              ) : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

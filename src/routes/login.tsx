@@ -26,7 +26,8 @@ function getSafeRedirect(url: string | undefined): string {
 export const Route = createFileRoute('/login')({
   validateSearch: (search: Record<string, unknown>): LoginSearch => {
     return {
-      redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
+      redirect:
+        typeof search.redirect === 'string' ? search.redirect : undefined,
     }
   },
   component: LoginPage,

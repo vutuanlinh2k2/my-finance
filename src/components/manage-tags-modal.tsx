@@ -347,9 +347,7 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
       toast.success(`Tag "${name}" added`)
     } catch (error) {
       console.error('Failed to add tag:', error)
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to add tag',
-      )
+      toast.error(error instanceof Error ? error.message : 'Failed to add tag')
     } finally {
       setAddingType(null)
     }
@@ -362,165 +360,169 @@ export function ManageTagsModal({ open, onOpenChange }: ManageTagsModalProps) {
 
   return (
     <>
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Manage Tags</DialogTitle>
-          <DialogDescription>
-            Add, edit, or remove tags for your transactions.
-          </DialogDescription>
-        </DialogHeader>
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Manage Tags</DialogTitle>
+            <DialogDescription>
+              Add, edit, or remove tags for your transactions.
+            </DialogDescription>
+          </DialogHeader>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <SpinnerGap className="size-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-6">
-            {/* Expense Tags Column */}
-            <div className="flex flex-col">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TagIcon weight="duotone" className="size-5 text-rose-500" />
-                  <span className="text-sm font-semibold uppercase tracking-wide text-rose-500">
-                    Expense Tags
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <SpinnerGap className="size-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-6">
+              {/* Expense Tags Column */}
+              <div className="flex flex-col">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TagIcon
+                      weight="duotone"
+                      className="size-5 text-rose-500"
+                    />
+                    <span className="text-sm font-semibold uppercase tracking-wide text-rose-500">
+                      Expense Tags
+                    </span>
+                  </div>
+                  <span className="rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                    {expenseTags.length} items
                   </span>
                 </div>
-                <span className="rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground">
-                  {expenseTags.length} items
-                </span>
+                <div className="flex min-h-0 max-h-[280px] flex-1 flex-col gap-2 overflow-y-auto pr-1">
+                  {expenseTags.map((tag) => (
+                    <TagItem
+                      key={tag.id}
+                      tag={tag}
+                      onEdit={handleEdit}
+                      onDelete={handleDeleteClick}
+                      isEditing={editingId === tag.id}
+                      editName={editName}
+                      editEmoji={editEmoji}
+                      onEditNameChange={setEditName}
+                      onEditEmojiChange={setEditEmoji}
+                      onSaveEdit={handleSaveEdit}
+                      onCancelEdit={handleCancelEdit}
+                      isSaving={
+                        updateMutation.isPending && editingId === tag.id
+                      }
+                      isDeleting={deletingId === tag.id}
+                    />
+                  ))}
+                </div>
+                <AddTagForm
+                  type="expense"
+                  onAdd={handleAdd}
+                  isAdding={addingType === 'expense'}
+                />
               </div>
-              <div
-                className="flex min-h-0 max-h-[280px] flex-1 flex-col gap-2 overflow-y-auto pr-1"
-              >
-                {expenseTags.map((tag) => (
-                  <TagItem
-                    key={tag.id}
-                    tag={tag}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
-                    isEditing={editingId === tag.id}
-                    editName={editName}
-                    editEmoji={editEmoji}
-                    onEditNameChange={setEditName}
-                    onEditEmojiChange={setEditEmoji}
-                    onSaveEdit={handleSaveEdit}
-                    onCancelEdit={handleCancelEdit}
-                    isSaving={updateMutation.isPending && editingId === tag.id}
-                    isDeleting={deletingId === tag.id}
-                  />
-                ))}
-              </div>
-              <AddTagForm
-                type="expense"
-                onAdd={handleAdd}
-                isAdding={addingType === 'expense'}
-              />
-            </div>
 
-            {/* Income Tags Column */}
-            <div className="flex flex-col">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TagIcon
-                    weight="duotone"
-                    className="size-5 text-emerald-500"
-                  />
-                  <span className="text-sm font-semibold uppercase tracking-wide text-emerald-500">
-                    Income Tags
+              {/* Income Tags Column */}
+              <div className="flex flex-col">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TagIcon
+                      weight="duotone"
+                      className="size-5 text-emerald-500"
+                    />
+                    <span className="text-sm font-semibold uppercase tracking-wide text-emerald-500">
+                      Income Tags
+                    </span>
+                  </div>
+                  <span className="rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                    {incomeTags.length} items
                   </span>
                 </div>
-                <span className="rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground">
-                  {incomeTags.length} items
-                </span>
+                <div className="flex min-h-0 max-h-[280px] flex-1 flex-col gap-2 overflow-y-auto pr-1">
+                  {incomeTags.map((tag) => (
+                    <TagItem
+                      key={tag.id}
+                      tag={tag}
+                      onEdit={handleEdit}
+                      onDelete={handleDeleteClick}
+                      isEditing={editingId === tag.id}
+                      editName={editName}
+                      editEmoji={editEmoji}
+                      onEditNameChange={setEditName}
+                      onEditEmojiChange={setEditEmoji}
+                      onSaveEdit={handleSaveEdit}
+                      onCancelEdit={handleCancelEdit}
+                      isSaving={
+                        updateMutation.isPending && editingId === tag.id
+                      }
+                      isDeleting={deletingId === tag.id}
+                    />
+                  ))}
+                </div>
+                <AddTagForm
+                  type="income"
+                  onAdd={handleAdd}
+                  isAdding={addingType === 'income'}
+                />
               </div>
-              <div
-                className="flex min-h-0 max-h-[280px] flex-1 flex-col gap-2 overflow-y-auto pr-1"
-              >
-                {incomeTags.map((tag) => (
-                  <TagItem
-                    key={tag.id}
-                    tag={tag}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
-                    isEditing={editingId === tag.id}
-                    editName={editName}
-                    editEmoji={editEmoji}
-                    onEditNameChange={setEditName}
-                    onEditEmojiChange={setEditEmoji}
-                    onSaveEdit={handleSaveEdit}
-                    onCancelEdit={handleCancelEdit}
-                    isSaving={updateMutation.isPending && editingId === tag.id}
-                    isDeleting={deletingId === tag.id}
-                  />
-                ))}
-              </div>
-              <AddTagForm
-                type="income"
-                onAdd={handleAdd}
-                isAdding={addingType === 'income'}
-              />
             </div>
-          </div>
-        )}
+          )}
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
-            Close
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleClose}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-    <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            {transactionCount > 0 && (
-              <Warning weight="fill" className="size-5 text-amber-500" />
-            )}
-            Delete Tag
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            {transactionCount > 0 ? (
-              <>
-                <span className="font-medium text-foreground">
-                  {tagToDelete?.emoji} {tagToDelete?.name}
-                </span>{' '}
-                is used by{' '}
-                <span className="font-medium text-foreground">
-                  {transactionCount} transaction{transactionCount > 1 ? 's' : ''}
-                </span>
-                . Deleting this tag will remove it from those transactions.
-              </>
-            ) : (
-              <>
-                Are you sure you want to delete{' '}
-                <span className="font-medium text-foreground">
-                  {tagToDelete?.emoji} {tagToDelete?.name}
-                </span>
-                ?
-              </>
-            )}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteMutation.isPending}>
-            Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleConfirmDelete}
-            disabled={deleteMutation.isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {deleteMutation.isPending && (
-              <SpinnerGap className="mr-2 size-4 animate-spin" />
-            )}
-            Delete
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              {transactionCount > 0 && (
+                <Warning weight="fill" className="size-5 text-amber-500" />
+              )}
+              Delete Tag
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {transactionCount > 0 ? (
+                <>
+                  <span className="font-medium text-foreground">
+                    {tagToDelete?.emoji} {tagToDelete?.name}
+                  </span>{' '}
+                  is used by{' '}
+                  <span className="font-medium text-foreground">
+                    {transactionCount} transaction
+                    {transactionCount > 1 ? 's' : ''}
+                  </span>
+                  . Deleting this tag will remove it from those transactions.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to delete{' '}
+                  <span className="font-medium text-foreground">
+                    {tagToDelete?.emoji} {tagToDelete?.name}
+                  </span>
+                  ?
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending && (
+                <SpinnerGap className="mr-2 size-4 animate-spin" />
+              )}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
