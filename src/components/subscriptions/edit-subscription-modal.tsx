@@ -6,11 +6,13 @@ import { BillingTypeToggle } from './billing-type-toggle'
 import { DaySelect } from './day-select'
 import { MonthSelect } from './month-select'
 import type {
-  Subscription,
   SubscriptionCurrency,
   SubscriptionType,
-  UpdateSubscriptionInput,
 } from '@/lib/subscriptions'
+import type {
+  Subscription,
+  UpdateSubscriptionInput,
+} from '@/lib/hooks/use-subscriptions'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,8 +39,9 @@ interface EditSubscriptionModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   subscription: Subscription | null
-  onUpdate: (id: string, updates: UpdateSubscriptionInput) => void
-  onDelete: (id: string) => void
+  onUpdate: (id: string, updates: UpdateSubscriptionInput) => Promise<void>
+  onDelete: (id: string) => Promise<void>
+  isSubmitting?: boolean
 }
 
 export function EditSubscriptionModal({
@@ -47,11 +50,15 @@ export function EditSubscriptionModal({
   subscription,
   onUpdate,
   onDelete,
+  isSubmitting: externalIsSubmitting = false,
 }: EditSubscriptionModalProps) {
   const { data: tags = [] } = useTags()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [internalIsSubmitting, setInternalIsSubmitting] = useState(false)
+  const [internalIsDeleting, setInternalIsDeleting] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
+  const isSubmitting = externalIsSubmitting || internalIsSubmitting
+  const isDeleting = internalIsDeleting
 
   // Form state
   const [title, setTitle] = useState('')
@@ -73,14 +80,20 @@ export function EditSubscriptionModal({
     if (open && subscription) {
       setTitle(subscription.title)
       setTagId(subscription.tag_id)
-      setCurrency(subscription.currency)
-      setAmount(String(subscription.amount))
-      setType(subscription.type)
+      const subCurrency = subscription.currency as SubscriptionCurrency
+      setCurrency(subCurrency)
+      // USD is stored as cents, convert back to dollars for display
+      const displayAmount =
+        subCurrency === 'USD'
+          ? (subscription.amount / 100).toFixed(2)
+          : String(subscription.amount)
+      setAmount(displayAmount)
+      setType(subscription.type as SubscriptionType)
       setDayOfMonth(subscription.day_of_month)
       setMonthOfYear(subscription.month_of_year)
       setManagementUrl(subscription.management_url ?? '')
-      setIsSubmitting(false)
-      setIsDeleting(false)
+      setInternalIsSubmitting(false)
+      setInternalIsDeleting(false)
       setIsDeleteDialogOpen(false)
     }
   }, [open, subscription])
@@ -110,7 +123,7 @@ export function EditSubscriptionModal({
     }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!subscription) return
 
     // Validation
@@ -136,46 +149,46 @@ export function EditSubscriptionModal({
       return
     }
 
-    setIsSubmitting(true)
+    setInternalIsSubmitting(true)
 
     try {
+      // Store USD as cents (multiply by 100) for BIGINT storage
+      const amountToStore =
+        currency === 'USD' ? Math.round(numAmount * 100) : numAmount
+
       const updates: UpdateSubscriptionInput = {
         title: title.trim(),
         tag_id: tagId,
         currency,
-        amount: numAmount,
+        amount: amountToStore,
         type,
         day_of_month: dayOfMonth,
         month_of_year: type === 'yearly' ? monthOfYear : null,
         management_url: managementUrl.trim() || null,
       }
 
-      onUpdate(subscription.id, updates)
-      toast.success('Subscription updated successfully')
+      await onUpdate(subscription.id, updates)
       onOpenChange(false)
-    } catch (error) {
-      console.error('Failed to update subscription:', error)
-      toast.error('Failed to update subscription')
+    } catch {
+      // Error handling is done by parent
     } finally {
-      setIsSubmitting(false)
+      setInternalIsSubmitting(false)
     }
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!subscription) return
 
-    setIsDeleting(true)
+    setInternalIsDeleting(true)
 
     try {
-      onDelete(subscription.id)
-      toast.success('Subscription deleted')
+      await onDelete(subscription.id)
       setIsDeleteDialogOpen(false)
       onOpenChange(false)
-    } catch (error) {
-      console.error('Failed to delete subscription:', error)
-      toast.error('Failed to delete subscription')
+    } catch {
+      // Error handling is done by parent
     } finally {
-      setIsDeleting(false)
+      setInternalIsDeleting(false)
     }
   }
 

@@ -6,10 +6,10 @@ import { BillingTypeToggle } from './billing-type-toggle'
 import { DaySelect } from './day-select'
 import { MonthSelect } from './month-select'
 import type {
-  CreateSubscriptionInput,
   SubscriptionCurrency,
   SubscriptionType,
 } from '@/lib/subscriptions'
+import type { CreateSubscriptionInput } from '@/lib/hooks/use-subscriptions'
 import {
   Dialog,
   DialogContent,
@@ -25,16 +25,19 @@ import { useTags } from '@/lib/hooks/use-tags'
 interface AddSubscriptionModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (input: CreateSubscriptionInput) => void
+  onSubmit: (input: CreateSubscriptionInput) => Promise<void>
+  isSubmitting?: boolean
 }
 
 export function AddSubscriptionModal({
   open,
   onOpenChange,
   onSubmit,
+  isSubmitting: externalIsSubmitting = false,
 }: AddSubscriptionModalProps) {
   const { data: tags = [] } = useTags()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [internalIsSubmitting, setInternalIsSubmitting] = useState(false)
+  const isSubmitting = externalIsSubmitting || internalIsSubmitting
 
   // Form state
   const [title, setTitle] = useState('')
@@ -60,7 +63,7 @@ export function AddSubscriptionModal({
       setDayOfMonth(null)
       setMonthOfYear(null)
       setManagementUrl('')
-      setIsSubmitting(false)
+      setInternalIsSubmitting(false)
     }
   }, [open])
 
@@ -89,7 +92,7 @@ export function AddSubscriptionModal({
     }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validation
     if (!title.trim()) {
       toast.error('Please enter a title')
@@ -113,28 +116,30 @@ export function AddSubscriptionModal({
       return
     }
 
-    setIsSubmitting(true)
+    setInternalIsSubmitting(true)
 
     try {
+      // Store USD as cents (multiply by 100) for BIGINT storage
+      const amountToStore =
+        currency === 'USD' ? Math.round(numAmount * 100) : numAmount
+
       const input: CreateSubscriptionInput = {
         title: title.trim(),
         tag_id: tagId,
         currency,
-        amount: numAmount,
+        amount: amountToStore,
         type,
         day_of_month: dayOfMonth,
         month_of_year: type === 'yearly' ? monthOfYear : null,
         management_url: managementUrl.trim() || null,
       }
 
-      onSubmit(input)
-      toast.success('Subscription added successfully')
+      await onSubmit(input)
       onOpenChange(false)
-    } catch (error) {
-      console.error('Failed to add subscription:', error)
-      toast.error('Failed to add subscription')
+    } catch {
+      // Error handling is done by parent
     } finally {
-      setIsSubmitting(false)
+      setInternalIsSubmitting(false)
     }
   }
 

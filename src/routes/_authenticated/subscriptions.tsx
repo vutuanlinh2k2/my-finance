@@ -1,20 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Plus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import type { Subscription } from '@/lib/api/subscriptions'
 import type {
   CreateSubscriptionInput,
-  Subscription,
   UpdateSubscriptionInput,
-} from '@/lib/subscriptions'
+} from '@/lib/hooks/use-subscriptions'
 import {
-  MOCK_EXCHANGE_RATE,
-  addSubscription,
-  calculateSummaryTotals,
-  deleteSubscription,
-  getSubscriptions,
-  updateSubscription,
-} from '@/lib/subscriptions'
+  useCreateSubscription,
+  useDeleteSubscription,
+  useSubscriptions,
+  useUpdateSubscription,
+} from '@/lib/hooks/use-subscriptions'
+import { calculateSummaryTotals } from '@/lib/subscriptions'
 import { useTags } from '@/lib/hooks/use-tags'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,14 +34,21 @@ import {
   SubscriptionsTable,
 } from '@/components/subscriptions'
 
+// TODO: Replace with real exchange rate API in Phase 3
+const MOCK_EXCHANGE_RATE = 24500
+
 export const Route = createFileRoute('/_authenticated/subscriptions')({
   component: SubscriptionsPage,
 })
 
 function SubscriptionsPage() {
-  // Subscriptions state (localStorage)
-  const [subscriptions, setSubscriptions] = useState<Array<Subscription>>([])
-  const [isLoading, setIsLoading] = useState(true)
+  // Subscriptions from Supabase
+  const { data: subscriptions = [], isLoading } = useSubscriptions()
+
+  // Mutations
+  const createMutation = useCreateSubscription()
+  const updateMutation = useUpdateSubscription()
+  const deleteMutation = useDeleteSubscription()
 
   // Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -55,71 +61,81 @@ function SubscriptionsPage() {
   const { data: tags = [] } = useTags()
   const expenseTags = tags.filter((t) => t.type === 'expense')
 
-  // Load subscriptions from localStorage on mount
-  useEffect(() => {
-    const loadSubscriptions = () => {
-      try {
-        const stored = getSubscriptions()
-        setSubscriptions(stored)
-      } catch (error) {
-        console.error('Failed to load subscriptions:', error)
-        toast.error('Failed to load subscriptions')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadSubscriptions()
-  }, [])
-
   // Calculate summary totals
+  // Cast to the expected type since database type has compatible fields
   const summaryTotals = calculateSummaryTotals(
-    subscriptions,
+    subscriptions as Parameters<typeof calculateSummaryTotals>[0],
     MOCK_EXCHANGE_RATE,
   )
 
+  // Check if any mutation is pending
+  const isMutating =
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    deleteMutation.isPending
+
   // Handlers
-  const handleAddSubscription = (input: CreateSubscriptionInput) => {
+  const handleAddSubscription = async (input: CreateSubscriptionInput) => {
     try {
-      const newSubscription = addSubscription(input)
-      setSubscriptions((prev) => [...prev, newSubscription])
+      await createMutation.mutateAsync(input)
+      toast.success('Subscription added')
     } catch (error) {
       console.error('Failed to add subscription:', error)
-      toast.error('Failed to add subscription')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to add subscription',
+      )
+      throw error // Re-throw so modal knows it failed
     }
   }
 
-  const handleUpdateSubscription = (
+  const handleUpdateSubscription = async (
     id: string,
     updates: UpdateSubscriptionInput,
   ) => {
     try {
-      const updated = updateSubscription(id, updates)
-      if (updated) {
-        setSubscriptions((prev) => prev.map((s) => (s.id === id ? updated : s)))
-      }
+      await updateMutation.mutateAsync({ id, updates })
+      toast.success('Subscription updated')
     } catch (error) {
       console.error('Failed to update subscription:', error)
-      toast.error('Failed to update subscription')
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to update subscription',
+      )
+      throw error
     }
   }
 
-  const handleDeleteSubscription = () => {
+  const handleDeleteSubscription = async () => {
     if (!deletingSubscription) return
 
     try {
-      const success = deleteSubscription(deletingSubscription.id)
-      if (success) {
-        setSubscriptions((prev) =>
-          prev.filter((s) => s.id !== deletingSubscription.id),
-        )
-        toast.success('Subscription deleted')
-      }
+      await deleteMutation.mutateAsync(deletingSubscription.id)
+      toast.success('Subscription deleted')
     } catch (error) {
       console.error('Failed to delete subscription:', error)
-      toast.error('Failed to delete subscription')
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete subscription',
+      )
     } finally {
       setDeletingSubscription(null)
+    }
+  }
+
+  const handleDeleteFromEditModal = async (id: string) => {
+    try {
+      await deleteMutation.mutateAsync(id)
+      toast.success('Subscription deleted')
+      setEditingSubscription(null)
+    } catch (error) {
+      console.error('Failed to delete subscription:', error)
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete subscription',
+      )
     }
   }
 
@@ -141,7 +157,11 @@ function SubscriptionsPage() {
             Manage your recurring payments and services
           </p>
         </div>
-        <Button onClick={() => setIsAddModalOpen(true)} className="gap-2">
+        <Button
+          onClick={() => setIsAddModalOpen(true)}
+          className="gap-2"
+          disabled={isMutating}
+        >
           <Plus weight="bold" className="size-4" />
           Add Subscription
         </Button>
@@ -164,10 +184,22 @@ function SubscriptionsPage() {
         <SubscriptionsEmptyState onAddClick={() => setIsAddModalOpen(true)} />
       ) : (
         <SubscriptionsTable
-          subscriptions={subscriptions}
+          subscriptions={
+            subscriptions as Parameters<
+              typeof SubscriptionsTable
+            >[0]['subscriptions']
+          }
           tags={expenseTags}
-          onEdit={handleEditClick}
-          onDelete={handleDeleteClick}
+          onEdit={
+            handleEditClick as Parameters<
+              typeof SubscriptionsTable
+            >[0]['onEdit']
+          }
+          onDelete={
+            handleDeleteClick as Parameters<
+              typeof SubscriptionsTable
+            >[0]['onDelete']
+          }
         />
       )}
 
@@ -176,6 +208,7 @@ function SubscriptionsPage() {
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
         onSubmit={handleAddSubscription}
+        isSubmitting={createMutation.isPending}
       />
 
       {/* Edit Subscription Modal */}
@@ -184,14 +217,12 @@ function SubscriptionsPage() {
         onOpenChange={(open) => {
           if (!open) setEditingSubscription(null)
         }}
-        subscription={editingSubscription}
+        subscription={
+          editingSubscription
+        }
         onUpdate={handleUpdateSubscription}
-        onDelete={(id) => {
-          // Edit modal already showed confirmation, so directly delete
-          deleteSubscription(id)
-          setSubscriptions((prev) => prev.filter((s) => s.id !== id))
-          setEditingSubscription(null)
-        }}
+        onDelete={handleDeleteFromEditModal}
+        isSubmitting={updateMutation.isPending || deleteMutation.isPending}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -211,12 +242,15 @@ function SubscriptionsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteSubscription}
+              disabled={deleteMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

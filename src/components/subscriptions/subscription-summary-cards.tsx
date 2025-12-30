@@ -1,4 +1,4 @@
-import { CalendarDots, Coins, Wallet } from '@phosphor-icons/react'
+import { CalendarDots, Coins, Info, Wallet } from '@phosphor-icons/react'
 import { formatCompact, formatCurrency } from '@/lib/currency'
 
 interface SubscriptionSummaryCardsProps {
@@ -16,14 +16,23 @@ export function SubscriptionSummaryCards({
 }: SubscriptionSummaryCardsProps) {
   return (
     <div className="grid grid-cols-3 gap-4">
-      {/* Average Monthly Cost */}
+      {/* Monthly Cost - true average cost per month (monthly + yearly/12) */}
       <div className="rounded-lg border border-border bg-sidebar p-4">
         <div className="mb-2 flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-amber-100">
             <CalendarDots weight="duotone" className="size-4 text-amber-600" />
           </div>
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Average Monthly Cost
+            Monthly Cost
+          </span>
+          <span
+            className="tooltip-fast"
+            data-tooltip="Monthly plans + annual plans ÷ 12"
+          >
+            <Info
+              weight="fill"
+              className="size-3.5 text-muted-foreground/50"
+            />
           </span>
         </div>
         {isLoading ? (
@@ -38,14 +47,23 @@ export function SubscriptionSummaryCards({
         )}
       </div>
 
-      {/* Total Monthly Cost */}
+      {/* Monthly Plans - sum of monthly-billed subscriptions only */}
       <div className="rounded-lg border border-border bg-sidebar p-4">
         <div className="mb-2 flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-rose-100">
             <Coins weight="duotone" className="size-4 text-rose-600" />
           </div>
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Total Monthly Cost
+            Monthly Plans
+          </span>
+          <span
+            className="tooltip-fast"
+            data-tooltip="Total from subscriptions billed monthly"
+          >
+            <Info
+              weight="fill"
+              className="size-3.5 text-muted-foreground/50"
+            />
           </span>
         </div>
         {isLoading ? (
@@ -60,14 +78,23 @@ export function SubscriptionSummaryCards({
         )}
       </div>
 
-      {/* Total Yearly Cost */}
+      {/* Annual Plans - sum of yearly-billed subscriptions only */}
       <div className="rounded-lg border border-border bg-sidebar p-4">
         <div className="mb-2 flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-100">
             <Wallet weight="duotone" className="size-4 text-emerald-600" />
           </div>
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Total Yearly Cost
+            Annual Plans
+          </span>
+          <span
+            className="tooltip-fast"
+            data-tooltip="Total from subscriptions billed yearly"
+          >
+            <Info
+              weight="fill"
+              className="size-3.5 text-muted-foreground/50"
+            />
           </span>
         </div>
         {isLoading ? (

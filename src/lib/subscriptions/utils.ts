@@ -132,6 +132,7 @@ export function formatDueDate(dueDate: Date): {
 
 /**
  * Convert amount to VND based on currency
+ * Note: USD amounts are stored as cents in the database
  */
 export function convertToVND(
   amount: number,
@@ -141,7 +142,9 @@ export function convertToVND(
   if (currency === 'VND') {
     return amount
   }
-  return Math.round(amount * exchangeRate)
+  // USD is stored as cents, convert to dollars first, then to VND
+  const dollars = amount / 100
+  return Math.round(dollars * exchangeRate)
 }
 
 /**
@@ -177,9 +180,11 @@ export function calculateSummaryTotals(
 
 /**
  * Format USD amount with 2 decimal places
+ * Note: USD amounts are stored as cents in the database
  */
-export function formatUSD(amount: number): string {
-  return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+export function formatUSD(amountInCents: number): string {
+  const dollars = amountInCents / 100
+  return `$${dollars.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 /**
