@@ -101,6 +101,93 @@ export const Route = createFileRoute('/path')({
 })
 ```
 
+## Feature Documentation Workflow
+
+For each new feature implementation, follow this documentation workflow to ensure high-quality deliverables:
+
+### 1. Create Feature Documentation
+
+- Create a folder inside `docs/` named after the feature (e.g., `docs/calendar/`, `docs/subscriptions/`)
+- Create `<feature-name>-feat.md` file with complete feature specifications:
+  - Feature overview and purpose
+  - User stories and use cases
+  - Detailed functional requirements
+  - Data models and state management
+  - API endpoints (if applicable)
+  - Edge cases and error handling
+
+### 2. Generate Testing Checklists
+
+After completing the feature specification, generate two comprehensive checklists:
+
+#### UI/UX Checklist (via `design-review` agent)
+
+Use the `design-review` sub-agent to create `<feature-name>-ui-checklist.md`:
+
+- Visual consistency with design system
+- Responsive design across viewports (mobile, tablet, desktop)
+- Accessibility compliance (WCAG guidelines)
+- Interactive states (hover, focus, active, disabled)
+- Loading states and skeleton screens
+- Empty states and placeholder content
+- Error state displays
+- Animation and transition smoothness
+- Typography and spacing consistency
+- Color contrast and readability
+- Icon usage and alignment
+- Form field validation feedback
+- Modal and dialog behavior
+- Navigation and breadcrumb accuracy
+- Dark mode compatibility (if applicable)
+
+#### Logic/QA Checklist (via `qa-expert` agent)
+
+Use the `qa-expert` sub-agent to create `<feature-name>-qa-checklist.md`:
+
+- All functional requirements work as specified
+- Data validation (input boundaries, required fields, formats)
+- State management correctness
+- API integration and error handling
+- Edge cases and boundary conditions
+- User flow completeness (happy path + error paths)
+- Data persistence and retrieval
+- Authentication/authorization checks
+- Form submission behavior
+- Pagination and infinite scroll (if applicable)
+- Search and filter functionality
+- Sorting behavior
+- CRUD operations completeness
+- Undo/redo functionality (if applicable)
+- Concurrent user scenarios
+- Performance under load
+- Browser compatibility
+- Offline behavior (if applicable)
+
+### 3. Testing with Playwright MCP
+
+Once implementation is complete, use Playwright MCP to rigorously test against both checklists:
+
+1. Navigate through every screen and component
+2. Systematically verify each item in the UI/UX checklist
+3. Execute test scenarios from the QA checklist
+4. Document any failures and fix them
+5. Re-test until all checklist items pass
+6. Only mark the feature complete when 100% of checklist items are verified
+
+**File Structure Example:**
+
+```
+docs/
+├── calendar/
+│   ├── calendar-feat.md
+│   ├── calendar-ui-checklist.md
+│   └── calendar-qa-checklist.md
+├── subscriptions/
+│   ├── subscriptions-feat.md
+│   ├── subscriptions-ui-checklist.md
+│   └── subscriptions-qa-checklist.md
+```
+
 ## MCP Tools
 
 ### Playwright
