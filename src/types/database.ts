@@ -4,7 +4,7 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Array<Json>
+  | Json[]
 
 export type Database = {
   graphql_public: {
@@ -34,6 +34,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      subscriptions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          day_of_month: number
+          id: string
+          last_payment_date: string | null
+          management_url: string | null
+          month_of_year: number | null
+          tag_id: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          day_of_month: number
+          id?: string
+          last_payment_date?: string | null
+          management_url?: string | null
+          month_of_year?: number | null
+          tag_id?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          day_of_month?: number
+          id?: string
+          last_payment_date?: string | null
+          management_url?: string | null
+          month_of_year?: number | null
+          tag_id?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'subscriptions_tag_id_fkey'
+            columns: ['tag_id']
+            isOneToOne: false
+            referencedRelation: 'tags'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       tags: {
         Row: {
           created_at: string
