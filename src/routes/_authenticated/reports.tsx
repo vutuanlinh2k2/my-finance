@@ -1,7 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import type { TimeMode, TransactionType } from '@/lib/reports/types'
-import { cn } from '@/lib/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
 import { ReportsHeader } from '@/components/reports/reports-header'
 import {
@@ -22,25 +20,77 @@ import {
 import { calculateMonthlyTagTotals } from '@/lib/reports/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 
+// Search params type for URL persistence
+type ReportsSearch = {
+  mode?: TimeMode
+  type?: TransactionType
+  year?: number
+  month?: number
+  tag?: string // 'untagged' for null, tag ID for specific tag, omitted for no selection
+}
+
+// Validate and parse search params
+function validateSearch(search: Record<string, unknown>): ReportsSearch {
+  return {
+    mode:
+      search.mode === 'monthly' || search.mode === 'yearly'
+        ? search.mode
+        : undefined,
+    type:
+      search.type === 'expense' || search.type === 'income'
+        ? search.type
+        : undefined,
+    year:
+      typeof search.year === 'number' ||
+      (typeof search.year === 'string' && !isNaN(Number(search.year)))
+        ? Number(search.year)
+        : undefined,
+    month:
+      (typeof search.month === 'number' ||
+        (typeof search.month === 'string' && !isNaN(Number(search.month)))) &&
+      Number(search.month) >= 0 &&
+      Number(search.month) <= 11
+        ? Number(search.month)
+        : undefined,
+    tag: typeof search.tag === 'string' ? search.tag : undefined,
+  }
+}
+
+// Convert tag URL param to selectedTagId state
+function parseTagParam(tag: string | undefined): string | null | undefined {
+  if (tag === undefined) return undefined // no selection
+  if (tag === 'untagged') return null // untagged transactions
+  return tag // specific tag ID
+}
+
+// Convert selectedTagId state to tag URL param
+function serializeTagParam(
+  selectedTagId: string | null | undefined,
+): string | undefined {
+  if (selectedTagId === undefined) return undefined // no selection - omit from URL
+  if (selectedTagId === null) return 'untagged' // untagged transactions
+  return selectedTagId // specific tag ID
+}
+
 export const Route = createFileRoute('/_authenticated/reports')({
+  validateSearch,
   component: ReportsPage,
 })
 
 function ReportsPage() {
-  // Page state
-  const [timeMode, setTimeMode] = useState<TimeMode>('monthly')
-  const [transactionType, setTransactionType] =
-    useState<TransactionType>('expense')
-  const [year, setYear] = useState(() => new Date().getFullYear())
-  const [month, setMonth] = useState(() => new Date().getMonth())
-  // undefined = no selection, null = untagged, string = specific tag
-  const [selectedTagId, setSelectedTagId] = useState<string | null | undefined>(
-    undefined,
-  )
+  const navigate = useNavigate({ from: Route.fullPath })
+  const search = Route.useSearch()
 
-  // Current date for boundary checks
+  // Current date for defaults and boundary checks
   const currentYear = new Date().getFullYear()
   const currentMonth = new Date().getMonth()
+
+  // Derive state from URL params with defaults
+  const timeMode: TimeMode = search.mode ?? 'monthly'
+  const transactionType: TransactionType = search.type ?? 'expense'
+  const year = search.year ?? currentYear
+  const month = search.month ?? currentMonth
+  const selectedTagId = parseTagParam(search.tag)
 
   // Check if we can navigate to next period (can't go to future)
   const canGoNext =
@@ -99,32 +149,50 @@ function ReportsPage() {
   // Period navigation handlers
   const handlePrevPeriod = () => {
     if (timeMode === 'monthly') {
-      if (month === 0) {
-        setMonth(11)
-        setYear(year - 1)
-      } else {
-        setMonth(month - 1)
-      }
+      const newMonth = month === 0 ? 11 : month - 1
+      const newYear = month === 0 ? year - 1 : year
+      navigate({
+        search: {
+          ...search,
+          month: newMonth,
+          year: newYear,
+          tag: undefined, // Clear selection
+        },
+      })
     } else {
-      setYear(year - 1)
+      navigate({
+        search: {
+          ...search,
+          year: year - 1,
+          tag: undefined, // Clear selection
+        },
+      })
     }
-    setSelectedTagId(undefined)
   }
 
   const handleNextPeriod = () => {
     if (!canGoNext) return
 
     if (timeMode === 'monthly') {
-      if (month === 11) {
-        setMonth(0)
-        setYear(year + 1)
-      } else {
-        setMonth(month + 1)
-      }
+      const newMonth = month === 11 ? 0 : month + 1
+      const newYear = month === 11 ? year + 1 : year
+      navigate({
+        search: {
+          ...search,
+          month: newMonth,
+          year: newYear,
+          tag: undefined, // Clear selection
+        },
+      })
     } else {
-      setYear(year + 1)
+      navigate({
+        search: {
+          ...search,
+          year: year + 1,
+          tag: undefined, // Clear selection
+        },
+      })
     }
-    setSelectedTagId(undefined)
   }
 
   // Format period label for display
@@ -145,30 +213,48 @@ function ReportsPage() {
   // Handle tag selection
   const handleTagSelect = (tagId: string | null) => {
     // Toggle off if already selected, otherwise select the tag
-    if (selectedTagId !== undefined && tagId === selectedTagId) {
-      setSelectedTagId(undefined)
-    } else {
-      setSelectedTagId(tagId)
-    }
+    const newTagId =
+      selectedTagId !== undefined && tagId === selectedTagId ? undefined : tagId
+    navigate({
+      search: {
+        ...search,
+        tag: serializeTagParam(newTagId),
+      },
+    })
   }
 
   // Handle time mode change - reset selected tag
   const handleTimeModeChange = (mode: TimeMode) => {
-    setTimeMode(mode)
-    setSelectedTagId(undefined)
+    navigate({
+      search: {
+        ...search,
+        mode,
+        tag: undefined, // Clear selection
+      },
+    })
   }
 
   // Handle transaction type change - reset selected tag
   const handleTransactionTypeChange = (type: TransactionType) => {
-    setTransactionType(type)
-    setSelectedTagId(undefined)
+    navigate({
+      search: {
+        ...search,
+        type,
+        tag: undefined, // Clear selection
+      },
+    })
   }
 
   // Handle month click in yearly mode - drill down to that month
   const handleMonthClick = (clickedMonth: number) => {
-    setTimeMode('monthly')
-    setMonth(clickedMonth)
-    // Keep the selected tag
+    navigate({
+      search: {
+        ...search,
+        mode: 'monthly',
+        month: clickedMonth,
+        // Keep the selected tag
+      },
+    })
   }
 
   // Find the selected distribution for the right panel
