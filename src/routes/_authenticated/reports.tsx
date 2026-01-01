@@ -1,8 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import type { TimeMode, TransactionType } from '@/lib/reports/types'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
 import { ReportsHeader } from '@/components/reports/reports-header'
@@ -12,7 +10,9 @@ import {
   NoTagSelectedState,
   NoTagsState,
 } from '@/components/reports/reports-empty-states'
-import { PieChartPlaceholder } from '@/components/reports/pie-chart-placeholder'
+import { DistributionPieChart } from '@/components/reports/distribution-pie-chart'
+import { PeriodNavigator } from '@/components/reports/period-navigator'
+import { TagList } from '@/components/reports/tag-list'
 import { MONTH_NAMES_SHORT } from '@/lib/reports/types'
 import {
   getMockDistributions,
@@ -161,34 +161,18 @@ function ReportsPage() {
             </div>
 
             {/* Period Navigator */}
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="icon-sm"
-                onClick={handlePrevPeriod}
-                className="bg-background"
-              >
-                <CaretLeft weight="bold" className="size-4" />
-              </Button>
-              <div className="min-w-[90px] rounded-md border border-border bg-background px-3 py-1.5 text-center text-sm font-medium">
-                {getPeriodButtonLabel()}
-              </div>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                onClick={handleNextPeriod}
-                disabled={!canGoNext}
-                className="bg-background"
-              >
-                <CaretRight weight="bold" className="size-4" />
-              </Button>
-            </div>
+            <PeriodNavigator
+              label={getPeriodButtonLabel()}
+              onPrevious={handlePrevPeriod}
+              onNext={handleNextPeriod}
+              canGoNext={canGoNext}
+            />
           </div>
 
-          {/* Pie Chart Area (Placeholder for Phase 2) */}
+          {/* Pie Chart */}
           {hasData ? (
             <div className="mb-6 flex flex-col items-center justify-center py-8">
-              <PieChartPlaceholder
+              <DistributionPieChart
                 distributions={distributions}
                 centerLabel={getPeriodLabel()}
                 onSegmentClick={handleTagSelect}
@@ -201,43 +185,11 @@ function ReportsPage() {
 
           {/* Tag List */}
           {hasData ? (
-            <div className="flex flex-col gap-2">
-              {distributions.map((distribution) => (
-                <button
-                  key={distribution.tagId ?? 'untagged'}
-                  type="button"
-                  onClick={() => handleTagSelect(distribution.tagId)}
-                  className={cn(
-                    'flex items-center justify-between rounded-lg border border-transparent p-3 text-left transition-colors hover:bg-muted/50',
-                    selectedTagId === distribution.tagId &&
-                      'border-primary bg-primary/5',
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Color indicator */}
-                    <div
-                      className="size-4 shrink-0 rounded"
-                      style={{ backgroundColor: distribution.color }}
-                    />
-                    {/* Tag info */}
-                    <span className="font-medium">{distribution.tagName}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {/* Amount */}
-                    <span
-                      className="font-semibold tooltip-fast"
-                      data-tooltip={formatCurrency(distribution.amount)}
-                    >
-                      {formatCompact(distribution.amount)}
-                    </span>
-                    {/* Percentage badge */}
-                    <span className="rounded border border-border bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                      {distribution.percentage}%
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
+            <TagList
+              distributions={distributions}
+              selectedTagId={selectedTagId}
+              onTagSelect={handleTagSelect}
+            />
           ) : (
             <NoTagsState />
           )}
