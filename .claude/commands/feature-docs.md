@@ -56,7 +56,64 @@ I couldn't identify a clear feature name from your input.
 What should I name this feature? (e.g., "reports", "notifications", "user-settings")
 ```
 
-### 1.2 Check Existing Documentation
+### 1.2 Deep Analysis & Clarification
+
+Before proceeding, thoroughly analyze the brain dump to identify:
+
+#### 1.2.1 Potential Issues & Concerns
+
+Look for:
+- **Conflicting requirements**: Ideas that may contradict each other
+- **Scope creep risks**: Features that could balloon in complexity
+- **Technical challenges**: Difficult implementations that need discussion
+- **Missing pieces**: Important aspects the user may have overlooked
+- **Ambiguous terms**: Words that could mean different things
+- **Dependencies**: Features that require other features to exist first
+
+#### 1.2.2 Questions to Clarify
+
+Ask about:
+- **Priority**: Which features are must-have vs nice-to-have?
+- **Scope boundaries**: What's explicitly out of scope for v1?
+- **User flows**: How should the user navigate/interact?
+- **Data sources**: Where does the data come from? Existing tables or new?
+- **Edge cases**: What happens when X is empty/large/invalid?
+- **Design preferences**: Any specific UI patterns or references?
+
+#### 1.2.3 Present Analysis
+
+Before generating documentation, present findings to the user:
+
+```
+📋 Brain Dump Analysis
+
+## What I Understood:
+- [Summary of main feature goals]
+- [Key requirements extracted]
+- [Technical approach inferred]
+
+## Concerns & Potential Issues:
+⚠️ [Issue 1]: [Description and why it matters]
+⚠️ [Issue 2]: [Description and why it matters]
+
+## Questions for Clarification:
+1. [Question about priority/scope]
+2. [Question about ambiguous requirement]
+3. [Question about technical approach]
+
+## Assumptions I'm Making:
+- [Assumption 1] - Let me know if this is wrong
+- [Assumption 2] - Let me know if this is wrong
+
+Would you like to address these before I generate the documentation?
+Or should I proceed with my assumptions and you can refine later?
+```
+
+**Wait for user response** before proceeding to Phase 2.
+
+This step is CRITICAL - don't skip it. Taking time to clarify upfront saves significant rework later.
+
+### 1.3 Check Existing Documentation
 
 Check if documentation already exists for this feature:
 
@@ -69,7 +126,7 @@ If docs exist, ask the user whether to:
 - Update/append to existing documentation
 - Cancel the operation
 
-### 1.3 Create Documentation Folder
+### 1.4 Create Documentation Folder
 
 Create the feature documentation folder if it doesn't exist:
 
@@ -902,12 +959,15 @@ Provide the user with next steps:
 
 ## Rules
 
-1. **Always use kebab-case** for folder and file names (e.g., `user-settings`, not `userSettings`)
-2. **Never overwrite without asking** - Confirm before replacing existing files
-3. **Pre-fill when possible** - Use discovered code to populate specifications
-4. **Be comprehensive** - Include all relevant checklist items for the feature type
-5. **Context-aware checklists** - Customize checklists based on feature requirements (e.g., skip currency checks for non-financial features)
-6. **Follow project patterns** - Reference existing code patterns from CLAUDE.md
+1. **Always analyze the brain dump first** - Present concerns, questions, and assumptions BEFORE generating any files. This is the most important step.
+2. **Wait for user clarification** - Don't proceed to documentation generation until the user has addressed your questions or confirmed your assumptions.
+3. **Always use kebab-case** for folder and file names (e.g., `user-settings`, not `userSettings`)
+4. **Never overwrite without asking** - Confirm before replacing existing files
+5. **Pre-fill when possible** - Use discovered code to populate specifications
+6. **Be comprehensive** - Include all relevant checklist items for the feature type
+7. **Context-aware checklists** - Customize checklists based on feature requirements (e.g., skip currency checks for non-financial features)
+8. **Follow project patterns** - Reference existing code patterns from CLAUDE.md
+9. **Think critically** - Identify potential issues the user may not have considered (performance, security, edge cases, scope creep)
 
 ## Example Usage
 
@@ -925,43 +985,85 @@ Provide the user with next steps:
 Feature: reports
 Status: New feature (no existing docs)
 
-📋 Phase 1: Setup
+📋 Phase 1: Parse & Analyze Brain Dump
+
+## What I Understood:
+- Reports page for spending analytics and insights
+- Charts: spending trends (line), category breakdown (pie), income vs expense
+- Date range filters: this month, 3 months, year, custom
+- PDF export functionality
+- Integrates with existing transactions data
+- Responsive design with simplified mobile charts
+
+## Concerns & Potential Issues:
+⚠️ Chart library choice: You mentioned recharts - this adds ~45KB to bundle.
+   Consider if lightweight alternatives (e.g., chart.js) would work.
+
+⚠️ PDF export complexity: Client-side PDF generation can be tricky with charts.
+   May need html2canvas + jsPDF or a server-side solution.
+
+⚠️ Performance with large datasets: If user has years of transactions,
+   chart rendering could be slow. May need data aggregation/sampling.
+
+## Questions for Clarification:
+1. For the date range filter, should "custom" allow any date range, or limit
+   to the last 2 years? (affects query complexity)
+
+2. Should the PDF include all charts, or let user select which to export?
+
+3. For mobile "simplified charts" - do you mean smaller charts, or different
+   chart types (e.g., bar instead of pie)?
+
+## Assumptions I'm Making:
+- Data comes from existing `transactions` table (no new tables needed)
+- Charts will use the same tag/category system as calendar
+- VND is the primary display currency (USD converted)
+
+Would you like to address these before I generate the documentation?
+
+---
+[User responds with clarifications]
+---
+
+📋 Phase 2: Setup
 ✅ Created docs/reports/
 
-📋 Phase 2: Context Gathering
+📋 Phase 3: Context Gathering
 Found existing files:
 - src/routes/_authenticated/reports.tsx
 - src/components/reports/report-card.tsx
 Reading files to understand current implementation...
 
-📋 Phase 3: Feature Specification
+📋 Phase 4: Feature Specification
 ✅ Created docs/reports/reports-feat.md
-   Pre-filled with discovered routes and components
+   Pre-filled with discovered routes, components, and your clarifications
 
-📋 Phase 4: UI/UX Checklist
+📋 Phase 5: UI/UX Checklist
 ✅ Created docs/reports/reports-ui-checklist.md
-   Generated 45 checklist items
+   Generated 52 checklist items (including chart-specific and filter-specific items)
 
-📋 Phase 5: QA Checklist
+📋 Phase 6: QA Checklist
 ✅ Created docs/reports/reports-qa-checklist.md
-   Generated 38 checklist items
+   Generated 44 checklist items (including PDF export and data aggregation tests)
 
-📋 Phase 6: Implementation Progress Tracker
+📋 Phase 7: Implementation Progress Tracker
 ✅ Created docs/reports/reports-progress.md
-   Generated 4 implementation phases with detailed steps:
-   - Phase 1: UI + Mock Data (12 steps)
-   - Phase 2: Database & API Layer (18 steps)
-   - Phase 3: Integration & Advanced Features (10 steps)
-   - Phase 4: Testing & Polish (14 steps)
+   Generated 6 customized phases based on your requirements:
+   - Phase 1: Page Layout + Mock Data (10 steps)
+   - Phase 2: Chart Components with recharts (14 steps)
+   - Phase 3: Data Layer & Transactions Integration (12 steps)
+   - Phase 4: Filters & Date Ranges (8 steps)
+   - Phase 5: PDF Export (6 steps)
+   - Phase 6: Testing & Polish (14 steps)
 
-📋 Phase 7: Summary
+📋 Phase 8: Summary
 All documentation created successfully!
 
 📁 docs/reports/
-├── reports-feat.md         # Feature specification
-├── reports-ui-checklist.md  # UI/UX testing checklist (45 items)
-├── reports-qa-checklist.md  # QA/Logic testing checklist (38 items)
-└── reports-progress.md      # Implementation tracker (4 phases)
+├── reports-feat.md          # Feature specification
+├── reports-ui-checklist.md  # UI/UX testing checklist (52 items)
+├── reports-qa-checklist.md  # QA/Logic testing checklist (44 items)
+└── reports-progress.md      # Implementation tracker (6 phases)
 
 Next Steps:
 1. Review & customize the feature specification
