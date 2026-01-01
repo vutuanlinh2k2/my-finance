@@ -116,7 +116,9 @@ export function useUpdateTransaction() {
 
       // If date changed, also invalidate old date queries
       if (variables.originalDate !== data.date) {
-        const [oldYear, oldMonth] = variables.originalDate.split('-').map(Number)
+        const [oldYear, oldMonth] = variables.originalDate
+          .split('-')
+          .map(Number)
         queryClient.invalidateQueries({
           queryKey: queryKeys.transactions.byDate(variables.originalDate),
         })
@@ -135,8 +137,7 @@ export function useDeleteTransaction() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id }: { id: string; date: string }) =>
-      deleteTransaction(id),
+    mutationFn: ({ id }: { id: string; date: string }) => deleteTransaction(id),
     onSuccess: (_, variables) => {
       const [year, month] = variables.date.split('-').map(Number)
 

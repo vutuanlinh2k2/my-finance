@@ -65,7 +65,9 @@ function validateTagName(name: string): string {
     throw new Error('Tag name cannot be empty')
   }
   if (trimmed.length > TAG_NAME_MAX_LENGTH) {
-    throw new Error(`Tag name must be ${TAG_NAME_MAX_LENGTH} characters or less`)
+    throw new Error(
+      `Tag name must be ${TAG_NAME_MAX_LENGTH} characters or less`,
+    )
   }
   return trimmed
 }

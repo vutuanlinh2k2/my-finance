@@ -12,16 +12,19 @@ Use `$ARGUMENTS` as the target branch. If empty or not provided, default to `ori
 ## Steps
 
 1. **Fetch latest changes** from remote to ensure we have up-to-date refs:
+
    ```bash
    git fetch origin
    ```
 
 2. **Get the list of changed files** between the target branch and HEAD:
+
    ```bash
    git diff --name-only <target>...HEAD
    ```
 
 3. **Get the full diff** for context:
+
    ```bash
    git diff <target>...HEAD
    ```
@@ -35,6 +38,7 @@ Use `$ARGUMENTS` as the target branch. If empty or not provided, default to `ori
 ## Review Focus
 
 Ask the code-reviewer to focus on:
+
 - Security vulnerabilities (injection, XSS, auth issues)
 - Logic errors and edge cases
 - Performance concerns
@@ -44,6 +48,7 @@ Ask the code-reviewer to focus on:
 ## Output
 
 Present the code-reviewer's findings in a clear, actionable format with:
+
 - Critical issues that must be fixed
 - Important improvements to consider
 - Overall assessment (approve/request changes)

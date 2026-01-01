@@ -16,7 +16,9 @@ if (!supabaseServiceKey) {
   console.error(
     'Error: SUPABASE_SERVICE_ROLE_KEY environment variable is required.',
   )
-  console.error('Run `pnpm db:start` and copy the service_role key from the output.')
+  console.error(
+    'Run `pnpm db:start` and copy the service_role key from the output.',
+  )
   process.exit(1)
 }
 
