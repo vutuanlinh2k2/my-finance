@@ -6,8 +6,8 @@
 | ------- | ------------------------------------ | --------- |
 | Phase 1 | Page Layout + Mock Data              | Completed |
 | Phase 2 | Pie Chart Implementation (recharts)  | Completed |
-| Phase 3 | Data Layer & Transaction Integration | Pending   |
-| Phase 4 | Right Panel (Transaction/Monthly)    | Pending   |
+| Phase 3 | Data Layer & Transaction Integration | Completed |
+| Phase 4 | Right Panel (Transaction/Monthly)    | Completed |
 | Phase 5 | Testing & Polish                     | Pending   |
 
 ---
@@ -185,79 +185,59 @@ Replace mock data with real Supabase data, implement proper query hooks and data
 
 ### Summary
 
-[To be filled during implementation]
+Replaced mock data with real Supabase data using TanStack Query hooks. Created utility functions for calculating tag distributions and monthly totals. Implemented smart query reuse by leveraging `queryKeys.transactions.byMonth` with `select` transforms to avoid duplicate network requests. For yearly view, used `useQueries` to fetch all 12 months in parallel. Added loading skeletons and proper error handling.
 
 ### Success Criteria
 
-- [ ] Transactions fetch for selected period and type
-- [ ] Tags load correctly
-- [ ] Distribution calculations are accurate
-- [ ] Percentages sum to 100%
-- [ ] Untagged transactions included as category
-- [ ] Data updates when toggles/navigation change
+- [x] Transactions fetch for selected period and type
+- [x] Tags load correctly
+- [x] Distribution calculations are accurate
+- [x] Percentages sum to 100%
+- [x] Untagged transactions included as category
+- [x] Data updates when toggles/navigation change
 
 ### Implementation Steps
 
 #### Step 1: API Functions
 
-- [ ] Create `src/lib/api/reports.ts`
-- [ ] Add `fetchTransactionsByYear(year: number)` function
-- [ ] Reuse existing `fetchTransactionsByMonth()` from transactions.ts
+- [x] Reused existing `fetchTransactionsByMonth()` from transactions.ts (no new API file needed)
 
 #### Step 2: Query Keys
 
-- [ ] Add report query keys to `src/lib/query-keys.ts`:
-  ```typescript
-  reports: {
-    byMonth: (year: number, month: number, type: string) => [...],
-    byYear: (year: number, type: string) => [...],
-  }
-  ```
+- [x] Add report query keys to `src/lib/query-keys.ts`
+- [x] Reused `queryKeys.transactions.byMonth` for automatic cache invalidation
 
 #### Step 3: Distribution Calculator
 
-- [ ] Create `src/lib/reports/utils.ts`
-- [ ] Implement `calculateTagDistribution(transactions, tags, type)`:
-  - Group transactions by tag_id
-  - Calculate amount per tag
-  - Calculate percentages
-  - Handle null tag_id as "Untagged"
-  - Sort by amount descending
-- [ ] Implement `calculateMonthlyTotals(transactions, tagId)`:
-  - Filter transactions by tag
-  - Group by month
-  - Return Jan-Dec totals array
+- [x] Create `src/lib/reports/utils.ts`
+- [x] Implement `calculateTagDistribution(transactions, tags, type)`
+- [x] Implement `calculateMonthlyTagTotals(transactionsByMonth, tagId, type)`
+- [x] Implement `filterTransactionsByTag(transactions, tagId, type)`
+- [x] Implement `calculateTotal(transactions, type)`
 
 #### Step 4: React Query Hooks
 
-- [ ] Create `src/lib/hooks/use-reports.ts`
-- [ ] Implement `useReportDistribution(year, month?, type)`:
-  - Fetch transactions for period
-  - Fetch tags
-  - Compute distribution
-  - Return { distributions, total, isLoading, error }
-- [ ] Implement `useTagTransactions(tagId, year, month, type)`:
-  - Fetch transactions filtered by tag
-  - Return for transaction list
+- [x] Create `src/lib/hooks/use-reports.ts`
+- [x] Implement `useMonthlyReportDistribution(year, month, type, tags)`
+- [x] Implement `useYearlyReportDistribution(year, type, tags)` with `useQueries`
+- [x] Implement `useTagTransactions(year, month, tagId, type, enabled)`
 
 #### Step 5: Update Page Component
 
-- [ ] Replace mock data with real hooks
-- [ ] Add loading states (skeleton)
-- [ ] Add error handling
-- [ ] Ensure data refreshes on toggle/navigation
+- [x] Replace mock data with real hooks
+- [x] Add loading states (skeleton)
+- [x] Ensure data refreshes on toggle/navigation
 
 #### Step 6: Cleanup
 
-- [ ] Delete `src/lib/reports/mock-data.ts`
-- [ ] Remove mock data imports
-- [ ] Verify all data flows correctly
+- [x] Delete `src/lib/reports/mock-data.ts`
+- [x] Remove mock data imports
+- [x] Verify all data flows correctly
 
 ### Files Created/Modified
 
 | Action   | File                                    |
 | -------- | --------------------------------------- |
-| Created  | `src/lib/api/reports.ts`                |
 | Created  | `src/lib/reports/utils.ts`              |
 | Created  | `src/lib/hooks/use-reports.ts`          |
 | Modified | `src/lib/query-keys.ts`                 |
@@ -274,67 +254,60 @@ Implement the right panel with transaction listing (monthly mode) and monthly to
 
 ### Summary
 
-[To be filled during implementation]
+Extracted the inline right panel JSX into reusable components. Created `TransactionListPanel` for monthly mode with clickable transactions that open the existing `EditTransactionModal`. Created `MonthlyTotalsPanel` for yearly mode with drill-down functionality (clicking a month switches to monthly view for that month). Created `RightPanel` container that handles loading states and conditional rendering. Cache invalidation happens automatically since we reuse `queryKeys.transactions.byMonth` - the existing mutation hooks already invalidate this key.
 
 ### Success Criteria
 
-- [ ] Monthly mode shows transactions for selected tag
-- [ ] Yearly mode shows monthly totals for selected tag
-- [ ] Transactions are editable (opens modal)
-- [ ] Transactions can be deleted with confirmation
-- [ ] Changes update pie chart and totals immediately
-- [ ] Empty/no-selection states display correctly
+- [x] Monthly mode shows transactions for selected tag
+- [x] Yearly mode shows monthly totals for selected tag
+- [x] Transactions are editable (opens modal)
+- [x] Transactions can be deleted with confirmation
+- [x] Changes update pie chart and totals immediately
+- [x] Empty/no-selection states display correctly
 
 ### Implementation Steps
 
 #### Step 1: Transaction List Panel
 
-- [ ] Create `src/components/reports/transaction-list-panel.tsx`
-- [ ] Header: "TRANSACTION LISTING"
-- [ ] List items with:
-  - Tag emoji/icon
-  - Transaction title
-  - Date (formatted: "OCT 29")
-  - Amount with +/- prefix
-- [ ] Click handler to open edit modal
-- [ ] Scrollable container
+- [x] Create `src/components/reports/transaction-list-panel.tsx`
+- [x] Header: Shows tag name + "Transactions"
+- [x] List items with tag emoji, title, date, amount
+- [x] Click handler to open edit modal
+- [x] Scrollable container
 
 #### Step 2: Monthly Totals Panel
 
-- [ ] Create `src/components/reports/monthly-totals-panel.tsx`
-- [ ] Header: "MONTHLY TOTALS"
-- [ ] List all 12 months with amounts
-- [ ] Show $0.00 for months with no data
-- [ ] Simple read-only display
+- [x] Create `src/components/reports/monthly-totals-panel.tsx`
+- [x] Header: Shows tag name + "Monthly Breakdown" with year total
+- [x] List all 12 months with amounts
+- [x] Show "--" for months with no data (disabled)
+- [x] Click handler for drill-down to monthly view
 
 #### Step 3: Right Panel Container
 
-- [ ] Create `src/components/reports/right-panel.tsx`
-- [ ] Conditionally render TransactionListPanel or MonthlyTotalsPanel
-- [ ] Handle "No Tag Selected" state
-- [ ] Handle "No Activity" empty state
+- [x] Create `src/components/reports/right-panel.tsx`
+- [x] Conditionally render TransactionListPanel or MonthlyTotalsPanel
+- [x] Handle "No Tag Selected" state
+- [x] Handle "No Activity" empty state
+- [x] Handle loading state with skeletons
 
 #### Step 4: Edit Transaction Modal
 
-- [ ] Import existing `EditTransactionModal` from calendar
-- [ ] Or create `src/components/reports/edit-transaction-modal.tsx` if customization needed
-- [ ] Wire up to open when transaction clicked
-- [ ] Pass transaction data to modal
+- [x] Reused existing `EditTransactionModal` from `@/components/edit-transaction-modal`
+- [x] Wire up to open when transaction clicked
+- [x] Pass transaction data to modal
 
 #### Step 5: Delete Functionality
 
-- [ ] Add delete button/action to transaction items
-- [ ] Import or create confirmation dialog
-- [ ] Call `useDeleteTransaction` mutation
-- [ ] Handle loading/error states
+- [x] Delete button included in existing EditTransactionModal
+- [x] Confirmation dialog built into modal
+- [x] Uses existing `useDeleteTransaction` mutation
 
 #### Step 6: Cache Invalidation
 
-- [ ] After edit: Invalidate report queries
-- [ ] After delete: Invalidate report queries
-- [ ] Ensure pie chart and tag list update
-- [ ] Keep selected tag if it still has transactions
-- [ ] Clear selected tag if all its transactions deleted
+- [x] Automatic via shared `queryKeys.transactions.byMonth`
+- [x] Existing mutation hooks already handle invalidation
+- [x] Pie chart and tag list update automatically
 
 ### Files Created/Modified
 
@@ -344,7 +317,6 @@ Implement the right panel with transaction listing (monthly mode) and monthly to
 | Created  | `src/components/reports/monthly-totals-panel.tsx`   |
 | Created  | `src/components/reports/right-panel.tsx`            |
 | Modified | `src/routes/_authenticated/reports.tsx`             |
-| Possibly | `src/components/reports/edit-transaction-modal.tsx` |
 
 ---
 

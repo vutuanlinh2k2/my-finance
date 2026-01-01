@@ -240,6 +240,13 @@ Use Playwright MCP for browser automation and testing:
 - Debugging UI issues by taking snapshots and screenshots
 - Interacting with the running app (click, type, navigate)
 
+**CRITICAL - Prevent Empty Tabs:**
+- NEVER use `browser_close` followed by `browser_navigate` - this creates empty `about:blank` tabs
+- When browser errors occur, use `browser_tabs` with `action: "list"` to check tab state first
+- To refresh a page, use `browser_navigate` to the same URL (it reuses the current tab)
+- Only close tabs explicitly with `browser_tabs` action `close` when needed
+- If you see "Browser is already in use" error, wait and retry instead of closing
+
 **Required Testing Workflow for New Components/Pages:**
 When creating new components or pages, you MUST:
 
