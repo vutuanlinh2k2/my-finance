@@ -14,6 +14,7 @@ Analyze recent git changes and intelligently update the CLAUDE.md file to reflec
 ## Phase 1: Gather Current State
 
 ### Read Current CLAUDE.md
+
 First, read the existing CLAUDE.md file to understand its current structure and content:
 
 ```bash
@@ -21,16 +22,19 @@ cat CLAUDE.md
 ```
 
 ### Current Repository Status
+
 ```bash
 git status --porcelain
 ```
 
 ### Recent Changes (Last 10 commits)
+
 ```bash
 git log --oneline -10
 ```
 
 ### Detailed Recent Changes
+
 ```bash
 git log --since="1 week ago" --pretty=format:"%h - %an, %ar : %s" --stat
 ```
@@ -38,26 +42,31 @@ git log --since="1 week ago" --pretty=format:"%h - %an, %ar : %s" --stat
 ## Phase 2: Analyze Changes
 
 ### Recent Diff Analysis
+
 ```bash
 git diff HEAD~5 --name-only | head -20
 ```
 
 ### Detailed Diff of Key Changes
+
 ```bash
 git diff HEAD~5 -- "*.js" "*.ts" "*.jsx" "*.tsx" "*.py" "*.md" "*.json" | head -200
 ```
 
 ### New Files Added
+
 ```bash
 git diff --name-status HEAD~10 | grep "^A" | head -15
 ```
 
 ### Deleted Files
+
 ```bash
 git diff --name-status HEAD~10 | grep "^D" | head -10
 ```
 
 ### Modified Core Files
+
 ```bash
 git diff --name-status HEAD~10 | grep "^M" | grep -E "(package\.json|README|config|main|index|app)" | head -10
 ```
@@ -65,21 +74,25 @@ git diff --name-status HEAD~10 | grep "^M" | grep -E "(package\.json|README|conf
 ## Phase 3: Project Structure Changes
 
 ### Markdown Files
+
 ```bash
 find . -name "*.md" -not -path "./node_modules/*" -not -path "./.git/*" | head -10
 ```
 
 ### Configuration Changes
+
 ```bash
 git diff HEAD~10 -- package.json tsconfig.json webpack.config.js next.config.js vite.config.ts .env* docker* 2>/dev/null | head -100
 ```
 
 ### API/Route Changes
+
 ```bash
 git diff HEAD~10 -- "**/routes/**" "**/api/**" "**/controllers/**" 2>/dev/null | head -150
 ```
 
 ### Database/Model Changes
+
 ```bash
 git diff HEAD~10 -- "**/models/**" "**/schemas/**" "**/migrations/**" 2>/dev/null | head -100
 ```
@@ -89,13 +102,16 @@ git diff HEAD~10 -- "**/models/**" "**/schemas/**" "**/migrations/**" 2>/dev/nul
 Based on the current CLAUDE.md content and all the git analysis above, create an updated CLAUDE.md file that:
 
 ### 1. Preserves Important Existing Content
+
 - Keep the core project description and architecture
 - Maintain important setup instructions
 - Preserve key architectural decisions and patterns
 - Keep essential development workflow information
 
 ### 2. Integrates Recent Changes
+
 Analyze the git diff and logs to identify:
+
 - **New Features**: What new functionality was added?
 - **API Changes**: New endpoints, modified routes, updated parameters
 - **Configuration Updates**: Changes to build tools, dependencies, environment variables
@@ -105,46 +121,56 @@ Analyze the git diff and logs to identify:
 - **Refactoring**: Significant code reorganization or architectural changes
 
 ### 3. Updates Key Sections
+
 Intelligently update these CLAUDE.md sections:
 
 #### Project Overview
+
 - Update description if scope changed
 - Note new technologies or frameworks added
 - Update version information
 
 #### Architecture
+
 - Document new architectural patterns
 - Note significant structural changes
 - Update component relationships
 
 #### Setup Instructions
+
 - Add new environment variables
 - Update installation steps if dependencies changed
 - Note new configuration requirements
 
 #### API Documentation
+
 - Add new endpoints discovered in routes
 - Update existing endpoint documentation
 - Note authentication or parameter changes
 
 #### Development Workflow
+
 - Update based on new scripts in package.json
 - Note new development tools or processes
 - Update testing procedures if changed
 
 #### Recent Changes Section
+
 Add a "Recent Updates" section with:
+
 - Summary of major changes from git analysis
 - New features and their impact
 - Important bug fixes
 - Breaking changes developers should know about
 
 #### File Structure
+
 - Update directory explanations for new folders
 - Note relocated or reorganized files
 - Document new important files
 
 ### 4. Smart Content Management
+
 - **Don't duplicate**: Avoid repeating information already well-documented
 - **Prioritize relevance**: Focus on changes that affect how developers work with the code
 - **Keep it concise**: Summarize rather than listing every small change

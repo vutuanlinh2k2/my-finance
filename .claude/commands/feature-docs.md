@@ -6,6 +6,7 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Task, TodoWrite, AskUserQues
 # Feature Documentation Workflow
 
 Generate comprehensive feature documentation including:
+
 - Feature specification (`<feature>-feat.md`)
 - UI/UX testing checklist (`<feature>-ui-checklist.md`)
 - QA/Logic testing checklist (`<feature>-qa-checklist.md`)
@@ -23,6 +24,7 @@ Generate comprehensive feature documentation including:
   - References to existing features or patterns
 
 **Example brain dump:**
+
 ```
 reports feature - I want a page where users can see spending reports and analytics.
 Should show monthly spending breakdown by category/tag, income vs expense comparison,
@@ -63,6 +65,7 @@ Before proceeding, thoroughly analyze the brain dump to identify:
 #### 1.2.1 Potential Issues & Concerns (Feature/Product Only)
 
 Look for:
+
 - **Conflicting requirements**: Ideas that may contradict each other
 - **Scope creep risks**: Features that could balloon in complexity
 - **Missing user flows**: Important interactions the user may have overlooked
@@ -70,6 +73,7 @@ Look for:
 - **Business logic gaps**: Unclear rules or edge cases
 
 **DO NOT ask about technical choices** - handle those yourself:
+
 - Library/framework choices ✗
 - Implementation approaches ✗
 - Architecture decisions ✗
@@ -78,6 +82,7 @@ Look for:
 #### 1.2.2 Questions to Clarify (Feature/Product Only)
 
 Only ask about things the user needs to decide:
+
 - **Priority**: Which features are must-have vs nice-to-have for v1?
 - **Scope boundaries**: What's explicitly out of scope?
 - **User behavior**: How should users interact? What's the expected flow?
@@ -86,11 +91,13 @@ Only ask about things the user needs to decide:
 - **Design intent**: Any specific UX patterns or references to follow?
 
 **Examples of GOOD questions (feature-focused):**
+
 - "Should users be able to filter by custom date range, or only preset options?"
 - "When there's no data, should we show tips to add transactions?"
 - "Is this feature for all users or just premium?"
 
 **Examples of BAD questions (technical - don't ask these):**
+
 - "Should we use recharts or chart.js?" ✗
 - "Client-side or server-side PDF generation?" ✗
 - "Should we cache the API response?" ✗
@@ -137,6 +144,7 @@ ls -la docs/<feature-name>/ 2>/dev/null
 ```
 
 If docs exist, ask the user whether to:
+
 - Overwrite existing documentation
 - Update/append to existing documentation
 - Cancel the operation
@@ -156,16 +164,19 @@ mkdir -p docs/<feature-name>
 Search for existing code related to this feature:
 
 1. **Routes**: Check for existing route files
+
    ```bash
    find src/routes -name "*<feature-name>*" -type f
    ```
 
 2. **Components**: Check for feature components
+
    ```bash
    find src/components -type d -name "*<feature-name>*"
    ```
 
 3. **API/Hooks**: Check for data layer files
+
    ```bash
    find src/lib -name "*<feature-name>*" -type f
    ```
@@ -178,6 +189,7 @@ Search for existing code related to this feature:
 ### 2.2 Read Existing Code (if found)
 
 If relevant files exist, read them to understand:
+
 - Current implementation status
 - Data models and types
 - API endpoints
@@ -204,29 +216,34 @@ Brief description of the feature and its purpose.
 ## Functional Requirements
 
 ### FR-1: [Requirement Name]
+
 - Description
 - Acceptance criteria
 
 ### FR-2: [Requirement Name]
+
 - Description
 - Acceptance criteria
 
 ## Data Models
 
 ### [Model Name]
+
 | Field | Type | Description |
-|-------|------|-------------|
-| id | uuid | Primary key |
-| ... | ... | ... |
+| ----- | ---- | ----------- |
+| id    | uuid | Primary key |
+| ...   | ...  | ...         |
 
 ## API Endpoints (if applicable)
 
 ### GET /api/<feature>
+
 - Description
 - Request params
 - Response format
 
 ### POST /api/<feature>
+
 - Description
 - Request body
 - Response format
@@ -234,6 +251,7 @@ Brief description of the feature and its purpose.
 ## UI Components
 
 ### [Component Name]
+
 - Purpose
 - Props
 - States (loading, error, empty, success)
@@ -278,16 +296,20 @@ Use the parsed brain dump from Phase 1 to populate the specification:
 **Example transformation:**
 
 Brain dump input:
+
 > "monthly spending breakdown by category/tag, income vs expense comparison"
 
 Becomes:
+
 ```markdown
 ### FR-1: Monthly Spending Breakdown
+
 - Display spending grouped by category/tag
 - Show amounts in VND with formatCompact()
 - Acceptance: User can see which categories have highest spending
 
 ### FR-2: Income vs Expense Comparison
+
 - Show total income and total expenses side by side
 - Calculate and display the difference (savings/deficit)
 - Acceptance: User can quickly see if they saved or overspent
@@ -296,6 +318,7 @@ Becomes:
 ### 3.3 Enrich with Code Context
 
 If existing code was found in Phase 2, merge that information:
+
 - Add discovered data models and types
 - Include existing component structures
 - Note current implementation patterns
@@ -507,6 +530,7 @@ Based on all gathered information from previous phases (feature spec, UI checkli
 ### 6.1 Analyze Feature Complexity
 
 Determine the implementation phases based on:
+
 - **Data requirements**: Does it need database tables? API endpoints?
 - **UI complexity**: How many components? Forms? Modals?
 - **External dependencies**: Third-party APIs? New libraries?
@@ -516,17 +540,17 @@ Determine the implementation phases based on:
 
 Create `docs/<feature-name>/<feature-name>-progress.md` with the following structure:
 
-```markdown
+````markdown
 # <Feature Name> Feature - Implementation Progress
 
 ## Overview
 
-| Phase   | Description                     | Status  |
-| ------- | ------------------------------- | ------- |
-| Phase 1 | UI + Mock Data                  | Pending |
-| Phase 2 | Database & API Layer            | Pending |
-| Phase 3 | Integration & State Management  | Pending |
-| Phase 4 | Testing & Polish                | Pending |
+| Phase   | Description                    | Status  |
+| ------- | ------------------------------ | ------- |
+| Phase 1 | UI + Mock Data                 | Pending |
+| Phase 2 | Database & API Layer           | Pending |
+| Phase 3 | Integration & State Management | Pending |
+| Phase 4 | Testing & Polish               | Pending |
 
 ---
 
@@ -593,13 +617,13 @@ Build all UI components with hardcoded/mock data to validate the design and user
 
 ### Files Created/Modified
 
-| Action  | File                                           |
-| ------- | ---------------------------------------------- |
-| Created | `src/routes/_authenticated/<feature-name>.tsx` |
-| Created | `src/lib/<feature-name>/types.ts`              |
-| Created | `src/lib/<feature-name>/mock-data.ts`          |
-| Created | `src/components/<feature-name>/*.tsx`          |
-| Modified| `src/components/app-sidebar.tsx`               |
+| Action   | File                                           |
+| -------- | ---------------------------------------------- |
+| Created  | `src/routes/_authenticated/<feature-name>.tsx` |
+| Created  | `src/lib/<feature-name>/types.ts`              |
+| Created  | `src/lib/<feature-name>/mock-data.ts`          |
+| Created  | `src/components/<feature-name>/*.tsx`          |
+| Modified | `src/components/app-sidebar.tsx`               |
 
 ---
 
@@ -634,6 +658,7 @@ Replace mock data with real Supabase database persistence.
 - [ ] Regenerate types with `pnpm db:types`
 
 **Schema:**
+
 ```sql
 -- Define your table schema here
 CREATE TABLE public.<feature_name> (
@@ -663,6 +688,7 @@ CREATE POLICY "<feature>_delete_own"
   ON public.<feature_name> FOR DELETE
   USING (user_id = (SELECT auth.uid()));
 ```
+````
 
 #### Step 2: API Layer
 
@@ -703,15 +729,15 @@ CREATE POLICY "<feature>_delete_own"
 
 ### Files Created/Modified
 
-| Action   | File                                              |
-| -------- | ------------------------------------------------- |
-| Created  | `supabase/migrations/<timestamp>_<feature>.sql`   |
-| Created  | `src/lib/api/<feature-name>.ts`                   |
-| Created  | `src/lib/hooks/use-<feature-name>.ts`             |
-| Modified | `src/lib/query-keys.ts`                           |
-| Modified | `src/routes/_authenticated/<feature-name>.tsx`    |
-| Modified | `src/components/<feature-name>/*.tsx`             |
-| Deleted  | `src/lib/<feature-name>/mock-data.ts`             |
+| Action   | File                                            |
+| -------- | ----------------------------------------------- |
+| Created  | `supabase/migrations/<timestamp>_<feature>.sql` |
+| Created  | `src/lib/api/<feature-name>.ts`                 |
+| Created  | `src/lib/hooks/use-<feature-name>.ts`           |
+| Modified | `src/lib/query-keys.ts`                         |
+| Modified | `src/routes/_authenticated/<feature-name>.tsx`  |
+| Modified | `src/components/<feature-name>/*.tsx`           |
+| Deleted  | `src/lib/<feature-name>/mock-data.ts`           |
 
 ---
 
@@ -763,9 +789,9 @@ Add integrations, advanced features, and edge case handling.
 
 ### Files Created/Modified
 
-| Action   | File                           |
-| -------- | ------------------------------ |
-| Modified | [List files as you work]       |
+| Action   | File                     |
+| -------- | ------------------------ |
+| Modified | [List files as you work] |
 
 ---
 
@@ -825,9 +851,9 @@ Comprehensive testing against UI and QA checklists, bug fixes, and final polish.
 
 ### Files Created/Modified
 
-| Action   | File                           |
-| -------- | ------------------------------ |
-| Modified | [List files as you work]       |
+| Action   | File                     |
+| -------- | ------------------------ |
+| Modified | [List files as you work] |
 
 ---
 
@@ -864,7 +890,8 @@ Feature Complete ✅
 ### Future Improvements
 
 [Ideas for future enhancements]
-```
+
+````
 
 ### 6.3 Customize Progress Template from Brain Dump
 
@@ -890,7 +917,7 @@ Based on the user's brain dump and feature specification, heavily customize the 
    - [ ] Implement chart data transformations
    - [ ] Add chart loading states
    - [ ] Test with various data sizes
-   ```
+````
 
 4. **Include mentioned integrations** - Add steps for each integration:
    - If "integrates with transactions": Add transaction data fetching steps
@@ -958,18 +985,20 @@ Provide the user with next steps:
 
 5. **Test with Playwright**
    After each phase, use Playwright MCP to verify:
-   ```
-   1. Start dev server: pnpm dev
-   2. Navigate to http://localhost:3000/<feature-route>
-   3. Test against relevant checklist items
-   4. Fix issues before moving to next phase
-   ```
+```
+
+1.  Start dev server: pnpm dev
+2.  Navigate to http://localhost:3000/<feature-route>
+3.  Test against relevant checklist items
+4.  Fix issues before moving to next phase
+
+```
 
 6. **Final Verification**
-   In Phase 4, systematically verify both checklists:
-   - Complete all UI checklist items
-   - Complete all QA checklist items
-   - Only mark feature complete when 100% pass
+In Phase 4, systematically verify both checklists:
+- Complete all UI checklist items
+- Complete all QA checklist items
+- Only mark feature complete when 100% pass
 ```
 
 ## Rules
