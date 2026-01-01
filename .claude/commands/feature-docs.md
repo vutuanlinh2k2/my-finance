@@ -60,25 +60,40 @@ What should I name this feature? (e.g., "reports", "notifications", "user-settin
 
 Before proceeding, thoroughly analyze the brain dump to identify:
 
-#### 1.2.1 Potential Issues & Concerns
+#### 1.2.1 Potential Issues & Concerns (Feature/Product Only)
 
 Look for:
 - **Conflicting requirements**: Ideas that may contradict each other
 - **Scope creep risks**: Features that could balloon in complexity
-- **Technical challenges**: Difficult implementations that need discussion
-- **Missing pieces**: Important aspects the user may have overlooked
+- **Missing user flows**: Important interactions the user may have overlooked
 - **Ambiguous terms**: Words that could mean different things
-- **Dependencies**: Features that require other features to exist first
+- **Business logic gaps**: Unclear rules or edge cases
 
-#### 1.2.2 Questions to Clarify
+**DO NOT ask about technical choices** - handle those yourself:
+- Library/framework choices ✗
+- Implementation approaches ✗
+- Architecture decisions ✗
+- Performance optimizations ✗
 
-Ask about:
-- **Priority**: Which features are must-have vs nice-to-have?
-- **Scope boundaries**: What's explicitly out of scope for v1?
-- **User flows**: How should the user navigate/interact?
-- **Data sources**: Where does the data come from? Existing tables or new?
-- **Edge cases**: What happens when X is empty/large/invalid?
-- **Design preferences**: Any specific UI patterns or references?
+#### 1.2.2 Questions to Clarify (Feature/Product Only)
+
+Only ask about things the user needs to decide:
+- **Priority**: Which features are must-have vs nice-to-have for v1?
+- **Scope boundaries**: What's explicitly out of scope?
+- **User behavior**: How should users interact? What's the expected flow?
+- **Business rules**: What are the rules/constraints? (e.g., date limits, permissions)
+- **Edge cases**: What should happen when data is empty/invalid?
+- **Design intent**: Any specific UX patterns or references to follow?
+
+**Examples of GOOD questions (feature-focused):**
+- "Should users be able to filter by custom date range, or only preset options?"
+- "When there's no data, should we show tips to add transactions?"
+- "Is this feature for all users or just premium?"
+
+**Examples of BAD questions (technical - don't ask these):**
+- "Should we use recharts or chart.js?" ✗
+- "Client-side or server-side PDF generation?" ✗
+- "Should we cache the API response?" ✗
 
 #### 1.2.3 Present Analysis
 
@@ -960,14 +975,16 @@ Provide the user with next steps:
 ## Rules
 
 1. **Always analyze the brain dump first** - Present concerns, questions, and assumptions BEFORE generating any files. This is the most important step.
-2. **Wait for user clarification** - Don't proceed to documentation generation until the user has addressed your questions or confirmed your assumptions.
-3. **Always use kebab-case** for folder and file names (e.g., `user-settings`, not `userSettings`)
-4. **Never overwrite without asking** - Confirm before replacing existing files
-5. **Pre-fill when possible** - Use discovered code to populate specifications
-6. **Be comprehensive** - Include all relevant checklist items for the feature type
-7. **Context-aware checklists** - Customize checklists based on feature requirements (e.g., skip currency checks for non-financial features)
-8. **Follow project patterns** - Reference existing code patterns from CLAUDE.md
-9. **Think critically** - Identify potential issues the user may not have considered (performance, security, edge cases, scope creep)
+2. **Only ask about feature/product decisions** - The user trusts you with technical choices. Ask about user flows, priorities, scope, and business logic - NOT about libraries, architecture, or implementation details.
+3. **Wait for user clarification** - Don't proceed to documentation generation until the user has addressed your questions or confirmed your assumptions.
+4. **Make technical decisions yourself** - Choose libraries, architecture patterns, and implementation approaches. Document your choices in the spec but don't ask for approval.
+5. **Always use kebab-case** for folder and file names (e.g., `user-settings`, not `userSettings`)
+6. **Never overwrite without asking** - Confirm before replacing existing files
+7. **Pre-fill when possible** - Use discovered code to populate specifications
+8. **Be comprehensive** - Include all relevant checklist items for the feature type
+9. **Context-aware checklists** - Customize checklists based on feature requirements (e.g., skip currency checks for non-financial features)
+10. **Follow project patterns** - Reference existing code patterns from CLAUDE.md
+11. **Think critically** - Identify scope creep, missing user flows, and edge cases the user may not have considered
 
 ## Example Usage
 
@@ -996,28 +1013,30 @@ Status: New feature (no existing docs)
 - Responsive design with simplified mobile charts
 
 ## Concerns & Potential Issues:
-⚠️ Chart library choice: You mentioned recharts - this adds ~45KB to bundle.
-   Consider if lightweight alternatives (e.g., chart.js) would work.
+⚠️ Scope: "Export to PDF" could be a significant sub-feature.
+   Is this must-have for v1, or can it be added later?
 
-⚠️ PDF export complexity: Client-side PDF generation can be tricky with charts.
-   May need html2canvas + jsPDF or a server-side solution.
+⚠️ Missing flow: What happens when user clicks on a category in the pie chart?
+   Navigate to filtered transactions? Show details? Or just informational?
 
-⚠️ Performance with large datasets: If user has years of transactions,
-   chart rendering could be slow. May need data aggregation/sampling.
+⚠️ Empty state: New users with no transactions - should we show sample data,
+   tips to add transactions, or just empty charts?
 
 ## Questions for Clarification:
-1. For the date range filter, should "custom" allow any date range, or limit
-   to the last 2 years? (affects query complexity)
+1. Date range "custom" - any limits? (e.g., max 2 years back, or all history?)
 
-2. Should the PDF include all charts, or let user select which to export?
+2. Should the PDF export all charts at once, or let user pick which ones?
 
-3. For mobile "simplified charts" - do you mean smaller charts, or different
-   chart types (e.g., bar instead of pie)?
+3. Mobile "simplified charts" - smaller versions of same charts, or
+   should we hide some charts entirely on mobile?
 
-## Assumptions I'm Making:
-- Data comes from existing `transactions` table (no new tables needed)
-- Charts will use the same tag/category system as calendar
-- VND is the primary display currency (USD converted)
+4. Category breakdown - by tags only, or also show "untagged" transactions?
+
+## Assumptions I'm Making (will proceed with these unless you correct):
+- Reports are read-only (no editing transactions from this page)
+- Same tag colors as calendar page
+- "This month" is the default filter when page loads
+- Income shown in green, expenses in red (matching calendar)
 
 Would you like to address these before I generate the documentation?
 
