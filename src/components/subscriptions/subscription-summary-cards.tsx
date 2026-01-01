@@ -66,10 +66,7 @@ export function SubscriptionSummaryCards({
             className="tooltip-fast"
             data-tooltip="Monthly plans + annual plans ÷ 12"
           >
-            <Info
-              weight="fill"
-              className="size-3.5 text-muted-foreground/50"
-            />
+            <Info weight="fill" className="size-3.5 text-muted-foreground/50" />
           </span>
         </div>
         {isLoading ? (
@@ -97,10 +94,7 @@ export function SubscriptionSummaryCards({
             className="tooltip-fast"
             data-tooltip="Total from subscriptions billed monthly"
           >
-            <Info
-              weight="fill"
-              className="size-3.5 text-muted-foreground/50"
-            />
+            <Info weight="fill" className="size-3.5 text-muted-foreground/50" />
           </span>
         </div>
         {isLoading ? (
@@ -128,10 +122,7 @@ export function SubscriptionSummaryCards({
             className="tooltip-fast"
             data-tooltip="Total from subscriptions billed yearly"
           >
-            <Info
-              weight="fill"
-              className="size-3.5 text-muted-foreground/50"
-            />
+            <Info weight="fill" className="size-3.5 text-muted-foreground/50" />
           </span>
         </div>
         {isLoading ? (

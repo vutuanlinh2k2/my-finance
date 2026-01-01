@@ -61,7 +61,8 @@ src/lib/
 export const queryKeys = {
   transactions: {
     all: ['transactions'] as const,
-    byMonth: (year: number, month: number) => ['transactions', year, month] as const,
+    byMonth: (year: number, month: number) =>
+      ['transactions', year, month] as const,
   },
   subscriptions: {
     all: ['subscriptions'] as const,

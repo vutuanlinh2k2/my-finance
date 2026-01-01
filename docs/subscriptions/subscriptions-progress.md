@@ -322,17 +322,18 @@ Daily at 00:05 UTC (via Supabase scheduled function):
 
 ### Files Created/Modified
 
-| Action   | File                                                              |
-| -------- | ----------------------------------------------------------------- |
-| Created  | `supabase/migrations/20260101094754_subscription_payment_processing.sql` |
-| Created  | `supabase/functions/process-subscription-payments/index.ts`       |
-| Modified | `supabase/config.toml` (added function config and schedule docs)  |
-| Simplified | `src/lib/api/exchange-rate.ts` (removed DB sync, kept API fetch)|
-| Simplified | `src/lib/hooks/use-exchange-rate.ts` (removed payment hook)     |
+| Action     | File                                                                     |
+| ---------- | ------------------------------------------------------------------------ |
+| Created    | `supabase/migrations/20260101094754_subscription_payment_processing.sql` |
+| Created    | `supabase/functions/process-subscription-payments/index.ts`              |
+| Modified   | `supabase/config.toml` (added function config and schedule docs)         |
+| Simplified | `src/lib/api/exchange-rate.ts` (removed DB sync, kept API fetch)         |
+| Simplified | `src/lib/hooks/use-exchange-rate.ts` (removed payment hook)              |
 
 ### Production Deployment
 
 **Local Testing:**
+
 ```bash
 supabase functions serve process-subscription-payments
 curl -X POST http://localhost:54321/functions/v1/process-subscription-payments \
@@ -340,6 +341,7 @@ curl -X POST http://localhost:54321/functions/v1/process-subscription-payments \
 ```
 
 **Production Scheduling (Supabase Dashboard):**
+
 1. Go to Edge Functions → process-subscription-payments
 2. Click "Add Schedule"
 3. Set cron expression: `5 0 * * *` (00:05 UTC daily)

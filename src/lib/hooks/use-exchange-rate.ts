@@ -2,7 +2,10 @@ import { useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { ExchangeRateResult } from '@/lib/api/exchange-rate'
-import { DEFAULT_EXCHANGE_RATE, fetchExchangeRate } from '@/lib/api/exchange-rate'
+import {
+  DEFAULT_EXCHANGE_RATE,
+  fetchExchangeRate,
+} from '@/lib/api/exchange-rate'
 import { queryKeys } from '@/lib/query-keys'
 
 // 24 hours in milliseconds
@@ -54,7 +57,8 @@ export function useExchangeRateValue(): {
     if (isUsingFallback && !isLoading && !hasShownFallbackToast.current) {
       hasShownFallbackToast.current = true
       toast.warning('Using estimated exchange rate', {
-        description: 'Could not fetch live USD/VND rate. Amounts may be approximate.',
+        description:
+          'Could not fetch live USD/VND rate. Amounts may be approximate.',
         duration: 5000,
       })
     }

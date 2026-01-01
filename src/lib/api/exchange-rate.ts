@@ -25,7 +25,10 @@ function getCachedRate(): ExchangeRateCache | null {
     if (!cached) return null
 
     const parsed = JSON.parse(cached) as ExchangeRateCache
-    if (typeof parsed.rate !== 'number' || typeof parsed.timestamp !== 'number') {
+    if (
+      typeof parsed.rate !== 'number' ||
+      typeof parsed.timestamp !== 'number'
+    ) {
       return null
     }
 

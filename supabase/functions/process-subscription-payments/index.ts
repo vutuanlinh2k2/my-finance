@@ -31,7 +31,7 @@ interface ExchangeRateResult {
  * Fetch the latest exchange rate from the database
  */
 async function fetchRateFromDatabase(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
 ): Promise<number | null> {
   try {
     const { data, error } = await supabase
@@ -64,7 +64,7 @@ async function fetchRateFromDatabase(
  * Fallback chain: API → Database → Default (25000)
  */
 async function fetchExchangeRate(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
 ): Promise<ExchangeRateResult> {
   // Try fetching from external API first
   try {
@@ -126,10 +126,13 @@ Deno.serve(async (req) => {
 
   // Accept either service_role key (for manual invocation) or anon key (for cron jobs)
   if (token !== serviceRoleKey && token !== anonKey) {
-    return new Response(JSON.stringify({ error: 'Invalid authorization token' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({ error: 'Invalid authorization token' }),
+      {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
   }
 
   try {
@@ -152,12 +155,15 @@ Deno.serve(async (req) => {
     // Skip update if we're already using the database rate
     if (source !== 'database') {
       console.log('Updating exchange rate in database...')
-      const { error: updateError } = await supabase.rpc('update_exchange_rate', {
-        p_from_currency: 'USD',
-        p_to_currency: 'VND',
-        p_rate: rate,
-        p_source: source,
-      })
+      const { error: updateError } = await supabase.rpc(
+        'update_exchange_rate',
+        {
+          p_from_currency: 'USD',
+          p_to_currency: 'VND',
+          p_rate: rate,
+          p_source: source,
+        },
+      )
 
       if (updateError) {
         console.warn('Failed to update exchange rate:', updateError.message)
@@ -171,12 +177,12 @@ Deno.serve(async (req) => {
     // Step 3: Process subscription payments
     console.log('Processing subscription payments...')
     const { data: payments, error: processError } = await supabase.rpc(
-      'process_subscription_payments'
+      'process_subscription_payments',
     )
 
     if (processError) {
       throw new Error(
-        `Failed to process subscription payments: ${processError.message}`
+        `Failed to process subscription payments: ${processError.message}`,
       )
     }
 
@@ -198,7 +204,7 @@ Deno.serve(async (req) => {
       {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-      }
+      },
     )
   } catch (error) {
     console.error('Error processing subscription payments:', error)
@@ -212,7 +218,7 @@ Deno.serve(async (req) => {
       {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
-      }
+      },
     )
   }
 })
