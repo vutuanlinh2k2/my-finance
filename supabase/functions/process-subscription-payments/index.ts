@@ -110,10 +110,23 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Verify authorization - accept service_role key for cron jobs
+  // Verify authorization - validate against known keys
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
     return new Response(JSON.stringify({ error: 'Missing authorization' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  // Extract and validate the token
+  const token = authHeader.replace('Bearer ', '')
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+
+  // Accept either service_role key (for manual invocation) or anon key (for cron jobs)
+  if (token !== serviceRoleKey && token !== anonKey) {
+    return new Response(JSON.stringify({ error: 'Invalid authorization token' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     })
