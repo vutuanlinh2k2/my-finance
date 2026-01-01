@@ -1,17 +1,13 @@
+// Re-export the database-derived Subscription type with stricter field types
+import type { Subscription as DbSubscription } from '@/lib/api/subscriptions'
+
 export type SubscriptionCurrency = 'VND' | 'USD'
 export type SubscriptionType = 'monthly' | 'yearly'
 
-export interface Subscription {
-  id: string
-  title: string
-  tag_id: string | null
+// Subscription type with narrowed currency and type fields for type safety
+export type Subscription = Omit<DbSubscription, 'currency' | 'type'> & {
   currency: SubscriptionCurrency
-  amount: number
   type: SubscriptionType
-  day_of_month: number
-  month_of_year: number | null // Only for yearly subscriptions
-  management_url: string | null
-  created_at: string
 }
 
 export interface CreateSubscriptionInput {
@@ -25,7 +21,8 @@ export interface CreateSubscriptionInput {
   management_url: string | null
 }
 
-export interface UpdateSubscriptionInput extends Partial<CreateSubscriptionInput> {}
+export interface UpdateSubscriptionInput
+  extends Partial<CreateSubscriptionInput> {}
 
 export interface SubscriptionSummary {
   avgMonthly: number

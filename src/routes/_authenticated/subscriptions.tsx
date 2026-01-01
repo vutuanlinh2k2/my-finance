@@ -2,11 +2,11 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Plus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import type { Subscription } from '@/lib/api/subscriptions'
 import type {
   CreateSubscriptionInput,
+  Subscription,
   UpdateSubscriptionInput,
-} from '@/lib/hooks/use-subscriptions'
+} from '@/lib/subscriptions'
 import {
   useCreateSubscription,
   useDeleteSubscription,
@@ -63,11 +63,7 @@ function SubscriptionsPage() {
   const expenseTags = tags.filter((t) => t.type === 'expense')
 
   // Calculate summary totals
-  // Cast to the expected type since database type has compatible fields
-  const summaryTotals = calculateSummaryTotals(
-    subscriptions as Parameters<typeof calculateSummaryTotals>[0],
-    exchangeRate.rate,
-  )
+  const summaryTotals = calculateSummaryTotals(subscriptions, exchangeRate.rate)
 
   // Check if any mutation is pending
   const isMutating =
@@ -186,22 +182,10 @@ function SubscriptionsPage() {
         <SubscriptionsEmptyState onAddClick={() => setIsAddModalOpen(true)} />
       ) : (
         <SubscriptionsTable
-          subscriptions={
-            subscriptions as Parameters<
-              typeof SubscriptionsTable
-            >[0]['subscriptions']
-          }
+          subscriptions={subscriptions}
           tags={expenseTags}
-          onEdit={
-            handleEditClick as Parameters<
-              typeof SubscriptionsTable
-            >[0]['onEdit']
-          }
-          onDelete={
-            handleDeleteClick as Parameters<
-              typeof SubscriptionsTable
-            >[0]['onDelete']
-          }
+          onEdit={handleEditClick}
+          onDelete={handleDeleteClick}
         />
       )}
 
@@ -219,9 +203,7 @@ function SubscriptionsPage() {
         onOpenChange={(open) => {
           if (!open) setEditingSubscription(null)
         }}
-        subscription={
-          editingSubscription
-        }
+        subscription={editingSubscription}
         onUpdate={handleUpdateSubscription}
         onDelete={handleDeleteFromEditModal}
         isSubmitting={updateMutation.isPending || deleteMutation.isPending}

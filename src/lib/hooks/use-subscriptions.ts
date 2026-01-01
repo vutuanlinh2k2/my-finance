@@ -3,7 +3,7 @@ import type {
   CreateSubscriptionInput,
   Subscription,
   UpdateSubscriptionInput,
-} from '@/lib/api/subscriptions'
+} from '@/lib/subscriptions'
 import { queryKeys } from '@/lib/query-keys'
 import {
   createSubscription,
@@ -18,7 +18,12 @@ import {
 export function useSubscriptions() {
   return useQuery({
     queryKey: queryKeys.subscriptions.all,
-    queryFn: fetchSubscriptions,
+    queryFn: async (): Promise<Array<Subscription>> => {
+      const data = await fetchSubscriptions()
+      // Cast database response to stricter Subscription type
+      // The database enforces currency IN ('VND', 'USD') and type IN ('monthly', 'yearly')
+      return data as Array<Subscription>
+    },
   })
 }
 
@@ -29,7 +34,10 @@ export function useCreateSubscription() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (input: CreateSubscriptionInput) => createSubscription(input),
+    mutationFn: async (input: CreateSubscriptionInput): Promise<Subscription> => {
+      const data = await createSubscription(input)
+      return data as Subscription
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.subscriptions.all,
@@ -45,13 +53,16 @@ export function useUpdateSubscription() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       id,
       updates,
     }: {
       id: string
       updates: UpdateSubscriptionInput
-    }) => updateSubscription(id, updates),
+    }): Promise<Subscription> => {
+      const data = await updateSubscription(id, updates)
+      return data as Subscription
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.subscriptions.all,
