@@ -92,7 +92,7 @@ export async function fetchExchangeRate(): Promise<ExchangeRateResult> {
       throw new Error('Invalid rate received from API')
     }
 
-    // Cache the fresh rate
+    // Cache the fresh rate locally
     setCachedRate(rate)
 
     return {
