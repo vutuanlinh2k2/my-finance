@@ -5,21 +5,22 @@ import { cn } from '@/lib/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
 import { ReportsHeader } from '@/components/reports/reports-header'
 import {
-  NoActivityState,
   NoDataState,
-  NoTagSelectedState,
   NoTagsState,
 } from '@/components/reports/reports-empty-states'
+import { RightPanel } from '@/components/reports/right-panel'
 import { DistributionPieChart } from '@/components/reports/distribution-pie-chart'
 import { PeriodNavigator } from '@/components/reports/period-navigator'
 import { TagList } from '@/components/reports/tag-list'
 import { MONTH_NAMES_SHORT } from '@/lib/reports/types'
+import { useTags } from '@/lib/hooks/use-tags'
 import {
-  getMockDistributions,
-  getMockMonthlyTotals,
-  getMockTotal,
-  getMockTransactions,
-} from '@/lib/reports/mock-data'
+  useMonthlyReportDistribution,
+  useTagTransactions,
+  useYearlyReportDistribution,
+} from '@/lib/hooks/use-reports'
+import { calculateMonthlyTagTotals } from '@/lib/reports/utils'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/_authenticated/reports')({
   component: ReportsPage,
@@ -32,7 +33,10 @@ function ReportsPage() {
     useState<TransactionType>('expense')
   const [year, setYear] = useState(() => new Date().getFullYear())
   const [month, setMonth] = useState(() => new Date().getMonth())
-  const [selectedTagId, setSelectedTagId] = useState<string | null>(null)
+  // undefined = no selection, null = untagged, string = specific tag
+  const [selectedTagId, setSelectedTagId] = useState<string | null | undefined>(
+    undefined,
+  )
 
   // Current date for boundary checks
   const currentYear = new Date().getFullYear()
@@ -44,27 +48,52 @@ function ReportsPage() {
       ? year < currentYear || (year === currentYear && month < currentMonth)
       : year < currentYear
 
-  // Get mock data based on current state (now period-aware)
+  // Fetch tags
+  const { data: tags = [], isLoading: isLoadingTags } = useTags()
+
+  // Fetch distributions based on time mode
+  const monthlyReport = useMonthlyReportDistribution(
+    year,
+    month,
+    transactionType,
+    tags,
+  )
+  const yearlyReport = useYearlyReportDistribution(year, transactionType, tags)
+
+  // Select the appropriate report based on time mode
+  const isLoading =
+    isLoadingTags ||
+    (timeMode === 'monthly' ? monthlyReport.isLoading : yearlyReport.isLoading)
+
   const distributions =
     timeMode === 'monthly'
-      ? getMockDistributions(transactionType, year, month)
-      : getMockDistributions(transactionType, year)
+      ? (monthlyReport.data?.distributions ?? [])
+      : (yearlyReport.data?.distributions ?? [])
+
   const total =
     timeMode === 'monthly'
-      ? getMockTotal(transactionType, year, month)
-      : getMockTotal(transactionType, year)
+      ? (monthlyReport.data?.total ?? 0)
+      : (yearlyReport.data?.total ?? 0)
+
   const hasData = distributions.length > 0
 
-  // Get transactions for selected tag (mock) - only for monthly mode
-  const tagTransactions =
-    selectedTagId && timeMode === 'monthly'
-      ? getMockTransactions(year, month, selectedTagId, transactionType)
-      : []
+  // Get transactions for selected tag - only for monthly mode
+  const { data: tagTransactions = [] } = useTagTransactions(
+    year,
+    month,
+    selectedTagId ?? null,
+    transactionType,
+    timeMode === 'monthly' && selectedTagId !== undefined,
+  )
 
   // Get monthly totals for selected tag - only for yearly mode
   const monthlyTotals =
-    selectedTagId && timeMode === 'yearly'
-      ? getMockMonthlyTotals(year, selectedTagId, transactionType)
+    selectedTagId !== undefined && timeMode === 'yearly' && yearlyReport.data
+      ? calculateMonthlyTagTotals(
+          yearlyReport.data.transactionsByMonth,
+          selectedTagId,
+          transactionType,
+        )
       : []
 
   // Period navigation handlers
@@ -79,7 +108,7 @@ function ReportsPage() {
     } else {
       setYear(year - 1)
     }
-    setSelectedTagId(null)
+    setSelectedTagId(undefined)
   }
 
   const handleNextPeriod = () => {
@@ -95,7 +124,7 @@ function ReportsPage() {
     } else {
       setYear(year + 1)
     }
-    setSelectedTagId(null)
+    setSelectedTagId(undefined)
   }
 
   // Format period label for display
@@ -115,20 +144,37 @@ function ReportsPage() {
 
   // Handle tag selection
   const handleTagSelect = (tagId: string | null) => {
-    setSelectedTagId(tagId === selectedTagId ? null : tagId)
+    // Toggle off if already selected, otherwise select the tag
+    if (selectedTagId !== undefined && tagId === selectedTagId) {
+      setSelectedTagId(undefined)
+    } else {
+      setSelectedTagId(tagId)
+    }
   }
 
   // Handle time mode change - reset selected tag
   const handleTimeModeChange = (mode: TimeMode) => {
     setTimeMode(mode)
-    setSelectedTagId(null)
+    setSelectedTagId(undefined)
   }
 
   // Handle transaction type change - reset selected tag
   const handleTransactionTypeChange = (type: TransactionType) => {
     setTransactionType(type)
-    setSelectedTagId(null)
+    setSelectedTagId(undefined)
   }
+
+  // Handle month click in yearly mode - drill down to that month
+  const handleMonthClick = (clickedMonth: number) => {
+    setTimeMode('monthly')
+    setMonth(clickedMonth)
+    // Keep the selected tag
+  }
+
+  // Find the selected distribution for the right panel
+  const selectedDistribution = distributions.find(
+    (d) => d.tagId === selectedTagId,
+  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -152,12 +198,16 @@ function ReportsPage() {
                   ? 'TOTAL EXPENSES'
                   : 'TOTAL INCOME'}
               </p>
-              <p
-                className="text-3xl font-bold tooltip-fast"
-                data-tooltip={formatCurrency(total)}
-              >
-                {formatCompact(total)}
-              </p>
+              {isLoading ? (
+                <Skeleton className="mt-1 h-9 w-24" />
+              ) : (
+                <p
+                  className="text-3xl font-bold tooltip-fast"
+                  data-tooltip={formatCurrency(total)}
+                >
+                  {formatCompact(total)}
+                </p>
+              )}
             </div>
 
             {/* Period Navigator */}
@@ -170,7 +220,11 @@ function ReportsPage() {
           </div>
 
           {/* Pie Chart */}
-          {hasData ? (
+          {isLoading ? (
+            <div className="mb-6 flex flex-col items-center justify-center py-8">
+              <Skeleton className="size-[280px] rounded-full" />
+            </div>
+          ) : hasData ? (
             <div className="mb-6 flex flex-col items-center justify-center py-8">
               <DistributionPieChart
                 distributions={distributions}
@@ -184,7 +238,13 @@ function ReportsPage() {
           )}
 
           {/* Tag List */}
-          {hasData ? (
+          {isLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-14 w-full rounded-lg" />
+              <Skeleton className="h-14 w-full rounded-lg" />
+              <Skeleton className="h-14 w-full rounded-lg" />
+            </div>
+          ) : hasData ? (
             <TagList
               distributions={distributions}
               selectedTagId={selectedTagId}
@@ -197,90 +257,17 @@ function ReportsPage() {
 
         {/* Right Panel - Transaction List or Monthly Totals */}
         <div className="flex w-[400px] flex-col rounded-xl border border-dashed border-border bg-card">
-          {!hasData ? (
-            <NoActivityState />
-          ) : !selectedTagId ? (
-            <NoTagSelectedState />
-          ) : timeMode === 'monthly' ? (
-            // Transaction List (Monthly Mode)
-            <div className="flex flex-1 flex-col">
-              <div className="border-b border-border p-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  Transaction Listing
-                </h3>
-              </div>
-              <div className="flex flex-1 flex-col overflow-y-auto">
-                {tagTransactions.length === 0 ? (
-                  <div className="flex flex-1 items-center justify-center p-6">
-                    <p className="text-sm text-muted-foreground">
-                      No transactions for this tag
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col">
-                    {tagTransactions.map((transaction) => (
-                      <div
-                        key={transaction.id}
-                        className="flex items-center justify-between border-b border-border p-4 last:border-b-0"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="flex size-10 items-center justify-center rounded-lg bg-muted text-lg">
-                            {transaction.tagEmoji}
-                          </span>
-                          <div>
-                            <p className="font-medium">{transaction.title}</p>
-                            <p className="text-xs uppercase text-muted-foreground">
-                              {new Date(transaction.date).toLocaleDateString(
-                                'en-US',
-                                { month: 'short', day: 'numeric' },
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                        <span
-                          className={cn(
-                            'font-semibold tooltip-fast',
-                            transaction.type === 'income'
-                              ? 'text-emerald-600'
-                              : 'text-foreground',
-                          )}
-                          data-tooltip={formatCurrency(transaction.amount)}
-                        >
-                          {transaction.type === 'income' ? '+' : '-'}
-                          {formatCompact(transaction.amount)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            // Monthly Totals (Yearly Mode)
-            <div className="flex flex-1 flex-col">
-              <div className="border-b border-border p-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  Monthly Totals
-                </h3>
-              </div>
-              <div className="flex flex-1 flex-col overflow-y-auto">
-                {monthlyTotals.map((monthData) => (
-                  <div
-                    key={monthData.month}
-                    className="flex items-center justify-between border-b border-border px-4 py-3 last:border-b-0"
-                  >
-                    <span className="font-medium">{monthData.monthName}</span>
-                    <span
-                      className="font-semibold tooltip-fast"
-                      data-tooltip={formatCurrency(monthData.amount)}
-                    >
-                      {formatCompact(monthData.amount)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <RightPanel
+            timeMode={timeMode}
+            hasData={hasData}
+            isLoading={isLoading}
+            selectedTagId={selectedTagId}
+            selectedDistribution={selectedDistribution}
+            transactions={tagTransactions}
+            tags={tags}
+            monthlyTotals={monthlyTotals}
+            onMonthClick={handleMonthClick}
+          />
         </div>
       </div>
     </div>
