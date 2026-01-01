@@ -3,9 +3,9 @@ import {
   CalendarDots,
   CaretDown,
   ChartBar,
-  CurrencyCircleDollar,
   House,
   Repeat,
+  Wallet,
 } from '@phosphor-icons/react'
 
 import {
@@ -56,8 +56,8 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
-                      <CurrencyCircleDollar weight="duotone" />
-                      <span>Earnings/Spendings</span>
+                      <Wallet weight="duotone" />
+                      <span>Expenses/Incomes</span>
                       <CaretDown className="ml-auto size-3.5! text-muted-foreground transition-transform group-data-[state=open]/collapsible:rotate-180" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
