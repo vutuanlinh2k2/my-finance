@@ -37,7 +37,7 @@ The Reports page provides users with a visual breakdown of their spending and in
   - Above chart: "TOTAL EXPENSES" or "TOTAL INCOME" label with total amount formatted using `formatCurrency()`
   - Time period selector next to total (e.g., "Oct 2023" button that allows navigation)
 - **Calculation**:
-  - Each tag's percentage = (sum of transactions with that tag) / (total of all transactions) * 100
+  - Each tag's percentage = (sum of transactions with that tag) / (total of all transactions) \* 100
   - Untagged transactions (tag_id = null) grouped as "Untagged" category
 - **Acceptance Criteria**:
   - Pie chart renders smoothly with animations
@@ -138,94 +138,107 @@ The Reports page provides users with a visual breakdown of their spending and in
 ### Existing Models Used
 
 #### Transaction (from `src/lib/api/transactions.ts`)
-| Field | Type | Description |
-|-------|------|-------------|
-| id | uuid | Primary key |
-| user_id | uuid | Owner reference |
-| title | string | Transaction description |
-| amount | number | Amount in VND |
-| date | string | ISO date (YYYY-MM-DD) |
-| type | 'expense' \| 'income' | Transaction type |
-| tag_id | uuid \| null | Reference to tag (nullable) |
-| created_at | string | Creation timestamp |
-| updated_at | string | Last update timestamp |
+
+| Field      | Type                  | Description                 |
+| ---------- | --------------------- | --------------------------- |
+| id         | uuid                  | Primary key                 |
+| user_id    | uuid                  | Owner reference             |
+| title      | string                | Transaction description     |
+| amount     | number                | Amount in VND               |
+| date       | string                | ISO date (YYYY-MM-DD)       |
+| type       | 'expense' \| 'income' | Transaction type            |
+| tag_id     | uuid \| null          | Reference to tag (nullable) |
+| created_at | string                | Creation timestamp          |
+| updated_at | string                | Last update timestamp       |
 
 #### Tag (from `src/lib/api/tags.ts`)
-| Field | Type | Description |
-|-------|------|-------------|
-| id | uuid | Primary key |
-| user_id | uuid | Owner reference |
-| name | string | Tag name (max 50 chars) |
-| emoji | string | Tag emoji |
-| type | 'expense' \| 'income' | Tag type |
-| created_at | string | Creation timestamp |
-| updated_at | string | Last update timestamp |
+
+| Field      | Type                  | Description             |
+| ---------- | --------------------- | ----------------------- |
+| id         | uuid                  | Primary key             |
+| user_id    | uuid                  | Owner reference         |
+| name       | string                | Tag name (max 50 chars) |
+| emoji      | string                | Tag emoji               |
+| type       | 'expense' \| 'income' | Tag type                |
+| created_at | string                | Creation timestamp      |
+| updated_at | string                | Last update timestamp   |
 
 ### Derived Types (New)
 
 #### TagDistribution
-| Field | Type | Description |
-|-------|------|-------------|
-| tagId | string \| null | Tag ID (null for untagged) |
-| tagName | string | Tag name or "Untagged" |
-| tagEmoji | string | Tag emoji or default icon |
-| amount | number | Total amount for period |
-| percentage | number | Percentage of total (0-100) |
-| color | string | Chart segment color |
+
+| Field      | Type           | Description                 |
+| ---------- | -------------- | --------------------------- |
+| tagId      | string \| null | Tag ID (null for untagged)  |
+| tagName    | string         | Tag name or "Untagged"      |
+| tagEmoji   | string         | Tag emoji or default icon   |
+| amount     | number         | Total amount for period     |
+| percentage | number         | Percentage of total (0-100) |
+| color      | string         | Chart segment color         |
 
 #### MonthlyTagTotal
-| Field | Type | Description |
-|-------|------|-------------|
-| month | number | Month number (0-11) |
+
+| Field     | Type   | Description                          |
+| --------- | ------ | ------------------------------------ |
+| month     | number | Month number (0-11)                  |
 | monthName | string | Month name (January, February, etc.) |
-| amount | number | Total amount for that month |
+| amount    | number | Total amount for that month          |
 
 ## UI Components
 
 ### ReportsPage (`src/routes/_authenticated/reports.tsx`)
+
 - Main page component
 - Manages state for: time mode, transaction type, selected period, selected tag
 - Two-column layout (left: chart + tags, right: details)
 
 ### ReportsHeader
+
 - Page title and subtitle
 - Toggle controls for Monthly/Yearly and Expense/Income
 
 ### DistributionPieChart
+
 - Donut chart using recharts library
 - Period label in center
 - Interactive segments (hover, click)
 - Total display above chart
 
 ### PeriodNavigator
+
 - Current period display
 - Previous/next navigation buttons
 - Disabled states at boundaries
 
 ### TagList
+
 - Scrollable list of tags
 - Each item shows: color, emoji, name, amount, percentage
 - Click to select
 - Selected state styling
 
 ### TransactionListPanel (Monthly Mode)
+
 - Header: "TRANSACTION LISTING"
 - List of transactions for selected tag
 - Each item clickable to edit
 - Empty/no-selection states
 
 ### MonthlyTotalsPanel (Yearly Mode)
+
 - Header: "MONTHLY TOTALS"
 - List of all 12 months with amounts
 - Empty/no-selection states
 
 ### EditTransactionModal (Reused)
+
 - Import from existing calendar components
 - Same functionality
 
 ## State Management
 
 ### Query Keys
+
 ```typescript
 // Add to src/lib/query-keys.ts
 reports: {
@@ -235,6 +248,7 @@ reports: {
 ```
 
 ### Local State (Page Level)
+
 - `timeMode`: 'monthly' | 'yearly'
 - `transactionType`: 'expense' | 'income'
 - `year`: number (current year default)
@@ -242,6 +256,7 @@ reports: {
 - `selectedTagId`: string | null
 
 ### Mutations
+
 - Reuse existing `useUpdateTransaction` and `useDeleteTransaction` hooks
 - Cache invalidation should update reports queries
 
@@ -266,9 +281,11 @@ reports: {
 ## Dependencies
 
 ### External Libraries
+
 - `recharts` - Pie chart visualization
 
 ### Internal Modules
+
 - `src/lib/api/transactions.ts` - Transaction CRUD
 - `src/lib/api/tags.ts` - Tag fetching
 - `src/lib/hooks/use-transactions.ts` - Transaction query hooks
@@ -279,15 +296,18 @@ reports: {
 ## Technical Notes
 
 ### Chart Colors
+
 - Generate consistent colors for tags based on tag ID hash
 - Ensure sufficient contrast between adjacent segments
 - "Untagged" uses a neutral gray color
 
 ### Performance Considerations
+
 - Fetch all transactions for period at once, compute distribution client-side
 - Avoid re-fetching when only selected tag changes
 - Consider virtualization if tag list becomes very long
 
 ### Responsive Design
+
 - Mobile: Stack panels vertically (chart on top, details below)
 - Tablet+: Side-by-side layout as shown in mockups

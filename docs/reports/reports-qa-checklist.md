@@ -123,7 +123,7 @@ This checklist provides comprehensive quality assurance coverage for the Reports
 ### Pie Chart Calculations
 
 - [ ] All segment percentages sum to 100%
-- [ ] Each segment percentage matches: (tag total / grand total) * 100
+- [ ] Each segment percentage matches: (tag total / grand total) \* 100
 - [ ] Segment sizes visually proportional to percentages
 - [ ] No rounding errors cause total to exceed 100%
 
@@ -466,22 +466,23 @@ This checklist provides comprehensive quality assurance coverage for the Reports
 
 ## Test Sign-off
 
-| Category | Tested By | Date | Pass/Fail |
-|----------|-----------|------|-----------|
-| Functional Requirements | | | |
-| Data Accuracy | | | |
-| State Management | | | |
-| API Integration | | | |
-| User Flows | | | |
-| Edge Cases | | | |
-| Currency Handling | | | |
-| Transaction Operations | | | |
-| Cross-Feature Integration | | | |
-| Performance | | | |
+| Category                  | Tested By | Date | Pass/Fail |
+| ------------------------- | --------- | ---- | --------- |
+| Functional Requirements   |           |      |           |
+| Data Accuracy             |           |      |           |
+| State Management          |           |      |           |
+| API Integration           |           |      |           |
+| User Flows                |           |      |           |
+| Edge Cases                |           |      |           |
+| Currency Handling         |           |      |           |
+| Transaction Operations    |           |      |           |
+| Cross-Feature Integration |           |      |           |
+| Performance               |           |      |           |
 
 ---
 
 **Notes:**
+
 - All tests should be performed on the latest build
 - Test on multiple browsers (Chrome, Firefox, Safari)
 - Test on mobile viewport sizes for responsive behavior

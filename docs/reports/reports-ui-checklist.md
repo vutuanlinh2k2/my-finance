@@ -5,6 +5,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 1. Visual Consistency
 
 ### Design System Adherence (shadcn/ui)
+
 - [ ] All buttons use shadcn/ui Button component with appropriate variants
 - [ ] Toggle controls use shadcn/ui Tabs or toggle-group pattern
 - [ ] Cards and panels use shadcn/ui Card component styling
@@ -13,6 +14,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] All interactive elements have consistent border-radius values
 
 ### Spacing & Typography
+
 - [ ] Page title "Reports" uses correct heading typography (text-2xl or larger)
 - [ ] Subtitle "Detailed breakdown of your finances" uses muted text color
 - [ ] Consistent spacing between header and content sections
@@ -22,6 +24,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Amount values are right-aligned where appropriate
 
 ### Colors (OKLCH Color System)
+
 - [ ] Toggle active states use correct accent colors from styles.css
 - [ ] Expense toggle uses appropriate highlight color (yellow as specified)
 - [ ] Income amounts use success color (emerald/green)
@@ -31,6 +34,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Background colors follow light/dark theme variables
 
 ### Icon Usage (@phosphor-icons/react)
+
 - [ ] Navigation arrows use Phosphor icons (CaretLeft, CaretRight)
 - [ ] Tag list uses tag emoji correctly displayed
 - [ ] Transaction list items show tag emoji as icon
@@ -40,6 +44,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 2. Responsive Design
 
 ### Mobile (< 640px)
+
 - [ ] Panels stack vertically (pie chart on top, details below)
 - [ ] Toggle controls wrap or resize appropriately
 - [ ] Pie chart scales to fit mobile width
@@ -50,6 +55,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Period navigation is easily tappable
 
 ### Tablet (640px - 1024px)
+
 - [ ] Two-panel layout begins to show side-by-side
 - [ ] Pie chart maintains readable size
 - [ ] Tag list scrollable if needed
@@ -57,6 +63,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Toggle controls fit without wrapping
 
 ### Desktop (> 1024px)
+
 - [ ] Side-by-side layout with left panel (chart + tags) and right panel (details)
 - [ ] Left panel takes approximately half the screen
 - [ ] Right panel takes approximately half the screen
@@ -67,6 +74,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 3. Interactive States
 
 ### Toggle Buttons (Monthly/Yearly)
+
 - [ ] Default state shows "Monthly" as selected
 - [ ] Hover state on unselected option shows visual feedback
 - [ ] Active/selected state is clearly distinguishable
@@ -75,6 +83,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] State persists during data loading
 
 ### Toggle Buttons (Expense/Income)
+
 - [ ] Default state shows "Expense" as selected
 - [ ] Expense toggle uses yellow highlight when active (as specified)
 - [ ] Income toggle uses appropriate color when active
@@ -82,6 +91,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Transition between states is smooth
 
 ### Tag List Item States
+
 - [ ] Default state: neutral background, readable text
 - [ ] Hover state: subtle background change, cursor pointer
 - [ ] Selected state: visible highlight (border or background color change)
@@ -90,12 +100,14 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Percentage and amount remain visible in all states
 
 ### Transaction List Item Hover
+
 - [ ] Hover shows clickable indication (cursor, background change)
 - [ ] Hover reveals edit/delete actions if applicable
 - [ ] Transition is smooth and not jarring
 - [ ] Click opens edit modal correctly
 
 ### Navigation Arrow States
+
 - [ ] Enabled state: visible, clickable cursor
 - [ ] Hover state: color/opacity change
 - [ ] Disabled state: reduced opacity, not-allowed cursor
@@ -106,6 +118,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 4. Loading States
 
 ### Initial Page Load
+
 - [ ] Skeleton loader shows while data fetches
 - [ ] Pie chart area shows loading placeholder
 - [ ] Tag list shows skeleton rows
@@ -113,12 +126,14 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Loading state is visually consistent with rest of app
 
 ### Period Navigation Loading
+
 - [ ] Brief loading indicator when navigating months/years
 - [ ] Previous data clears or fades during transition
 - [ ] New data appears smoothly
 - [ ] Selected tag resets or persists appropriately
 
 ### Data Refresh Loading
+
 - [ ] After transaction edit/delete, data refreshes
 - [ ] Loading indicator appears during refresh
 - [ ] UI remains responsive during refresh
@@ -127,29 +142,34 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 5. Empty States
 
 ### No Data in Pie Chart
+
 - [ ] "No Data" placeholder shown in pie chart area
 - [ ] Placeholder is centered and visually clear
 - [ ] Helpful message explains the empty state
 - [ ] Period navigation still works to find data
 
 ### No Tags to Display
+
 - [ ] "No tags to display" message shown in tag list area
 - [ ] Message is styled consistently with other empty states
 - [ ] Untagged category still shows if untagged transactions exist
 
 ### No Tag Selected (Right Panel)
+
 - [ ] "No Tag Selected" header displayed
 - [ ] Subtext: "Select a category tag from the list on the left..."
 - [ ] Visual treatment is distinct but not alarming
 - [ ] Empty state icon if applicable (from Phosphor)
 
 ### No Activity for Period
+
 - [ ] "No Activity" message in right panel
 - [ ] Subtext: "No financial activity for this period"
 - [ ] Shown when selected tag has no transactions
 - [ ] Styled consistently with other empty states
 
 ### No Transactions for Selected Tag
+
 - [ ] "No transactions" message in transaction list
 - [ ] Clear indication that the tag exists but has no data
 - [ ] Suggestion to navigate to different period if applicable
@@ -157,12 +177,14 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 6. Error States
 
 ### API Error Handling
+
 - [ ] Error message displayed if data fetch fails
 - [ ] Retry button available
 - [ ] Error message is user-friendly, not technical
 - [ ] Error state does not break layout
 
 ### Network Failure Display
+
 - [ ] Graceful degradation if network unavailable
 - [ ] Cached data shown if available
 - [ ] Clear indication of connectivity issue
@@ -171,12 +193,14 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 7. Accessibility (WCAG 2.1 AA)
 
 ### ARIA Labels for Chart Segments
+
 - [ ] Each pie chart segment has aria-label with tag name and percentage
 - [ ] Chart has overall accessible name
 - [ ] Screen readers can navigate chart data
 - [ ] Alternative data representation available (tag list)
 
 ### Keyboard Navigation
+
 - [ ] Tab key navigates through all interactive elements
 - [ ] Tab order is logical (header toggles -> chart -> tag list -> details)
 - [ ] Arrow keys navigate within toggle groups
@@ -184,12 +208,14 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Escape closes modals
 
 ### Screen Reader Support
+
 - [ ] Percentages read correctly (e.g., "forty percent")
 - [ ] Currency amounts read with currency name
 - [ ] Tag names and amounts announced together
 - [ ] State changes announced (loading, selection)
 
 ### Focus Management
+
 - [ ] Focus visible on all interactive elements
 - [ ] Focus returns to trigger after modal close
 - [ ] Focus trapped within open modals
@@ -197,6 +223,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Skip link available for repetitive content
 
 ### Color Contrast
+
 - [ ] Text meets 4.5:1 contrast ratio minimum
 - [ ] Interactive elements meet 3:1 contrast ratio
 - [ ] Pie chart segments distinguishable without color alone
@@ -205,18 +232,21 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 8. Animations & Transitions
 
 ### Pie Chart Segment Animations
+
 - [ ] Chart renders with smooth entry animation
 - [ ] Segments animate when data changes
 - [ ] Animation duration is appropriate (200-300ms)
 - [ ] Reduced motion preference respected
 
 ### Panel Content Transitions
+
 - [ ] Content fades or slides when switching tabs
 - [ ] Transaction list updates smoothly when tag changes
 - [ ] No jarring layout shifts during transitions
 - [ ] Loading states transition smoothly to content
 
 ### Toggle Switch Animations
+
 - [ ] Toggle indicator slides smoothly
 - [ ] Background color transitions smoothly
 - [ ] Animation completes before data fetch visual
@@ -224,24 +254,28 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 9. Dark Mode
 
 ### Chart Colors in Dark Mode
+
 - [ ] Pie chart colors visible and distinct in dark mode
 - [ ] Chart background adapts to dark theme
 - [ ] Segment borders visible if applicable
 - [ ] Hover/tooltip styling adapts to dark mode
 
 ### Panel Backgrounds
+
 - [ ] Left panel uses appropriate dark background
 - [ ] Right panel uses appropriate dark background
 - [ ] Divider between panels visible in dark mode
 - [ ] Card backgrounds use dark theme variables
 
 ### Tag List Contrast
+
 - [ ] Tag names readable in dark mode
 - [ ] Color indicators visible against dark background
 - [ ] Percentages and amounts have sufficient contrast
 - [ ] Selected state visible in dark mode
 
 ### Text and Icons
+
 - [ ] All text uses appropriate light colors for dark mode
 - [ ] Icons visible and not washed out
 - [ ] Placeholder text has sufficient contrast
@@ -249,12 +283,14 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 10. Chart-Specific Items
 
 ### Pie Chart Rendering
+
 - [ ] Chart renders without visual artifacts
 - [ ] Segments are properly sized based on data
 - [ ] Very small segments (< 1%) still visible
 - [ ] Chart handles single-segment case (100%)
 
 ### Donut Center
+
 - [ ] Center shows current period label
 - [ ] Monthly: "Oct 23" format
 - [ ] Yearly: "2023" format
@@ -262,6 +298,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Text is centered and readable
 
 ### Segment Tooltips
+
 - [ ] Hover shows tooltip with tag name
 - [ ] Tooltip shows amount (formatted with formatCurrency)
 - [ ] Tooltip shows percentage
@@ -269,18 +306,21 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Tooltip disappears on mouse leave
 
 ### Segment Click to Select
+
 - [ ] Clicking segment selects corresponding tag
 - [ ] Tag list scrolls to show selected tag if needed
 - [ ] Right panel updates with tag details
 - [ ] Visual feedback on segment click
 
 ### Color Consistency
+
 - [ ] Same tag always has same color
 - [ ] Colors persist across sessions
 - [ ] Adjacent segments have distinct colors
 - [ ] "Untagged" always uses neutral gray
 
 ### Legend/Tag List Color Match
+
 - [ ] Color indicator in tag list matches chart segment
 - [ ] Colors remain synchronized during updates
 - [ ] Hover on tag highlights corresponding segment (if implemented)
@@ -288,24 +328,28 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 11. Panel Layout Items
 
 ### Two-Panel Layout Balance
+
 - [ ] Left and right panels visually balanced
 - [ ] No excessive whitespace in either panel
 - [ ] Panels resize proportionally on window resize
 - [ ] Minimum widths respected to prevent content cramping
 
 ### Right Panel Header
+
 - [ ] "TRANSACTION LISTING" header in monthly mode
 - [ ] "MONTHLY TOTALS" header in yearly mode
 - [ ] Header styled consistently (caps, spacing)
 - [ ] Header changes when mode toggles
 
 ### Transaction/Monthly List Scrollable
+
 - [ ] List scrolls when content exceeds height
 - [ ] Scroll indicator visible when scrollable
 - [ ] Scrollbar styled consistently with app
 - [ ] Smooth scroll behavior
 
 ### Item Spacing
+
 - [ ] Consistent vertical spacing between list items
 - [ ] Adequate padding within each item
 - [ ] Dividers between items if applicable
@@ -314,18 +358,21 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## 12. Navigation Items
 
 ### Period Selector Styling
+
 - [ ] Current period prominently displayed
 - [ ] "Oct 2023" format for monthly
 - [ ] "2023" format for yearly
 - [ ] Clickable area is clearly defined
 
 ### Navigation Arrows Visibility
+
 - [ ] Left arrow positioned before period text
 - [ ] Right arrow positioned after period text
 - [ ] Arrows appropriately sized (not too small)
 - [ ] Arrows aligned vertically with period text
 
 ### Disabled State for Boundaries
+
 - [ ] Cannot navigate before first data month/year
 - [ ] Cannot navigate beyond current month/year
 - [ ] Disabled arrows have visual indication (opacity, color)
@@ -363,16 +410,19 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 ## Testing Notes
 
 ### Viewport Sizes to Test
+
 - Mobile: 375px width
 - Tablet: 768px width
 - Desktop: 1440px width
 
 ### Browsers to Test
+
 - Chrome (latest)
 - Firefox (latest)
 - Safari (latest)
 
 ### Test Data Scenarios
+
 - [ ] Account with many transactions across multiple tags
 - [ ] Account with single tag only
 - [ ] Account with only untagged transactions
@@ -382,6 +432,7 @@ This checklist covers all UI/UX testing requirements for the Reports page featur
 - [ ] Tag with many transactions (scrolling test)
 
 ### Accessibility Testing Tools
+
 - [ ] Run axe-core accessibility audit
 - [ ] Test with VoiceOver (macOS)
 - [ ] Test keyboard-only navigation

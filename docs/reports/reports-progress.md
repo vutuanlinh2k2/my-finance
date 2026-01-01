@@ -5,7 +5,7 @@
 | Phase   | Description                          | Status    |
 | ------- | ------------------------------------ | --------- |
 | Phase 1 | Page Layout + Mock Data              | Completed |
-| Phase 2 | Pie Chart Implementation (recharts)  | Pending   |
+| Phase 2 | Pie Chart Implementation (recharts)  | Completed |
 | Phase 3 | Data Layer & Transaction Integration | Pending   |
 | Phase 4 | Right Panel (Transaction/Monthly)    | Pending   |
 | Phase 5 | Testing & Polish                     | Pending   |
@@ -80,13 +80,13 @@ Implemented the complete page layout with two-panel design, header with toggle c
 
 ### Files Created/Modified
 
-| Action  | File                                             |
-| ------- | ------------------------------------------------ |
-| Created | `src/routes/_authenticated/reports.tsx`          |
-| Created | `src/lib/reports/types.ts`                       |
-| Created | `src/lib/reports/mock-data.ts`                   |
-| Created | `src/components/reports/reports-header.tsx`      |
-| Created | `src/components/reports/reports-empty-states.tsx`|
+| Action  | File                                              |
+| ------- | ------------------------------------------------- |
+| Created | `src/routes/_authenticated/reports.tsx`           |
+| Created | `src/lib/reports/types.ts`                        |
+| Created | `src/lib/reports/mock-data.ts`                    |
+| Created | `src/components/reports/reports-header.tsx`       |
+| Created | `src/components/reports/reports-empty-states.tsx` |
 
 ---
 
@@ -98,72 +98,72 @@ Implement the distribution pie chart with proper styling, interactivity, and per
 
 ### Summary
 
-[To be filled during implementation]
+Implemented the distribution pie chart using recharts library. Created a dedicated color system, extracted Period Navigator and Tag List into reusable components, and integrated everything into the reports page. The chart features hover tooltips, click-to-select functionality, and smooth interactions. All toggles (Monthly/Yearly, Expense/Income) and period navigation work correctly with the new chart.
 
 ### Success Criteria
 
-- [ ] Donut chart renders with mock data
-- [ ] Segments have distinct, consistent colors
-- [ ] Hover shows tooltip with tag name, amount, percentage
-- [ ] Click on segment selects the tag
-- [ ] Center shows period label (e.g., "Oct 23")
-- [ ] Period navigation (prev/next) works
-- [ ] Total amount displays above chart
+- [x] Donut chart renders with mock data
+- [x] Segments have distinct, consistent colors
+- [x] Hover shows tooltip with tag name, amount, percentage
+- [x] Click on segment selects the tag
+- [x] Center shows period label (e.g., "Oct 23")
+- [x] Period navigation (prev/next) works
+- [x] Total amount displays above chart
 
 ### Implementation Steps
 
 #### Step 1: Install recharts
 
-- [ ] Run `pnpm add recharts` (confirm with user first)
-- [ ] Verify installation
+- [x] Run `pnpm add recharts` (confirm with user first)
+- [x] Verify installation
 
 #### Step 2: Color System
 
-- [ ] Create `src/lib/reports/colors.ts`
-- [ ] Define color palette for chart segments (8-10 colors)
-- [ ] Create function to get consistent color by tag ID
-- [ ] Define "Untagged" neutral gray color
+- [x] Create `src/lib/reports/colors.ts`
+- [x] Define color palette for chart segments (10 colors)
+- [x] Create function to get consistent color by tag ID
+- [x] Define "Untagged" neutral gray color
 
 #### Step 3: Distribution Pie Chart Component
 
-- [ ] Create `src/components/reports/distribution-pie-chart.tsx`
-- [ ] Implement donut chart using recharts `<PieChart>` and `<Pie>`
-- [ ] Add inner radius for donut effect
-- [ ] Style segments with colors from palette
-- [ ] Add center label showing period
+- [x] Create `src/components/reports/distribution-pie-chart.tsx`
+- [x] Implement donut chart using recharts `<PieChart>` and `<Pie>`
+- [x] Add inner radius for donut effect
+- [x] Style segments with colors from palette
+- [x] Add center label showing period
 
 #### Step 4: Chart Interactivity
 
-- [ ] Add hover state with tooltip
-- [ ] Implement `onMouseEnter`/`onMouseLeave` for segments
-- [ ] Add click handler to select tag
-- [ ] Visual feedback for selected segment
+- [x] Add hover state with tooltip
+- [x] Implement `onMouseEnter`/`onMouseLeave` for segments
+- [x] Add click handler to select tag
+- [x] Visual feedback for selected segment
 
 #### Step 5: Period Navigator Component
 
-- [ ] Create `src/components/reports/period-navigator.tsx`
-- [ ] Display current period (month/year format)
-- [ ] Add previous/next navigation buttons
-- [ ] Handle boundary conditions (disable at limits)
-- [ ] Style to match mockup (pill/button style)
+- [x] Create `src/components/reports/period-navigator.tsx`
+- [x] Display current period (month/year format)
+- [x] Add previous/next navigation buttons
+- [x] Handle boundary conditions (disable at limits)
+- [x] Style to match mockup (pill/button style)
 
 #### Step 6: Total Display
 
-- [ ] Add "TOTAL EXPENSES" / "TOTAL INCOME" label above chart
-- [ ] Display total amount using `formatCurrency()`
-- [ ] Position period selector next to total
+- [x] Add "TOTAL EXPENSES" / "TOTAL INCOME" label above chart
+- [x] Display total amount using `formatCurrency()`
+- [x] Position period selector next to total
 
 #### Step 7: Tag List Component
 
-- [ ] Create `src/components/reports/tag-list.tsx`
-- [ ] Display sorted list of tags with:
+- [x] Create `src/components/reports/tag-list.tsx`
+- [x] Display sorted list of tags with:
   - Color indicator (square/dot)
   - Emoji + name
   - Amount (formatCurrency)
   - Percentage badge
-- [ ] Implement scrollable container
-- [ ] Add click handler to select tag
-- [ ] Style selected state (border/background)
+- [x] Implement scrollable container
+- [x] Add click handler to select tag
+- [x] Style selected state (border/background)
 
 ### Files Created/Modified
 
