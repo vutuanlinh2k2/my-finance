@@ -2,7 +2,6 @@ node_modules
 .DS_Store
 dist
 dist-ssr
-*.local
 count.txt
 .env
 .nitro
@@ -24,3 +23,6 @@ supabase/.temp
 
 # Local Netlify folder
 .netlify
+
+# Env
+.env.*
