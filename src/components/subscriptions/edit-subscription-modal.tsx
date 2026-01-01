@@ -6,13 +6,14 @@ import { BillingTypeToggle } from './billing-type-toggle'
 import { DaySelect } from './day-select'
 import { MonthSelect } from './month-select'
 import type {
-  SubscriptionCurrency,
-  SubscriptionType,
-} from '@/lib/subscriptions'
-import type {
   Subscription,
   UpdateSubscriptionInput,
 } from '@/lib/hooks/use-subscriptions'
+import type {
+  SubscriptionCurrency,
+  SubscriptionType,
+} from '@/lib/subscriptions'
+import { isValidUrl, sanitizeUrl } from '@/lib/subscriptions'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,15 +81,14 @@ export function EditSubscriptionModal({
     if (open && subscription) {
       setTitle(subscription.title)
       setTagId(subscription.tag_id)
-      const subCurrency = subscription.currency as SubscriptionCurrency
-      setCurrency(subCurrency)
+      setCurrency(subscription.currency)
       // USD is stored as cents, convert back to dollars for display
       const displayAmount =
-        subCurrency === 'USD'
+        subscription.currency === 'USD'
           ? (subscription.amount / 100).toFixed(2)
           : String(subscription.amount)
       setAmount(displayAmount)
-      setType(subscription.type as SubscriptionType)
+      setType(subscription.type)
       setDayOfMonth(subscription.day_of_month)
       setMonthOfYear(subscription.month_of_year)
       setManagementUrl(subscription.management_url ?? '')
@@ -149,6 +149,11 @@ export function EditSubscriptionModal({
       return
     }
 
+    if (managementUrl.trim() && !isValidUrl(managementUrl)) {
+      toast.error('Please enter a valid URL (http:// or https://)')
+      return
+    }
+
     setInternalIsSubmitting(true)
 
     try {
@@ -164,7 +169,7 @@ export function EditSubscriptionModal({
         type,
         day_of_month: dayOfMonth,
         month_of_year: type === 'yearly' ? monthOfYear : null,
-        management_url: managementUrl.trim() || null,
+        management_url: sanitizeUrl(managementUrl),
       }
 
       await onUpdate(subscription.id, updates)

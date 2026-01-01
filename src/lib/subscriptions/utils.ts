@@ -1,6 +1,43 @@
 import type { Subscription, SubscriptionSummary } from './types'
 
 /**
+ * Validate and sanitize a URL for safe rendering
+ * Only allows http:// and https:// URLs to prevent XSS
+ * Returns null if invalid
+ */
+export function sanitizeUrl(url: string | null | undefined): string | null {
+  if (!url || typeof url !== 'string') {
+    return null
+  }
+
+  const trimmed = url.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  try {
+    const parsed = new URL(trimmed)
+    // Only allow http and https protocols
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return null
+    }
+    return parsed.href
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Validate a URL string (returns true if valid http/https URL or empty)
+ */
+export function isValidUrl(url: string): boolean {
+  if (!url.trim()) {
+    return true // Empty is valid (optional field)
+  }
+  return sanitizeUrl(url) !== null
+}
+
+/**
  * Get the last day of a given month
  */
 function getLastDayOfMonth(year: number, month: number): number {

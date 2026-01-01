@@ -5,6 +5,7 @@ import {
   calculateUpcomingDueDate,
   formatDueDate,
   formatUSD,
+  sanitizeUrl,
 } from '@/lib/subscriptions'
 import { formatCompact, formatCurrency } from '@/lib/currency'
 import { cn } from '@/lib/utils'
@@ -149,20 +150,23 @@ export function SubscriptionsTable({
 
               {/* Manage Link */}
               <div className="flex items-center">
-                {subscription.management_url ? (
-                  <a
-                    href={subscription.management_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  >
-                    <ArrowSquareOut weight="duotone" className="size-5" />
-                  </a>
-                ) : (
-                  <span className="flex size-8 items-center justify-center text-muted-foreground/30">
-                    <ArrowSquareOut weight="duotone" className="size-5" />
-                  </span>
-                )}
+                {(() => {
+                  const safeUrl = sanitizeUrl(subscription.management_url)
+                  return safeUrl ? (
+                    <a
+                      href={safeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      <ArrowSquareOut weight="duotone" className="size-5" />
+                    </a>
+                  ) : (
+                    <span className="flex size-8 items-center justify-center text-muted-foreground/30">
+                      <ArrowSquareOut weight="duotone" className="size-5" />
+                    </span>
+                  )
+                })()}
               </div>
 
               {/* Actions */}

@@ -5,11 +5,12 @@ import { CurrencySelect } from './currency-select'
 import { BillingTypeToggle } from './billing-type-toggle'
 import { DaySelect } from './day-select'
 import { MonthSelect } from './month-select'
+import type { CreateSubscriptionInput } from '@/lib/hooks/use-subscriptions'
 import type {
   SubscriptionCurrency,
   SubscriptionType,
 } from '@/lib/subscriptions'
-import type { CreateSubscriptionInput } from '@/lib/hooks/use-subscriptions'
+import { isValidUrl, sanitizeUrl } from '@/lib/subscriptions'
 import {
   Dialog,
   DialogContent,
@@ -116,6 +117,11 @@ export function AddSubscriptionModal({
       return
     }
 
+    if (managementUrl.trim() && !isValidUrl(managementUrl)) {
+      toast.error('Please enter a valid URL (http:// or https://)')
+      return
+    }
+
     setInternalIsSubmitting(true)
 
     try {
@@ -131,7 +137,7 @@ export function AddSubscriptionModal({
         type,
         day_of_month: dayOfMonth,
         month_of_year: type === 'yearly' ? monthOfYear : null,
-        management_url: managementUrl.trim() || null,
+        management_url: sanitizeUrl(managementUrl),
       }
 
       await onSubmit(input)
