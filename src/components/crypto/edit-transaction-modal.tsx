@@ -245,6 +245,7 @@ export function EditTransactionModal({
           assetId,
           amount: parseFloat(amount),
           storageId,
+          fiatAmount: parseInt(fiatAmount, 10),
         })
         break
     }
@@ -297,15 +298,20 @@ export function EditTransactionModal({
           </DialogTitle>
         </DialogHeader>
 
-        {/* Buy/Sell linked transaction notice */}
-        {(transaction.type === 'buy' || transaction.type === 'sell') &&
+        {/* Linked transaction notice */}
+        {(transaction.type === 'buy' ||
+          transaction.type === 'sell' ||
+          transaction.type === 'transfer_in' ||
+          transaction.type === 'transfer_out') &&
           transaction.linkedTransactionId && (
             <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
               <Warning className="mt-0.5 size-4 shrink-0" weight="bold" />
               <p>
                 This transaction is linked to a calendar{' '}
-                {transaction.type === 'buy' ? 'expense' : 'income'}. Changes to
-                date and fiat amount will be synced.
+                {transaction.type === 'buy' || transaction.type === 'transfer_out'
+                  ? 'expense'
+                  : 'income'}
+                . Changes to date and fiat amount will be synced.
               </p>
             </div>
           )}
@@ -398,25 +404,32 @@ export function EditTransactionModal({
                 </select>
               </div>
 
-              {/* Fiat Amount (Buy/Sell only) */}
-              {(transaction.type === 'buy' ||
-                transaction.type === 'sell') && (
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium">
-                    Fiat Amount (VND) *
-                  </label>
-                  <Input
-                    type="number"
-                    step="1"
-                    min="0"
-                    value={fiatAmount}
-                    onChange={(e) => setFiatAmount(e.target.value)}
-                    placeholder="0"
-                    className="h-10"
-                    disabled={isSubmitting}
-                  />
-                </div>
-              )}
+              {/* Fiat Amount (Buy/Sell/Transfer In/Out) */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium">
+                  {transaction.type === 'transfer_in' ||
+                  transaction.type === 'transfer_out'
+                    ? 'Estimated Value (VND) *'
+                    : 'Fiat Amount (VND) *'}
+                </label>
+                <Input
+                  type="number"
+                  step="1"
+                  min="0"
+                  value={fiatAmount}
+                  onChange={(e) => setFiatAmount(e.target.value)}
+                  placeholder="0"
+                  className="h-10"
+                  disabled={isSubmitting}
+                />
+                {(transaction.type === 'transfer_in' ||
+                  transaction.type === 'transfer_out') && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Estimated VND value at time of{' '}
+                    {transaction.type === 'transfer_in' ? 'receiving' : 'sending'}
+                  </p>
+                )}
+              </div>
             </>
           )}
 

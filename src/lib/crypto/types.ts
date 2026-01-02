@@ -314,22 +314,26 @@ export interface SwapTransactionInput extends TransactionInputBase {
 
 /**
  * Transfer In transaction input
+ * Creates linked income transaction (value received)
  */
 export interface TransferInTransactionInput extends TransactionInputBase {
   type: 'transfer_in'
   assetId: string
   amount: number
   storageId: string
+  fiatAmount: number
 }
 
 /**
  * Transfer Out transaction input
+ * Creates linked expense transaction (value given away)
  */
 export interface TransferOutTransactionInput extends TransactionInputBase {
   type: 'transfer_out'
   assetId: string
   amount: number
   storageId: string
+  fiatAmount: number
 }
 
 /**
