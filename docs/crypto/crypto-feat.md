@@ -110,19 +110,51 @@ A comprehensive cryptocurrency portfolio tracking system integrated into the my-
 
 ### CoinGecko Integration
 
+**Search Coins:**
+```typescript
+async function searchCoinGeckoCoins(query: string): Promise<Array<{
+  id: string
+  name: string
+  symbol: string
+  thumb: string // Icon URL
+}>>
+```
+- Endpoint: `https://api.coingecko.com/api/v3/search`
+- Query params: `query={query}`
+- Used in Add Asset Modal for coin search
+- Stale time: 5 minutes
+
 **Fetch Asset Metadata:**
 ```typescript
 async function fetchCoinGeckoAsset(coingeckoId: string): Promise<{
   id: string
   name: string
   symbol: string
-  image: { small: string; large: string }
+  image: { thumb: string; small: string; large: string }
 }>
 ```
 - Endpoint: `https://api.coingecko.com/api/v3/coins/{id}`
-- Cache aggressively - metadata rarely changes
+- Cache aggressively - metadata rarely changes (24 hours stale time)
 
-**Fetch Price Data:**
+**Fetch Market Data (Primary for Assets Table):**
+```typescript
+async function fetchCoinGeckoMarkets(ids: string[]): Promise<Array<{
+  id: string
+  current_price: number
+  market_cap: number
+  price_change_percentage_24h: number
+  price_change_percentage_7d_in_currency: number
+  price_change_percentage_30d_in_currency: number
+  price_change_percentage_60d_in_currency: number
+  price_change_percentage_1y_in_currency: number
+  // ... more fields
+}>>
+```
+- Endpoint: `https://api.coingecko.com/api/v3/coins/markets`
+- Query params: `vs_currency=usd&ids={csv}&price_change_percentage=7d,30d,60d,1y`
+- Stale time: ~60 seconds, auto-refresh
+
+**Fetch Simple Prices:**
 ```typescript
 async function fetchCoinGeckoPrices(coingeckoIds: string[]): Promise<{
   [id: string]: {
@@ -136,7 +168,7 @@ async function fetchCoinGeckoPrices(coingeckoIds: string[]): Promise<{
 - Query params: `ids={csv}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`
 - Stale time: ~60 seconds for price data
 
-**Fetch Historical Prices (for price change columns):**
+**Fetch Historical Prices (for charts):**
 ```typescript
 async function fetchCoinGeckoMarketChart(
   coingeckoId: string,
@@ -147,7 +179,7 @@ async function fetchCoinGeckoMarketChart(
 ```
 - Endpoint: `https://api.coingecko.com/api/v3/coins/{id}/market_chart`
 - Query params: `vs_currency=usd&days={days}`
-- Used for calculating 7d, 30d, 60d, 1y price changes
+- Used for historical charts (Phase 6)
 
 ### Supabase API Functions
 
@@ -192,24 +224,34 @@ Crypto (collapsible)
 - **Page Title**: "Crypto Assets" (top-left)
 - **Add Asset Button**: Opens AddCryptoAssetModal (top-right)
 
-#### AddCryptoAssetModal
-- CoinGecko ID input with validation
-- "Auto-fill Metadata" button (fetches name/symbol from CoinGecko)
-- Name input (editable)
-- Symbol input (editable)
-- Cancel / Create buttons
+#### AddCryptoAssetModal (Search-Based)
+- Search input with debounce (300ms)
+- Search results list with coin icons from CoinGecko
+- Click to select coin - auto-fills Name, Symbol, Icon
+- Selected coin preview with "Change" button
+- Name input (editable after selection)
+- Symbol input (editable after selection)
+- Cancel / Add Asset buttons
 
 #### Summary Cards (4 cards row)
-1. **Total Value**: Current portfolio value in VND
-2. **24h Change**: Value change with % and color indicator
-3. **7d Change**: Value change with % and color indicator
-4. **30d Change**: Value change with % and color indicator
+1. **Portfolio Value**: Total value of all crypto assets in VND
+2. **24h Change**: Price change percentage with color indicator (green/red)
+3. **7d Change**: Price change percentage with color indicator (green/red)
+4. **USD Rate**: Current USD to VND exchange rate with source indicator
+
+**Note:** Change cards show percentage changes (not value changes) since balances are 0 until transactions are implemented. The USD Rate card includes an "Offline" badge when using fallback/default rate.
 
 **Display Pattern:**
 ```tsx
-<span className="tooltip-fast" data-tooltip={formatCurrency(valueVND)}>
-  {formatCompact(valueVND)}
-</span>
+// Portfolio Value
+<p className="tooltip-fast" data-tooltip={formatCurrency(totalValueVnd)}>
+  {formatCompact(totalValueVnd)}
+</p>
+
+// Price Change Percentage
+<p className={change >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+  {formatPercentage(change)} // e.g., "+2.45%" or "-1.23%"
+</p>
 ```
 
 #### Charts Section (flex row)
@@ -232,21 +274,22 @@ Crypto (collapsible)
 
 | Column | Description |
 |--------|-------------|
-| Asset | Icon + Symbol (e.g., [BTC] BTC) |
-| Price | Current price in VND |
-| 24h | % change with color |
+| Asset | Icon + Symbol (e.g., [BTC icon] BTC) |
+| Price | Current price in VND (formatCompact with tooltip) |
+| 24h | % change with color (green positive, red negative) |
 | 7d | % change with color |
 | 30d | % change with color |
 | 60d | % change with color |
 | 1y | % change with color |
-| Market Cap | In VND (compact format) |
-| Balance | User's holding amount |
+| Market Cap | In VND (compact format with tooltip) |
+| Balance | User's holding amount (0 until Phase 4) |
 | Value | Balance × Price in VND |
 | % Portfolio | Allocation percentage |
+| Actions | Delete button (opens confirmation dialog) |
 
-- Sortable by any column
-- Default sort: Value (descending)
-- Click row: Could open detail view or expand inline
+- Uses `useCryptoMarkets` hook for extended price change data (CoinGecko /coins/markets endpoint)
+- Sortable by any column (planned, not yet implemented)
+- Delete confirmation uses AlertDialog component
 
 ### Storage Page (`/crypto/storage`)
 
@@ -346,17 +389,25 @@ Crypto (collapsible)
 ```typescript
 export const queryKeys = {
   crypto: {
-    assets: ['crypto', 'assets'] as const,
+    assets: {
+      all: ['crypto', 'assets'] as const,
+    },
     storages: ['crypto', 'storages'] as const,
     transactions: {
       all: ['crypto', 'transactions'] as const,
       list: (filters: CryptoTransactionFilters) =>
         ['crypto', 'transactions', 'list', filters] as const,
     },
-    prices: (assetIds: string[]) =>
-      ['crypto', 'prices', assetIds.sort().join(',')] as const,
     portfolioHistory: (range: TimeRange) =>
       ['crypto', 'portfolio-history', range] as const,
+  },
+  coingecko: {
+    asset: (id: string) => ['coingecko', 'asset', id] as const,
+    prices: (ids: string[]) => ['coingecko', 'prices', ids.sort().join(',')] as const,
+    markets: (ids: string[]) => ['coingecko', 'markets', ids.sort().join(',')] as const,
+    marketData: (id: string, days: number | 'max') =>
+      ['coingecko', 'market-data', id, days] as const,
+    search: (query: string) => ['coingecko', 'search', query] as const,
   },
 }
 ```

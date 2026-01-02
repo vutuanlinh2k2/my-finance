@@ -22,11 +22,12 @@ This checklist covers all UI/UX testing requirements for the Crypto Portfolio fe
 
 #### Assets Page
 
-- [ ] Summary cards (Total Value, 24h/7d/30d Change) use Card component with consistent padding
+- [ ] Summary cards (Portfolio Value, 24h Change, 7d Change, USD Rate) use Card component with consistent padding
+- [ ] Each summary card has icon with colored background in header
 - [ ] Pie chart container uses Card styling with proper shadow and border
-- [ ] History charts container uses Card styling with tab navigation
+- [ ] History charts container uses Card styling with tab navigation (placeholder for Phase 6)
 - [ ] Assets table uses consistent table styling with proper cell alignment
-- [ ] Time range selector buttons use toggle-group pattern
+- [ ] Time range selector buttons use toggle-group pattern (disabled until Phase 6)
 
 #### Storage Page
 
@@ -434,12 +435,13 @@ This checklist covers all UI/UX testing requirements for the Crypto Portfolio fe
 
 #### Add Asset Modal
 
-- [ ] Empty CoinGecko ID: "CoinGecko ID is required"
-- [ ] Invalid CoinGecko ID (API returns 404): "Asset not found on CoinGecko"
-- [ ] Duplicate asset: "This asset is already in your portfolio"
-- [ ] Error messages appear below respective inputs
-- [ ] Input borders turn red on error
-- [ ] Errors clear when user starts typing
+- [ ] No coin selected: "Please select a cryptocurrency" (toast)
+- [ ] Empty name after selection: "Please enter a name" (toast)
+- [ ] Empty symbol after selection: "Please enter a symbol" (toast)
+- [ ] Search returns no results: "No results found" message in dropdown
+- [ ] Search API error: Error message displayed in dropdown
+- [ ] Duplicate asset: "This asset has already been added to your portfolio" (toast)
+- [ ] Input borders show validation state appropriately
 
 #### Add Storage Modal
 
@@ -830,26 +832,32 @@ This checklist covers all UI/UX testing requirements for the Crypto Portfolio fe
 
 ## 11. Modals
 
-### Add Asset Modal
+### Add Asset Modal (Search-Based)
 
 #### Structure
 
 - [ ] Modal title: "Add Crypto Asset"
-- [ ] Close button (X) in header
-- [ ] Form fields: CoinGecko ID, Name, Symbol
-- [ ] "Auto-fill Metadata" button
-- [ ] Footer: Cancel and Create buttons
+- [ ] Search input with magnifying glass icon
+- [ ] Search results list (appears when query >= 2 characters)
+- [ ] Selected coin preview with icon, name, symbol, and "Change" button
+- [ ] Name input (editable, shown after selection)
+- [ ] Symbol input (editable, shown after selection)
+- [ ] Footer: Cancel and "Add Asset" buttons
 
 #### Behavior
 
-- [ ] Modal opens with focus on first input
-- [ ] Auto-fill fetches and populates name/symbol from CoinGecko
-- [ ] Auto-fill shows loading state
-- [ ] Name and Symbol editable after auto-fill
+- [ ] Modal opens with focus on search input
+- [ ] Search debounces input by 300ms
+- [ ] Loading spinner shows during search
+- [ ] Search results show coin icons, names, and symbols
+- [ ] Click on result selects coin and auto-fills form
+- [ ] Selected coin preview replaces search results
+- [ ] "Change" button clears selection and shows search again
+- [ ] Name and Symbol editable after selection
 - [ ] Cancel closes modal without action
-- [ ] Create validates and submits form
+- [ ] "Add Asset" button disabled until coin selected
 - [ ] Success closes modal and refreshes data
-- [ ] Error shows message, keeps modal open
+- [ ] Error shows toast message, keeps modal open
 
 #### Animation
 

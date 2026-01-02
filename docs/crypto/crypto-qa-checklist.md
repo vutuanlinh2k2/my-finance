@@ -23,14 +23,16 @@ This document provides a comprehensive QA checklist for testing the Crypto Portf
 
 ### 1.3 Summary Cards (4 Cards Row)
 
-- [ ] All four summary cards are displayed: Total Value, 24h Change, 7d Change, 30d Change
-- [ ] Cards are properly aligned and spaced
-- [ ] Total Value shows portfolio value in VND using `formatCompact()`
-- [ ] Total Value tooltip shows full value using `formatCurrency()`
-- [ ] 24h/7d/30d Change shows percentage with color indicator (green positive, red negative)
-- [ ] Change amounts are displayed in VND
+- [ ] All four summary cards are displayed: Portfolio Value, 24h Change, 7d Change, USD Rate
+- [ ] Cards are properly aligned and spaced in a 4-column grid
+- [ ] Portfolio Value shows total in VND using `formatCompact()`
+- [ ] Portfolio Value tooltip shows full value using `formatCurrency()`
+- [ ] 24h Change shows percentage with color indicator (green positive, red negative)
+- [ ] 7d Change shows percentage with color indicator
+- [ ] USD Rate card shows current exchange rate with source info tooltip
+- [ ] USD Rate card shows "Offline" badge when using fallback/default rate
 - [ ] Cards show "0" or appropriate empty state when no assets exist
-- [ ] Cards update when exchange rate changes
+- [ ] Cards show loading skeletons while fetching data
 - [ ] Cards are responsive across different screen sizes
 
 ### 1.4 Charts Section
@@ -45,49 +47,51 @@ This document provides a comprehensive QA checklist for testing the Crypto Portf
 - [ ] Chart updates when assets or balances change
 - [ ] Small allocations (< 1%) are visible or grouped as "Other"
 
-#### History Charts (2/3 Width, Tabbed)
+#### History Charts (2/3 Width, Tabbed) - Placeholder for Phase 6
 
-- [ ] Tab navigation between "Allocation History" and "Total Value History"
-- [ ] Default tab is correctly selected
-- [ ] Allocation History shows stacked area chart
-- [ ] Total Value History shows line chart
-- [ ] Time range selector: 7d, 30d, 60d, 1y, All
-- [ ] Time range selection updates chart data
-- [ ] Chart loads data from portfolio snapshots
-- [ ] Hover shows detailed breakdown at that point
-- [ ] Empty state when no historical data exists
-- [ ] Chart handles missing data points gracefully
+- [ ] Tab navigation between "Allocation" and "Total Value" is visible
+- [ ] Default tab is "Allocation"
+- [ ] Time range selector: 7d, 30d, 60d, 1y, All (all disabled)
+- [ ] "Historical data coming soon" empty state displayed
+- [ ] Empty state icon (ChartLine) is visible
+- [ ] Subtitle explains "Portfolio snapshots will be collected daily"
+
+**Note:** Full chart functionality will be implemented in Phase 6 when portfolio snapshots are available.
 
 ### 1.5 Assets Table
 
 #### Column Display
 
 - [ ] Asset column: Icon + Symbol (e.g., [BTC icon] BTC)
-- [ ] Price column: Current price in VND
-- [ ] 24h column: Percentage change with color
+- [ ] Price column: Current price in VND (formatCompact with tooltip)
+- [ ] 24h column: Percentage change with color (green/red)
 - [ ] 7d column: Percentage change with color
 - [ ] 30d column: Percentage change with color
 - [ ] 60d column: Percentage change with color
 - [ ] 1y column: Percentage change with color
-- [ ] Market Cap column: In VND (compact format)
-- [ ] Balance column: User's holding amount (crypto units)
+- [ ] Market Cap column: In VND (compact format with tooltip)
+- [ ] Balance column: User's holding amount (shows 0 until Phase 4)
 - [ ] Value column: Balance x Price in VND
 - [ ] % Portfolio column: Allocation percentage
+- [ ] Actions column: Delete button (trash icon)
 
 #### Table Behavior
 
-- [ ] All columns display correct data
-- [ ] Table is sortable by any column
-- [ ] Sort direction toggles on repeated clicks
-- [ ] Default sort is by Value (descending)
+- [ ] All columns display correct data from CoinGecko markets endpoint
+- [ ] Delete button opens confirmation dialog (AlertDialog)
+- [ ] Delete confirmation shows asset name
+- [ ] Delete removes asset from table and updates summary cards
+- [ ] Delete shows success toast "Asset removed from portfolio"
 - [ ] Table is responsive (horizontal scroll on mobile)
-- [ ] Empty state message when no assets exist
+- [ ] Empty state with "Add your first crypto asset" message when no assets
 - [ ] Loading skeleton shown while fetching data
 - [ ] Price data refreshes automatically (stale time ~60s)
 
+**Note:** Sorting is planned but not yet implemented. Balance is 0 until transactions are implemented in Phase 4.
+
 ---
 
-## 2. Add Crypto Asset Modal
+## 2. Add Crypto Asset Modal (Search-Based)
 
 ### 2.1 Modal Opening and Closing
 
@@ -99,56 +103,58 @@ This document provides a comprehensive QA checklist for testing the Crypto Portf
 - [ ] Modal can be closed by pressing Escape key
 - [ ] Page scroll is locked when modal is open
 - [ ] Cancel button closes modal without saving
+- [ ] Form state resets when modal reopens
 
-### 2.2 CoinGecko ID Field
+### 2.2 Search Input Field
 
-- [ ] CoinGecko ID input field is present and required
-- [ ] Field has appropriate placeholder (e.g., "bitcoin", "ethereum")
-- [ ] Field validates format before API call
-- [ ] Invalid format shows error message
-- [ ] Empty field shows error on submit
-- [ ] Field trims whitespace
-- [ ] Case-insensitive handling (e.g., "Bitcoin" -> "bitcoin")
+- [ ] Search input field is present with magnifying glass icon
+- [ ] Field has appropriate placeholder (e.g., "Search by name or symbol...")
+- [ ] Search is debounced by 300ms
+- [ ] Loading spinner appears in input while searching
+- [ ] Search does not trigger until 2+ characters entered
+- [ ] Search is case-insensitive
 
-### 2.3 Auto-Fill Metadata Button
+### 2.3 Search Results
 
-- [ ] "Auto-fill Metadata" button is visible
-- [ ] Button is disabled when CoinGecko ID is empty
-- [ ] Clicking button fetches data from CoinGecko API
-- [ ] Loading state shown during API call
-- [ ] Success: Name, Symbol, Icon fields are populated
-- [ ] Success: Icon preview is displayed
-- [ ] Error: Invalid CoinGecko ID shows error toast
-- [ ] Error: API rate limit shows appropriate message
-- [ ] Error: Network failure shows user-friendly message
-- [ ] Fields remain editable after auto-fill
+- [ ] Results appear below input in a scrollable dropdown
+- [ ] Each result shows coin icon, name, and symbol
+- [ ] Results are clickable
+- [ ] Hover state visible on result items
+- [ ] "No results found" message when search returns empty
+- [ ] Error message displayed when API fails
+- [ ] Results disappear after coin selection
 
-### 2.4 Name Field
+### 2.4 Coin Selection
 
-- [ ] Name field is present and editable
-- [ ] Field can be manually entered or auto-filled
-- [ ] Field is required
-- [ ] Maximum length validation (if defined)
+- [ ] Clicking a result selects the coin
+- [ ] Selected coin preview shows icon, name, symbol
+- [ ] "Change" button appears to clear selection
+- [ ] Name and Symbol fields become visible and are editable
+- [ ] Fields are pre-populated with selected coin data
+- [ ] Search input clears after selection
+
+### 2.5 Name and Symbol Fields
+
+- [ ] Name field is present and editable after selection
+- [ ] Name is required for submission
+- [ ] Symbol field is present and editable after selection
+- [ ] Symbol is auto-uppercased on input
+- [ ] Symbol is required for submission
 - [ ] Trims leading/trailing whitespace
-
-### 2.5 Symbol Field
-
-- [ ] Symbol field is present and editable
-- [ ] Field can be manually entered or auto-filled
-- [ ] Field is required
-- [ ] Typically uppercase (BTC, ETH)
-- [ ] Maximum length validation (if defined)
 
 ### 2.6 Form Submission
 
-- [ ] Create button submits the form
-- [ ] Create button shows loading state during submission
-- [ ] Validation errors prevent submission
-- [ ] Duplicate CoinGecko ID shows appropriate error
+- [ ] "Add Asset" button submits the form
+- [ ] Button is disabled when no coin is selected
+- [ ] Button shows loading state during submission
+- [ ] Toast error if no coin selected
+- [ ] Toast error if name is empty
+- [ ] Toast error if symbol is empty
+- [ ] Duplicate asset shows toast error: "This asset has already been added to your portfolio"
 - [ ] Success: Asset appears in table immediately
 - [ ] Success: Modal closes after creation
-- [ ] Success: Summary cards update
-- [ ] Success: Pie chart updates
+- [ ] Success: Toast shows "Asset added to portfolio"
+- [ ] Success: Summary cards and pie chart update
 
 ---
 
