@@ -60,13 +60,37 @@ async function fetchRateFromDatabase(
 }
 
 /**
+ * Check if running in local development environment
+ * Local Supabase uses 127.0.0.1 or localhost URLs
+ */
+function isLocalDevelopment(): boolean {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
+  return supabaseUrl.includes('127.0.0.1') || supabaseUrl.includes('localhost')
+}
+
+/**
  * Fetch fresh USD to VND exchange rate
- * Fallback chain: API → Database → Default (25000)
+ * Fallback chain:
+ * - Production: API → Database → Default (25000)
+ * - Local dev: Database → Default (DNS resolution fails for external APIs)
  */
 async function fetchExchangeRate(
   supabase: SupabaseClient,
 ): Promise<ExchangeRateResult> {
-  // Try fetching from external API first
+  // In local dev, DNS resolution fails for external APIs
+  // Skip API call and use database/default directly
+  if (isLocalDevelopment()) {
+    console.log('Local dev detected: skipping external API (DNS fails in Docker)')
+    const dbRate = await fetchRateFromDatabase(supabase)
+    if (dbRate !== null) {
+      console.log(`Using database rate: ${dbRate}`)
+      return { rate: dbRate, source: 'database' }
+    }
+    console.warn(`Using default fallback rate: ${DEFAULT_EXCHANGE_RATE}`)
+    return { rate: DEFAULT_EXCHANGE_RATE, source: 'default' }
+  }
+
+  // Production: Try fetching from external API first
   try {
     console.log('Attempting to fetch rate from API...')
     const response = await fetch(EXCHANGE_RATE_API_URL)

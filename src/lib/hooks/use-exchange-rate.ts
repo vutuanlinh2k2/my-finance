@@ -8,30 +8,28 @@ import {
 } from '@/lib/api/exchange-rate'
 import { queryKeys } from '@/lib/query-keys'
 
-// 24 hours in milliseconds
-const STALE_TIME = 24 * 60 * 60 * 1000
-// Keep in cache for 7 days
-const GC_TIME = 7 * 24 * 60 * 60 * 1000
+// Always call fetchExchangeRate - let localStorage handle caching (24h TTL)
+// This ensures the localStorage timestamp is always checked on page load
+const STALE_TIME = 0
+// Short GC time since localStorage is the primary cache
+const GC_TIME = 5 * 60 * 1000 // 5 minutes
 
 /**
  * Hook to fetch USD to VND exchange rate
  *
  * Features:
  * - Automatic caching in localStorage (24h TTL)
- * - Stale data served while refetching in background
+ * - localStorage is the single source of truth for caching
  * - Fallback to default rate if API unavailable
- * - Rate only refetched when stale (once per day)
+ * - Rate refetched when localStorage cache expires (after 24h)
  */
 export function useExchangeRate() {
   return useQuery<ExchangeRateResult>({
     queryKey: queryKeys.exchangeRate.usdVnd,
     queryFn: fetchExchangeRate,
-    staleTime: STALE_TIME,
+    staleTime: STALE_TIME, // 0 = always call queryFn, let localStorage handle TTL
     gcTime: GC_TIME,
-    // Don't retry too aggressively - we have fallback
     retry: 1,
-    // Refetch when window regains focus (if stale)
-    refetchOnWindowFocus: true,
   })
 }
 
