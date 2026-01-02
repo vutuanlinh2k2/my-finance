@@ -4,7 +4,7 @@
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| Phase 1 | Project Setup & CoinGecko API | Pending |
+| Phase 1 | Project Setup & CoinGecko API | Complete |
 | Phase 2 | Assets Page (incl. DB migration) | Pending |
 | Phase 3 | Storage Page (incl. DB migration) | Pending |
 | Phase 4 | Transactions Page - Basic UI (incl. DB migration) | Pending |
@@ -23,51 +23,51 @@
 Set up the project structure, create shared types, and implement CoinGecko API integration.
 
 ### Summary
-[To be filled during implementation]
+Set up the foundational project structure for the crypto portfolio feature. Created folder structure, added sidebar navigation with Crypto section (Assets, Storage, Transactions links), implemented CoinGecko API integration with rate limit handling, created React Query hooks for data fetching, and defined shared TypeScript types and utility functions.
 
 ### Success Criteria
-- [ ] Crypto folder structure created
-- [ ] CoinGecko API functions work
-- [ ] Sidebar navigation added (links won't work yet)
-- [ ] Shared TypeScript types defined
+- [x] Crypto folder structure created
+- [x] CoinGecko API functions work
+- [x] Sidebar navigation added (links won't work yet)
+- [x] Shared TypeScript types defined
 
 ### Implementation Steps
 
 #### Step 1.1: Create Folder Structure
-- [ ] Create `src/lib/crypto/` directory
-- [ ] Create `src/components/crypto/` directory
-- [ ] Create placeholder route files
+- [x] Create `src/lib/crypto/` directory
+- [x] Create `src/components/crypto/` directory
+- [x] Create placeholder route files
 
 #### Step 1.2: Sidebar Navigation
-- [ ] Edit `src/components/app-sidebar.tsx`
-- [ ] Add collapsible "Crypto" section
-- [ ] Add links: Assets, Storage, Transactions (routes created later)
+- [x] Edit `src/components/app-sidebar.tsx`
+- [x] Add collapsible "Crypto" section
+- [x] Add links: Assets, Storage, Transactions (routes created later)
 
 #### Step 1.3: Shared TypeScript Types
-- [ ] Create `src/lib/crypto/types.ts`
-- [ ] Define `CryptoTransactionType` enum
-- [ ] Define shared interfaces (will be extended per phase)
+- [x] Create `src/lib/crypto/types.ts`
+- [x] Define `CryptoTransactionType` enum
+- [x] Define shared interfaces (will be extended per phase)
 
 #### Step 1.4: CoinGecko API Functions
-- [ ] Create `src/lib/api/coingecko.ts`
-- [ ] Implement `fetchCoinGeckoAssetMetadata(id)` - get name, symbol, icon
-- [ ] Implement `fetchCoinGeckoPrices(ids[])` - batch price fetch
-- [ ] Implement `fetchCoinGeckoMarketData(id, days)` - historical prices
-- [ ] Add error handling for rate limits (429)
+- [x] Create `src/lib/api/coingecko.ts`
+- [x] Implement `fetchCoinGeckoAssetMetadata(id)` - get name, symbol, icon
+- [x] Implement `fetchCoinGeckoPrices(ids[])` - batch price fetch
+- [x] Implement `fetchCoinGeckoMarketData(id, days)` - historical prices
+- [x] Add error handling for rate limits (429)
 
 #### Step 1.5: CoinGecko Query Hooks
-- [ ] Create `src/lib/hooks/use-coingecko.ts`
-- [ ] Implement `useCoinGeckoAsset(id)` - metadata fetch
-- [ ] Implement `useCryptoPrices(ids[])` - batch prices
-- [ ] Configure staleTime (60s for prices, longer for metadata)
+- [x] Create `src/lib/hooks/use-coingecko.ts`
+- [x] Implement `useCoinGeckoAsset(id)` - metadata fetch
+- [x] Implement `useCryptoPrices(ids[])` - batch prices
+- [x] Configure staleTime (60s for prices, longer for metadata)
 
 #### Step 1.6: Crypto Utilities
-- [ ] Create `src/lib/crypto/utils.ts`
-- [ ] Implement `convertUsdToVnd(usdAmount, exchangeRate)`
-- [ ] Implement `formatCryptoAmount(amount, symbol)` - handles decimals
+- [x] Create `src/lib/crypto/utils.ts`
+- [x] Implement `convertUsdToVnd(usdAmount, exchangeRate)`
+- [x] Implement `formatCryptoAmount(amount, symbol)` - handles decimals
 
 #### Step 1.7: Update Query Keys
-- [ ] Update `src/lib/query-keys.ts` with crypto keys
+- [x] Update `src/lib/query-keys.ts` with crypto keys
 
 ### Files Created/Modified
 
