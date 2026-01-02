@@ -170,7 +170,6 @@ function SubscriptionsPage() {
         totalMonthly={summaryTotals.totalMonthly}
         totalYearly={summaryTotals.totalYearly}
         isLoading={isLoading}
-        exchangeRate={exchangeRate}
       />
 
       {/* Table or Empty State */}
