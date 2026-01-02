@@ -49,6 +49,7 @@ export const queryKeys = {
   coingecko: {
     asset: (id: string) => ['coingecko', 'asset', id] as const,
     prices: (ids: Array<string>) => ['coingecko', 'prices', ids.sort().join(',')] as const,
+    markets: (ids: Array<string>) => ['coingecko', 'markets', ids.sort().join(',')] as const,
     marketData: (id: string, days: number | 'max') =>
       ['coingecko', 'market-data', id, days] as const,
     search: (query: string) => ['coingecko', 'search', query] as const,

@@ -60,14 +60,42 @@ export interface CoinGeckoMarketData {
 }
 
 /**
- * Crypto Asset (will be extended in Phase 2)
+ * Crypto Asset from database
  */
-export interface CryptoAssetBase {
+export interface CryptoAsset {
   id: string
+  userId: string
+  coingeckoId: string
+  name: string
+  symbol: string
+  iconUrl: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * Input for creating a crypto asset
+ */
+export interface CryptoAssetInput {
   coingeckoId: string
   name: string
   symbol: string
   iconUrl?: string
+}
+
+/**
+ * Crypto asset with live price data (for display)
+ */
+export interface CryptoAssetWithPrice extends CryptoAsset {
+  currentPriceUsd: number
+  marketCapUsd: number
+  priceChange24h: number
+  priceChange7d: number
+  priceChange30d: number
+  priceChange60d: number
+  priceChange1y: number
+  balance: number // From transactions (0 until Phase 4)
+  valueUsd: number // balance * currentPriceUsd
 }
 
 /**

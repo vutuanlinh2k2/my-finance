@@ -4,9 +4,11 @@ import type {
   CoinGeckoMarketData,
   CoinGeckoPriceMap,
 } from '@/lib/crypto/types'
+import type { CoinGeckoMarketCoin } from '@/lib/api/coingecko'
 import {
   fetchCoinGeckoAssetMetadata,
   fetchCoinGeckoMarketData,
+  fetchCoinGeckoMarkets,
   fetchCoinGeckoPrices,
   searchCoinGeckoCoins,
 } from '@/lib/api/coingecko'
@@ -48,6 +50,27 @@ export function useCryptoPrices(ids: Array<string>, enabled = true) {
   return useQuery<CoinGeckoPriceMap>({
     queryKey: queryKeys.coingecko.prices(ids),
     queryFn: () => fetchCoinGeckoPrices(ids),
+    enabled: enabled && ids.length > 0,
+    staleTime: PRICE_STALE_TIME,
+    refetchInterval: PRICE_STALE_TIME, // Auto-refresh prices
+    retry: (failureCount, error) => {
+      if (error instanceof Error && error.message.includes('Rate limit')) {
+        return false
+      }
+      return failureCount < 2
+    },
+  })
+}
+
+/**
+ * Hook to fetch market data with extended price changes for multiple coins
+ * @param ids - Array of CoinGecko coin IDs
+ * @param enabled - Whether the query should be enabled
+ */
+export function useCryptoMarkets(ids: Array<string>, enabled = true) {
+  return useQuery<Array<CoinGeckoMarketCoin>>({
+    queryKey: queryKeys.coingecko.markets(ids),
+    queryFn: () => fetchCoinGeckoMarkets(ids),
     enabled: enabled && ids.length > 0,
     staleTime: PRICE_STALE_TIME,
     refetchInterval: PRICE_STALE_TIME, // Auto-refresh prices

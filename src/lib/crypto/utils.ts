@@ -128,3 +128,45 @@ export function truncateAddress(address: string, chars = 4): string {
   }
   return `${address.slice(0, chars + 2)}...${address.slice(-chars)}`
 }
+
+/**
+ * Format USD value in compact form
+ * @param amount - USD amount
+ * @returns Formatted string (e.g., "$1.2B", "$500M", "$50K")
+ */
+export function formatUsdCompact(amount: number): string {
+  const absAmount = Math.abs(amount)
+  const sign = amount < 0 ? '-' : ''
+
+  if (absAmount >= 1_000_000_000_000) {
+    return `${sign}$${(absAmount / 1_000_000_000_000).toFixed(2)}T`
+  }
+  if (absAmount >= 1_000_000_000) {
+    return `${sign}$${(absAmount / 1_000_000_000).toFixed(2)}B`
+  }
+  if (absAmount >= 1_000_000) {
+    return `${sign}$${(absAmount / 1_000_000).toFixed(2)}M`
+  }
+  if (absAmount >= 1_000) {
+    return `${sign}$${(absAmount / 1_000).toFixed(2)}K`
+  }
+  return `${sign}$${absAmount.toFixed(2)}`
+}
+
+/**
+ * Format USD price with appropriate precision
+ * @param price - USD price
+ * @returns Formatted string
+ */
+export function formatUsdPrice(price: number): string {
+  if (price >= 1) {
+    return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
+  if (price >= 0.01) {
+    return `$${price.toFixed(4)}`
+  }
+  if (price >= 0.0001) {
+    return `$${price.toFixed(6)}`
+  }
+  return `$${price.toFixed(8)}`
+}

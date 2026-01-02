@@ -111,6 +111,44 @@ export async function fetchCoinGeckoMarketData(
 }
 
 /**
+ * Market data for a coin from /coins/markets endpoint
+ */
+export interface CoinGeckoMarketCoin {
+  id: string
+  symbol: string
+  name: string
+  image: string
+  current_price: number
+  market_cap: number
+  market_cap_rank: number | null
+  price_change_percentage_24h: number | null
+  price_change_percentage_7d_in_currency: number | null
+  price_change_percentage_30d_in_currency: number | null
+  price_change_percentage_60d_in_currency: number | null
+  price_change_percentage_1y_in_currency: number | null
+}
+
+/**
+ * Fetch market data for multiple coins with extended price changes
+ * @param ids - Array of CoinGecko coin IDs
+ * @returns Array of market data for each coin
+ */
+export async function fetchCoinGeckoMarkets(
+  ids: Array<string>
+): Promise<Array<CoinGeckoMarketCoin>> {
+  if (ids.length === 0) {
+    return []
+  }
+
+  const url = `${COINGECKO_API_URL}/coins/markets?vs_currency=usd&ids=${ids.join(',')}&order=market_cap_desc&sparkline=false&price_change_percentage=24h,7d,30d,60d,1y`
+
+  const response = await fetch(url)
+  const data = await handleResponse<Array<CoinGeckoMarketCoin>>(response)
+
+  return data
+}
+
+/**
  * Search for coins by name or symbol
  * @param query - Search query
  * @returns Array of matching coins
