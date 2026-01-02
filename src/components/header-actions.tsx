@@ -46,7 +46,12 @@ export function HeaderActions() {
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" disabled={!mounted}>
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={!mounted}
+                className="bg-white dark:bg-input/30"
+              >
                 {mounted ? (
                   getIcon()
                 ) : (
@@ -75,7 +80,12 @@ export function HeaderActions() {
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="icon" onClick={handleSignOut}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleSignOut}
+            className="bg-white dark:bg-input/30"
+          >
             <SignOut weight="duotone" className="size-4" />
           </Button>
         </TooltipTrigger>

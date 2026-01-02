@@ -77,22 +77,22 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={currentPath === '/reports'}
+                          isActive={currentPath === '/subscriptions'}
                         >
-                          <Link to="/reports">
-                            <ChartBar weight="duotone" />
-                            <span>Reports</span>
+                          <Link to="/subscriptions">
+                            <Repeat weight="duotone" />
+                            <span>Subscriptions</span>
                           </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={currentPath === '/subscriptions'}
+                          isActive={currentPath === '/reports'}
                         >
-                          <Link to="/subscriptions">
-                            <Repeat weight="duotone" />
-                            <span>Subscriptions</span>
+                          <Link to="/reports">
+                            <ChartBar weight="duotone" />
+                            <span>Reports</span>
                           </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>

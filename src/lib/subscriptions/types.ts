@@ -21,8 +21,7 @@ export interface CreateSubscriptionInput {
   management_url: string | null
 }
 
-export interface UpdateSubscriptionInput
-  extends Partial<CreateSubscriptionInput> {}
+export interface UpdateSubscriptionInput extends Partial<CreateSubscriptionInput> {}
 
 export interface SubscriptionSummary {
   avgMonthly: number

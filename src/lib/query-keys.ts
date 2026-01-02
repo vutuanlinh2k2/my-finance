@@ -1,4 +1,5 @@
 import type { TagType } from '@/lib/api/tags'
+import type { TransactionType } from '@/lib/reports/types'
 
 export const queryKeys = {
   tags: {
@@ -22,5 +23,9 @@ export const queryKeys = {
   },
   exchangeRate: {
     usdVnd: ['exchangeRate', 'USD', 'VND'] as const,
+  },
+  reports: {
+    byYear: (year: number, type: TransactionType) =>
+      ['reports', 'yearly', year, type] as const,
   },
 }

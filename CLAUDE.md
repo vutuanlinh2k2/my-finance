@@ -16,7 +16,7 @@ pnpm check            # Auto-fix linting + formatting
 
 ## Architecture Overview
 
-**Stack**: TanStack Start (full-stack React framework) + shadcn/ui + TailwindCSS 4 + Vite
+**Stack**: TanStack Start (full-stack React framework) + shadcn/ui + TailwindCSS 4 + Vite + Supabase
 
 ### File-Based Routing
 
@@ -24,13 +24,54 @@ pnpm check            # Auto-fix linting + formatting
 - **Never edit `routeTree.gen.ts`** - it regenerates automatically when route files change
 - `__root.tsx` is the root layout shell (HTML structure, devtools, global head)
 - Route components export a `Route` object created with `createFileRoute()`
+- Authenticated routes live in `src/routes/_authenticated/`
 
 ### Component System
 
 - UI components in `src/components/ui/` follow shadcn/ui patterns
+- Feature components in `src/components/<feature>/` (e.g., `subscriptions/`)
 - Uses Radix UI primitives under the hood
 - Icons from `@phosphor-icons/react`
 - Component variants managed with CVA (Class Variance Authority)
+
+### Data Layer (TanStack Query)
+
+The app uses a structured API/hooks architecture:
+
+```
+src/lib/
+├── api/              # Supabase API functions
+│   ├── transactions.ts
+│   ├── tags.ts
+│   ├── subscriptions.ts
+│   └── exchange-rate.ts
+├── hooks/            # TanStack Query hooks
+│   ├── use-transactions.ts
+│   ├── use-tags.ts
+│   ├── use-subscriptions.ts
+│   └── use-exchange-rate.ts
+├── query-keys.ts     # Centralized query key definitions
+└── query-client.ts   # Query client configuration
+```
+
+**Query Keys Pattern:**
+
+```tsx
+// src/lib/query-keys.ts
+export const queryKeys = {
+  transactions: {
+    all: ['transactions'] as const,
+    byMonth: (year: number, month: number) =>
+      ['transactions', year, month] as const,
+  },
+  subscriptions: {
+    all: ['subscriptions'] as const,
+  },
+  exchangeRate: {
+    current: ['exchange-rate'] as const,
+  },
+}
+```
 
 ### Styling
 
@@ -199,6 +240,13 @@ Use Playwright MCP for browser automation and testing:
 - Debugging UI issues by taking snapshots and screenshots
 - Interacting with the running app (click, type, navigate)
 
+**CRITICAL - Prevent Empty Tabs:**
+- NEVER use `browser_close` followed by `browser_navigate` - this creates empty `about:blank` tabs
+- When browser errors occur, use `browser_tabs` with `action: "list"` to check tab state first
+- To refresh a page, use `browser_navigate` to the same URL (it reuses the current tab)
+- Only close tabs explicitly with `browser_tabs` action `close` when needed
+- If you see "Browser is already in use" error, wait and retry instead of closing
+
 **Required Testing Workflow for New Components/Pages:**
 When creating new components or pages, you MUST:
 
@@ -235,6 +283,105 @@ After making any database changes (migrations, RLS policies, functions, triggers
 
 - **Function Search Path Mutable**: Add `SET search_path = ''` to function definitions
 - **Auth RLS Initialization Plan**: Change `auth.uid()` to `(SELECT auth.uid())` in RLS policies for better performance
+
+## Supabase Edge Functions
+
+Edge Functions live in `supabase/functions/` and run on Deno runtime.
+
+### Development Setup
+
+VS Code is configured with Deno support for edge functions (see `.vscode/settings.json`). The Deno extension activates only for files in `supabase/functions/`.
+
+### Creating Edge Functions
+
+```bash
+supabase functions new <function-name>
+```
+
+### Cron Jobs
+
+Cron jobs are configured in `supabase/config.toml` and call edge functions via HTTP:
+
+```toml
+[functions.process-subscription-payments]
+enabled = true
+
+[[analytics.cron]]
+name = "process-subscription-payments"
+schedule = "0 0 * * *"  # Daily at midnight
+command = "SELECT net.http_post(...)"
+```
+
+**Security:** Always validate the `Authorization` header in cron job handlers:
+
+```typescript
+const authHeader = req.headers.get('Authorization')
+if (authHeader !== `Bearer ${Deno.env.get('CRON_SECRET')}`) {
+  return new Response('Unauthorized', { status: 401 })
+}
+```
+
+## Claude Code Customization
+
+### Custom Agents
+
+Custom agents live in `.claude/agents/` and extend Claude Code's capabilities:
+
+- `code-reviewer.md` - Expert code review agent
+- `design-review.md` - UI/UX design review agent
+- `qa-expert.md` - Quality assurance testing agent
+
+### Custom Commands (Slash Commands)
+
+Custom slash commands live in `.claude/commands/`:
+
+- `/smart-commit` - Analyze changes and create focused atomic commits
+- `/code-review` - Review code changes against a remote branch
+- `/update-claude-md` - Update CLAUDE.md based on recent git changes
+
+**Creating a new command:**
+
+```markdown
+---
+description: Short description of the command
+allowed-tools: Bash, Read, Write, Edit, Glob, Grep
+---
+
+# Command Name
+
+Instructions for the command...
+```
+
+## Security Patterns
+
+### URL Sanitization
+
+Always sanitize user-provided URLs to prevent XSS attacks:
+
+```tsx
+import { sanitizeUrl } from '@/lib/subscriptions/utils'
+
+// Returns sanitized URL or empty string if invalid
+const safeUrl = sanitizeUrl(userInput)
+```
+
+### Input Validation
+
+Use strict TypeScript types for data from external sources:
+
+```tsx
+// Define strict literal types
+type Currency = 'VND' | 'USD'
+type BillingType = 'monthly' | 'yearly'
+
+// Validate at API boundary
+function validateCurrency(value: string): Currency {
+  if (value !== 'VND' && value !== 'USD') {
+    throw new Error('Invalid currency')
+  }
+  return value
+}
+```
 
 ## Dependency Management
 
@@ -313,3 +460,105 @@ refactor(components): extract shared button styles
 chore(deps): upgrade TanStack Router to v1.95
 feat(api)!: change response format for transactions endpoint
 ```
+
+## Features
+
+### Calendar (Transaction Tracking)
+
+The calendar page (`/calendar`) displays daily income/expenses with:
+
+- Monthly calendar view with transaction summaries per day
+- Add/edit/delete transactions via modals
+- Tag management for categorizing transactions
+- Income (green) and expense (red) color coding
+
+### Subscriptions
+
+The subscriptions page (`/subscriptions`) tracks recurring payments:
+
+**Components:** `src/components/subscriptions/`
+
+- `add-subscription-modal.tsx` - Create new subscriptions
+- `edit-subscription-modal.tsx` - Edit/delete subscriptions
+- `subscriptions-table.tsx` - Display all subscriptions
+- `subscription-summary-cards.tsx` - Monthly/yearly totals with exchange rate
+
+**Data Layer:** `src/lib/subscriptions/`
+
+- `types.ts` - TypeScript interfaces (Subscription, Currency, BillingType)
+- `utils.ts` - Formatting, calculations, URL sanitization
+
+**Exchange Rate Integration:**
+
+```tsx
+import { useExchangeRate } from '@/lib/hooks/use-exchange-rate'
+
+const { data: rate, isLoading } = useExchangeRate()
+// Converts USD subscriptions to VND for total calculations
+```
+
+**Automated Payment Processing:**
+
+- Cron job runs daily to process due subscriptions
+- Creates expense transactions automatically
+- Edge function: `supabase/functions/process-subscription-payments/`
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── ui/                 # shadcn/ui components
+│   ├── subscriptions/      # Subscription feature components
+│   ├── app-sidebar.tsx     # Main navigation
+│   └── *.tsx               # Shared components
+├── lib/
+│   ├── api/                # Supabase API functions
+│   ├── hooks/              # TanStack Query hooks
+│   ├── subscriptions/      # Subscription types/utils
+│   └── *.ts                # Shared utilities
+├── routes/
+│   ├── _authenticated/     # Protected routes
+│   │   ├── calendar.tsx
+│   │   ├── subscriptions.tsx
+│   │   └── index.tsx
+│   ├── login.tsx
+│   └── __root.tsx
+└── types/
+    └── database.ts         # Supabase generated types
+
+supabase/
+├── functions/              # Edge Functions (Deno)
+├── migrations/             # Database migrations
+└── config.toml             # Supabase configuration
+
+docs/
+├── calendar/               # Calendar feature docs
+└── subscriptions/          # Subscriptions feature docs
+
+.claude/
+├── agents/                 # Custom Claude Code agents
+└── commands/               # Custom slash commands
+```
+
+## Recent Updates (2026-01-01)
+
+### Subscriptions Feature (Complete)
+
+- Full CRUD for subscription tracking
+- Support for VND and USD currencies
+- Monthly/yearly billing cycles
+- Exchange rate API integration (USD to VND)
+- Automated payment processing via cron jobs
+
+### Security Improvements
+
+- URL sanitization to prevent XSS attacks
+- Authorization token validation in edge functions
+- Stricter TypeScript types for currency and billing fields
+
+### Developer Experience
+
+- Added custom Claude Code agents and slash commands
+- VS Code Deno extension configured for edge functions
+- Feature documentation workflow with checklists

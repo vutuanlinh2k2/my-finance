@@ -121,7 +121,7 @@ function CalendarPage() {
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
-            className="gap-2"
+            className="gap-2 bg-white dark:bg-input/30"
             onClick={() => setIsManageTagsOpen(true)}
           >
             <Tag weight="duotone" className="size-4" />

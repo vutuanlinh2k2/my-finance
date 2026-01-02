@@ -34,7 +34,9 @@ export function useCreateSubscription() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (input: CreateSubscriptionInput): Promise<Subscription> => {
+    mutationFn: async (
+      input: CreateSubscriptionInput,
+    ): Promise<Subscription> => {
       const data = await createSubscription(input)
       return data as Subscription
     },

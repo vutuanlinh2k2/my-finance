@@ -31,7 +31,7 @@ interface ExchangeRateResult {
  * Fetch the latest exchange rate from the database
  */
 async function fetchRateFromDatabase(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
 ): Promise<number | null> {
   try {
     const { data, error } = await supabase
@@ -60,13 +60,37 @@ async function fetchRateFromDatabase(
 }
 
 /**
+ * Check if running in local development environment
+ * Local Supabase uses 127.0.0.1 or localhost URLs
+ */
+function isLocalDevelopment(): boolean {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
+  return supabaseUrl.includes('127.0.0.1') || supabaseUrl.includes('localhost')
+}
+
+/**
  * Fetch fresh USD to VND exchange rate
- * Fallback chain: API → Database → Default (25000)
+ * Fallback chain:
+ * - Production: API → Database → Default (25000)
+ * - Local dev: Database → Default (DNS resolution fails for external APIs)
  */
 async function fetchExchangeRate(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
 ): Promise<ExchangeRateResult> {
-  // Try fetching from external API first
+  // In local dev, DNS resolution fails for external APIs
+  // Skip API call and use database/default directly
+  if (isLocalDevelopment()) {
+    console.log('Local dev detected: skipping external API (DNS fails in Docker)')
+    const dbRate = await fetchRateFromDatabase(supabase)
+    if (dbRate !== null) {
+      console.log(`Using database rate: ${dbRate}`)
+      return { rate: dbRate, source: 'database' }
+    }
+    console.warn(`Using default fallback rate: ${DEFAULT_EXCHANGE_RATE}`)
+    return { rate: DEFAULT_EXCHANGE_RATE, source: 'default' }
+  }
+
+  // Production: Try fetching from external API first
   try {
     console.log('Attempting to fetch rate from API...')
     const response = await fetch(EXCHANGE_RATE_API_URL)
@@ -126,10 +150,13 @@ Deno.serve(async (req) => {
 
   // Accept either service_role key (for manual invocation) or anon key (for cron jobs)
   if (token !== serviceRoleKey && token !== anonKey) {
-    return new Response(JSON.stringify({ error: 'Invalid authorization token' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({ error: 'Invalid authorization token' }),
+      {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
   }
 
   try {
@@ -152,12 +179,15 @@ Deno.serve(async (req) => {
     // Skip update if we're already using the database rate
     if (source !== 'database') {
       console.log('Updating exchange rate in database...')
-      const { error: updateError } = await supabase.rpc('update_exchange_rate', {
-        p_from_currency: 'USD',
-        p_to_currency: 'VND',
-        p_rate: rate,
-        p_source: source,
-      })
+      const { error: updateError } = await supabase.rpc(
+        'update_exchange_rate',
+        {
+          p_from_currency: 'USD',
+          p_to_currency: 'VND',
+          p_rate: rate,
+          p_source: source,
+        },
+      )
 
       if (updateError) {
         console.warn('Failed to update exchange rate:', updateError.message)
@@ -171,12 +201,12 @@ Deno.serve(async (req) => {
     // Step 3: Process subscription payments
     console.log('Processing subscription payments...')
     const { data: payments, error: processError } = await supabase.rpc(
-      'process_subscription_payments'
+      'process_subscription_payments',
     )
 
     if (processError) {
       throw new Error(
-        `Failed to process subscription payments: ${processError.message}`
+        `Failed to process subscription payments: ${processError.message}`,
       )
     }
 
@@ -198,7 +228,7 @@ Deno.serve(async (req) => {
       {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-      }
+      },
     )
   } catch (error) {
     console.error('Error processing subscription payments:', error)
@@ -212,7 +242,7 @@ Deno.serve(async (req) => {
       {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
-      }
+      },
     )
   }
 })
