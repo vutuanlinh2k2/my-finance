@@ -8,7 +8,45 @@
 // Balance Calculation Utilities
 // ============================================
 
+import type { Tag } from '@/lib/api/tags'
 import type { CryptoTransaction } from './types'
+
+// ============================================
+// Tag Validation Utilities
+// ============================================
+
+/**
+ * Find an "Investing" or "Investments" tag by type (case-insensitive search)
+ * @param tags - Array of tags to search
+ * @param type - Tag type ('expense' or 'income')
+ * @returns The tag if found, null otherwise
+ */
+export function findInvestingTag(
+  tags: Array<Tag>,
+  type: 'expense' | 'income',
+): Tag | null {
+  const lowerNames = ['investing', 'investments']
+  return (
+    tags.find(
+      (tag) =>
+        tag.type === type &&
+        lowerNames.includes(tag.name.toLowerCase()),
+    ) ?? null
+  )
+}
+
+/**
+ * Check if an "Investing" tag exists for the given type
+ * @param tags - Array of tags to search
+ * @param type - Tag type ('expense' or 'income')
+ * @returns True if the tag exists
+ */
+export function hasInvestingTag(
+  tags: Array<Tag>,
+  type: 'expense' | 'income',
+): boolean {
+  return findInvestingTag(tags, type) !== null
+}
 
 export function convertUsdToVnd(
   usdAmount: number,

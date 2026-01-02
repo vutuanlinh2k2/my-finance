@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Plus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import type {
@@ -12,9 +12,12 @@ import {
   useCreateCryptoTransaction,
   useCryptoTransactions,
   useDeleteCryptoTransaction,
+  useUpdateCryptoTransaction,
 } from '@/lib/hooks/use-crypto-transactions'
 import { useCryptoAssets } from '@/lib/hooks/use-crypto-assets'
 import { useCryptoStorages } from '@/lib/hooks/use-crypto-storages'
+import { useTags } from '@/lib/hooks/use-tags'
+import { findInvestingTag } from '@/lib/crypto/utils'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -28,6 +31,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import {
   AddTransactionModal,
+  EditTransactionModal,
   TransactionFilters,
   TransactionList,
 } from '@/components/crypto'
@@ -71,18 +75,35 @@ function CryptoTransactionsPage() {
   const { data: allTransactions = [] } = useAllCryptoTransactions()
   const { data: assets = [] } = useCryptoAssets()
   const { data: storages = [] } = useCryptoStorages()
+  const { data: tags = [] } = useTags()
+
+  // Find investing tags for linking buy/sell to expense/income
+  const investingExpenseTag = useMemo(
+    () => findInvestingTag(tags, 'expense'),
+    [tags],
+  )
+  const investingIncomeTag = useMemo(
+    () => findInvestingTag(tags, 'income'),
+    [tags],
+  )
 
   // Mutations
   const createMutation = useCreateCryptoTransaction()
+  const updateMutation = useUpdateCryptoTransaction()
   const deleteMutation = useDeleteCryptoTransaction()
 
   // Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [editingTransaction, setEditingTransaction] =
+    useState<CryptoTransactionWithDetails | null>(null)
   const [deletingTransaction, setDeletingTransaction] =
     useState<CryptoTransactionWithDetails | null>(null)
 
   // Check if any mutation is pending
-  const isMutating = createMutation.isPending || deleteMutation.isPending
+  const isMutating =
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    deleteMutation.isPending
 
   // Update URL with new filters
   const updateFilters = useCallback(
@@ -115,12 +136,102 @@ function CryptoTransactionsPage() {
   // Handlers
   const handleAddTransaction = async (input: CryptoTransactionInput) => {
     try {
-      await createMutation.mutateAsync(input)
+      // For buy/sell, we need to link to expense/income
+      if (input.type === 'buy' || input.type === 'sell') {
+        const tagType = input.type === 'buy' ? 'expense' : 'income'
+        const investingTag =
+          input.type === 'buy' ? investingExpenseTag : investingIncomeTag
+
+        if (!investingTag) {
+          toast.error(
+            `Please create an "Investing" tag for ${tagType}s first. ` +
+              `Go to Calendar and create a tag named "Investing" with type "${tagType}".`,
+          )
+          throw new Error(`Missing "Investing" tag for ${tagType}`)
+        }
+
+        // Get asset symbol for the linked transaction title
+        const asset = assets.find((a) => a.id === input.assetId)
+        if (!asset) {
+          throw new Error('Asset not found')
+        }
+
+        await createMutation.mutateAsync({
+          transaction: input,
+          linkedOptions: {
+            tagId: investingTag.id,
+            assetSymbol: asset.symbol,
+          },
+        })
+      } else {
+        // For other transaction types, no linked transaction needed
+        await createMutation.mutateAsync({
+          transaction: input,
+        })
+      }
+
       toast.success('Transaction added successfully')
     } catch (error) {
       console.error('Failed to add transaction:', error)
+      if (
+        error instanceof Error &&
+        !error.message.includes('Missing "Investing"')
+      ) {
+        toast.error(
+          error instanceof Error ? error.message : 'Failed to add transaction',
+        )
+      }
+      throw error
+    }
+  }
+
+  const handleEditTransaction = async (
+    transaction: CryptoTransactionWithDetails,
+    updates: Partial<CryptoTransactionInput>,
+  ) => {
+    try {
+      // For buy/sell, also update the linked transaction
+      const shouldUpdateLinked =
+        transaction.type === 'buy' || transaction.type === 'sell'
+
+      // Get asset symbol if we're updating it
+      let assetSymbol: string | undefined
+      if (updates.assetId && shouldUpdateLinked) {
+        const asset = assets.find((a) => a.id === updates.assetId)
+        assetSymbol = asset?.symbol
+      }
+
+      await updateMutation.mutateAsync({
+        id: transaction.id,
+        updates: {
+          ...(updates.date && { date: updates.date }),
+          ...(updates.txId !== undefined && { tx_id: updates.txId || null }),
+          ...(updates.txExplorerUrl !== undefined && {
+            tx_explorer_url: updates.txExplorerUrl || null,
+          }),
+          // Type-specific fields
+          ...(('amount' in updates) && updates.amount !== undefined && { amount: updates.amount }),
+          ...(('fiatAmount' in updates) && updates.fiatAmount !== undefined && { fiat_amount: updates.fiatAmount }),
+          ...(('assetId' in updates) && updates.assetId && { asset_id: updates.assetId }),
+          ...(('storageId' in updates) && updates.storageId && { storage_id: updates.storageId }),
+          ...(('fromStorageId' in updates) && updates.fromStorageId && { from_storage_id: updates.fromStorageId }),
+          ...(('toStorageId' in updates) && updates.toStorageId && { to_storage_id: updates.toStorageId }),
+          ...(('fromAssetId' in updates) && updates.fromAssetId && { from_asset_id: updates.fromAssetId }),
+          ...(('fromAmount' in updates) && updates.fromAmount !== undefined && { from_amount: updates.fromAmount }),
+          ...(('toAssetId' in updates) && updates.toAssetId && { to_asset_id: updates.toAssetId }),
+          ...(('toAmount' in updates) && updates.toAmount !== undefined && { to_amount: updates.toAmount }),
+        },
+        linkedOptions: shouldUpdateLinked
+          ? { updateLinked: true, assetSymbol }
+          : undefined,
+      })
+
+      toast.success('Transaction updated successfully')
+      setEditingTransaction(null)
+    } catch (error) {
+      console.error('Failed to update transaction:', error)
       toast.error(
-        error instanceof Error ? error.message : 'Failed to add transaction',
+        error instanceof Error ? error.message : 'Failed to update transaction',
       )
       throw error
     }
@@ -131,7 +242,12 @@ function CryptoTransactionsPage() {
 
     try {
       await deleteMutation.mutateAsync(deletingTransaction.id)
-      toast.success('Transaction deleted successfully')
+      const hasLinkedTx = deletingTransaction.linkedTransactionId !== null
+      toast.success(
+        hasLinkedTx
+          ? 'Transaction and linked expense/income deleted successfully'
+          : 'Transaction deleted successfully',
+      )
     } catch (error) {
       console.error('Failed to delete transaction:', error)
       toast.error(
@@ -142,9 +258,8 @@ function CryptoTransactionsPage() {
     }
   }
 
-  const handleEdit = (_transaction: CryptoTransactionWithDetails) => {
-    // TODO: Implement edit modal in Phase 5
-    toast.info('Edit functionality coming soon')
+  const handleEdit = (transaction: CryptoTransactionWithDetails) => {
+    setEditingTransaction(transaction)
   }
 
   return (
@@ -204,6 +319,28 @@ function CryptoTransactionsPage() {
         isSubmitting={createMutation.isPending}
       />
 
+      {/* Edit Transaction Modal */}
+      {editingTransaction && (
+        <EditTransactionModal
+          open
+          onOpenChange={(open) => {
+            if (!open) setEditingTransaction(null)
+          }}
+          transaction={editingTransaction}
+          onSubmit={(updates) =>
+            handleEditTransaction(editingTransaction, updates)
+          }
+          onDelete={() => {
+            setEditingTransaction(null)
+            setDeletingTransaction(editingTransaction)
+          }}
+          assets={assets}
+          storages={storages}
+          transactions={allTransactions}
+          isSubmitting={updateMutation.isPending}
+        />
+      )}
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog
         open={deletingTransaction !== null}
@@ -215,8 +352,21 @@ function CryptoTransactionsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this transaction? This action
-              cannot be undone.
+              {deletingTransaction?.linkedTransactionId ? (
+                <>
+                  Are you sure you want to delete this{' '}
+                  {deletingTransaction.type === 'buy' ? 'buy' : 'sell'}{' '}
+                  transaction?{' '}
+                  <strong>
+                    The linked{' '}
+                    {deletingTransaction.type === 'buy' ? 'expense' : 'income'}{' '}
+                    transaction will also be deleted.
+                  </strong>{' '}
+                  This action cannot be undone.
+                </>
+              ) : (
+                'Are you sure you want to delete this transaction? This action cannot be undone.'
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

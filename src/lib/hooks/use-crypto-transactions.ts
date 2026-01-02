@@ -8,7 +8,11 @@ import type {
   PaginationOptions,
   StorageType,
 } from '@/lib/crypto/types'
-import type { CryptoTransactionRow } from '@/lib/api/crypto-transactions'
+import type {
+  CryptoTransactionRow,
+  LinkedTransactionOptions,
+  UpdateLinkedTransactionOptions,
+} from '@/lib/api/crypto-transactions'
 import type { TablesInsert } from '@/types/database'
 import {
   createCryptoTransaction,
@@ -155,20 +159,31 @@ export function useAllCryptoTransactions() {
 }
 
 /**
+ * Input for creating crypto transactions with linked transaction support
+ */
+export interface CreateCryptoTransactionInput {
+  transaction: CryptoTransactionInput
+  /** Options for linking to regular transaction (required for buy/sell) */
+  linkedOptions?: LinkedTransactionOptions
+}
+
+/**
  * Hook to create a new crypto transaction
+ * For Buy/Sell, also creates a linked expense/income transaction
  */
 export function useCreateCryptoTransaction() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (
-      input: CryptoTransactionInput,
-    ): Promise<CryptoTransaction> => {
-      const data = await createCryptoTransaction(input)
+    mutationFn: async ({
+      transaction,
+      linkedOptions,
+    }: CreateCryptoTransactionInput): Promise<CryptoTransaction> => {
+      const data = await createCryptoTransaction(transaction, linkedOptions)
       return transformToCryptoTransaction(data)
     },
     onSuccess: () => {
-      // Invalidate all transaction queries
+      // Invalidate all crypto transaction queries
       queryClient.invalidateQueries({
         queryKey: ['crypto', 'transactions'],
       })
@@ -180,12 +195,27 @@ export function useCreateCryptoTransaction() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.crypto.storages.all,
       })
+      // Invalidate regular transactions (for calendar display of buy/sell)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.transactions.all,
+      })
     },
   })
 }
 
 /**
+ * Input for updating crypto transactions with linked transaction support
+ */
+export interface UpdateCryptoTransactionInput {
+  id: string
+  updates: Partial<TablesInsert<'crypto_transactions'>>
+  /** Options for updating linked expense/income (for buy/sell) */
+  linkedOptions?: UpdateLinkedTransactionOptions
+}
+
+/**
  * Hook to update a crypto transaction
+ * For Buy/Sell, also updates the linked expense/income transaction if requested
  */
 export function useUpdateCryptoTransaction() {
   const queryClient = useQueryClient()
@@ -194,15 +224,13 @@ export function useUpdateCryptoTransaction() {
     mutationFn: async ({
       id,
       updates,
-    }: {
-      id: string
-      updates: Partial<TablesInsert<'crypto_transactions'>>
-    }): Promise<CryptoTransaction> => {
-      const data = await updateCryptoTransaction(id, updates)
+      linkedOptions,
+    }: UpdateCryptoTransactionInput): Promise<CryptoTransaction> => {
+      const data = await updateCryptoTransaction(id, updates, linkedOptions)
       return transformToCryptoTransaction(data)
     },
     onSuccess: () => {
-      // Invalidate all transaction queries
+      // Invalidate all crypto transaction queries
       queryClient.invalidateQueries({
         queryKey: ['crypto', 'transactions'],
       })
@@ -213,6 +241,10 @@ export function useUpdateCryptoTransaction() {
       // Invalidate storages query (for balance recalculation)
       queryClient.invalidateQueries({
         queryKey: queryKeys.crypto.storages.all,
+      })
+      // Invalidate regular transactions (for calendar display of buy/sell)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.transactions.all,
       })
     },
   })
@@ -220,6 +252,7 @@ export function useUpdateCryptoTransaction() {
 
 /**
  * Hook to delete a crypto transaction
+ * For Buy/Sell, also deletes the linked expense/income transaction
  */
 export function useDeleteCryptoTransaction() {
   const queryClient = useQueryClient()
@@ -227,7 +260,7 @@ export function useDeleteCryptoTransaction() {
   return useMutation({
     mutationFn: (id: string) => deleteCryptoTransaction(id),
     onSuccess: () => {
-      // Invalidate all transaction queries
+      // Invalidate all crypto transaction queries
       queryClient.invalidateQueries({
         queryKey: ['crypto', 'transactions'],
       })
@@ -238,6 +271,10 @@ export function useDeleteCryptoTransaction() {
       // Invalidate storages query (for balance recalculation)
       queryClient.invalidateQueries({
         queryKey: queryKeys.crypto.storages.all,
+      })
+      // Invalidate regular transactions (for calendar display of buy/sell)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.transactions.all,
       })
     },
   })
@@ -250,4 +287,6 @@ export type {
   CryptoTransactionFilters,
   CryptoTransactionInput,
   PaginationOptions,
+  LinkedTransactionOptions,
+  UpdateLinkedTransactionOptions,
 }

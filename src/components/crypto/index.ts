@@ -1,6 +1,7 @@
 export { AddAssetModal } from './add-asset-modal'
 export { AddStorageModal } from './add-storage-modal'
 export { AddTransactionModal } from './add-transaction-modal'
+export { EditTransactionModal } from './edit-transaction-modal'
 export { AllocationPieChart, getAssetColor } from './allocation-pie-chart'
 export { AssetsTable } from './assets-table'
 export { PortfolioHistoryChart } from './portfolio-history-chart'

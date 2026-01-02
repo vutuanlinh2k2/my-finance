@@ -1,12 +1,24 @@
 import type { Tables, TablesInsert } from '@/types/database'
 import type {
+  BuyTransactionInput,
   CryptoTransactionFilters,
   CryptoTransactionInput,
   PaginationOptions,
+  SellTransactionInput,
 } from '@/lib/crypto/types'
 import { supabase } from '@/lib/supabase'
 
 export type CryptoTransactionRow = Tables<'crypto_transactions'>
+
+/**
+ * Options for creating Buy/Sell transactions with linked expense/income
+ */
+export interface LinkedTransactionOptions {
+  /** The "Investing" tag ID for the appropriate type (expense for buy, income for sell) */
+  tagId: string
+  /** The asset symbol for the transaction title (e.g., "BTC") */
+  assetSymbol: string
+}
 
 // Joined query type for transactions with related data
 type TransactionWithJoins = CryptoTransactionRow & {
@@ -117,13 +129,23 @@ export async function fetchAllCryptoTransactions(): Promise<
 
 /**
  * Create a new crypto transaction
+ * For Buy/Sell transactions, optionally creates a linked expense/income transaction
+ *
+ * @param input - Transaction input data
+ * @param linkedOptions - Options for creating linked expense/income (required for buy/sell)
  */
 export async function createCryptoTransaction(
   input: CryptoTransactionInput,
+  linkedOptions?: LinkedTransactionOptions,
 ): Promise<CryptoTransactionRow> {
   const { data: userData } = await supabase.auth.getUser()
   if (!userData.user) {
     throw new Error('User not authenticated')
+  }
+
+  // For buy/sell, we need to create linked transactions
+  if (input.type === 'buy' || input.type === 'sell') {
+    return createBuySellTransaction(input, linkedOptions, userData.user.id)
   }
 
   // Build insert data based on transaction type
@@ -137,14 +159,6 @@ export async function createCryptoTransaction(
 
   // Add type-specific fields
   switch (input.type) {
-    case 'buy':
-    case 'sell':
-      insertData.asset_id = input.assetId
-      insertData.amount = input.amount
-      insertData.storage_id = input.storageId
-      insertData.fiat_amount = input.fiatAmount
-      break
-
     case 'transfer_between':
       insertData.asset_id = input.assetId
       insertData.amount = input.amount
@@ -182,12 +196,141 @@ export async function createCryptoTransaction(
 }
 
 /**
+ * Create a Buy or Sell transaction with linked expense/income
+ * This is an atomic operation - either both succeed or both fail
+ */
+async function createBuySellTransaction(
+  input: BuyTransactionInput | SellTransactionInput,
+  linkedOptions: LinkedTransactionOptions | undefined,
+  userId: string,
+): Promise<CryptoTransactionRow> {
+  if (!linkedOptions) {
+    throw new Error(
+      `Cannot create ${input.type} transaction without linked transaction options. ` +
+        `Please ensure an "Investing" tag exists for ${input.type === 'buy' ? 'expenses' : 'income'}.`,
+    )
+  }
+
+  // Determine transaction type for the linked regular transaction
+  const linkedType = input.type === 'buy' ? 'expense' : 'income'
+  const title = `${input.type === 'buy' ? 'Buy' : 'Sell'} ${linkedOptions.assetSymbol.toUpperCase()}`
+
+  // Step 1: Create the linked regular transaction (expense for buy, income for sell)
+  const { data: linkedTransaction, error: linkedError } = await supabase
+    .from('transactions')
+    .insert({
+      user_id: userId,
+      title,
+      amount: input.fiatAmount,
+      date: input.date,
+      type: linkedType,
+      tag_id: linkedOptions.tagId,
+    })
+    .select()
+    .single()
+
+  if (linkedError) {
+    throw new Error(
+      `Failed to create linked ${linkedType} transaction: ${linkedError.message}`,
+    )
+  }
+
+  // Step 2: Create the crypto transaction with linked_transaction_id
+  const { data: cryptoTransaction, error: cryptoError } = await supabase
+    .from('crypto_transactions')
+    .insert({
+      user_id: userId,
+      type: input.type,
+      date: input.date,
+      tx_id: input.txId ?? null,
+      tx_explorer_url: input.txExplorerUrl ?? null,
+      asset_id: input.assetId,
+      amount: input.amount,
+      storage_id: input.storageId,
+      fiat_amount: input.fiatAmount,
+      linked_transaction_id: linkedTransaction.id,
+    })
+    .select()
+    .single()
+
+  if (cryptoError) {
+    // Rollback: Delete the linked transaction
+    await supabase.from('transactions').delete().eq('id', linkedTransaction.id)
+    throw new Error(
+      `Failed to create crypto transaction: ${cryptoError.message}`,
+    )
+  }
+
+  return cryptoTransaction
+}
+
+/**
+ * Update options for Buy/Sell transactions
+ */
+export interface UpdateLinkedTransactionOptions {
+  /** If true, also update the linked expense/income transaction */
+  updateLinked?: boolean
+  /** The asset symbol for updating the transaction title */
+  assetSymbol?: string
+}
+
+/**
  * Update an existing crypto transaction
+ * For Buy/Sell, also updates the linked expense/income transaction if requested
  */
 export async function updateCryptoTransaction(
   id: string,
   updates: Partial<TablesInsert<'crypto_transactions'>>,
+  linkedOptions?: UpdateLinkedTransactionOptions,
 ): Promise<CryptoTransactionRow> {
+  // First, get the current transaction to check if it's a buy/sell with linked transaction
+  const { data: currentTx, error: fetchError } = await supabase
+    .from('crypto_transactions')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch crypto transaction: ${fetchError.message}`)
+  }
+
+  // If it's a buy/sell with linked transaction and we need to update it
+  if (
+    (currentTx.type === 'buy' || currentTx.type === 'sell') &&
+    currentTx.linked_transaction_id &&
+    linkedOptions?.updateLinked
+  ) {
+    // Update the linked transaction (amount and/or date)
+    const linkedUpdates: Record<string, unknown> = {}
+
+    if (updates.fiat_amount !== undefined) {
+      linkedUpdates.amount = updates.fiat_amount
+    }
+
+    if (updates.date !== undefined) {
+      linkedUpdates.date = updates.date
+    }
+
+    // Update title if asset symbol changed
+    if (linkedOptions.assetSymbol) {
+      linkedUpdates.title = `${currentTx.type === 'buy' ? 'Buy' : 'Sell'} ${linkedOptions.assetSymbol.toUpperCase()}`
+    }
+
+    if (Object.keys(linkedUpdates).length > 0) {
+      const { error: linkedError } = await supabase
+        .from('transactions')
+        .update(linkedUpdates)
+        .eq('id', currentTx.linked_transaction_id)
+
+      if (linkedError) {
+        throw new Error(
+          `Failed to update linked transaction: ${linkedError.message}`,
+        )
+      }
+    }
+  }
+
+  // Update the crypto transaction
   const { data, error } = await supabase
     .from('crypto_transactions')
     .update(updates)
@@ -204,8 +347,21 @@ export async function updateCryptoTransaction(
 
 /**
  * Delete a crypto transaction
+ * For Buy/Sell, also deletes the linked expense/income transaction
  */
 export async function deleteCryptoTransaction(id: string): Promise<void> {
+  // First, get the transaction to check if it has a linked transaction
+  const { data: transaction, error: fetchError } = await supabase
+    .from('crypto_transactions')
+    .select('linked_transaction_id')
+    .eq('id', id)
+    .single()
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch crypto transaction: ${fetchError.message}`)
+  }
+
+  // Delete the crypto transaction first
   const { error } = await supabase
     .from('crypto_transactions')
     .delete()
@@ -213,6 +369,19 @@ export async function deleteCryptoTransaction(id: string): Promise<void> {
 
   if (error) {
     throw new Error(`Failed to delete crypto transaction: ${error.message}`)
+  }
+
+  // If there's a linked transaction, delete it too
+  if (transaction.linked_transaction_id) {
+    const { error: linkedError } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', transaction.linked_transaction_id)
+
+    if (linkedError) {
+      // Log but don't throw - the main transaction was already deleted
+      console.error('Failed to delete linked transaction:', linkedError.message)
+    }
   }
 }
 
