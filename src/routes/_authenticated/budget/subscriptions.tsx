@@ -35,7 +35,7 @@ import {
   SubscriptionsTable,
 } from '@/components/subscriptions'
 
-export const Route = createFileRoute('/_authenticated/subscriptions')({
+export const Route = createFileRoute('/_authenticated/budget/subscriptions')({
   component: SubscriptionsPage,
 })
 

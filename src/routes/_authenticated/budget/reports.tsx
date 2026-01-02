@@ -72,7 +72,7 @@ function serializeTagParam(
   return selectedTagId // specific tag ID
 }
 
-export const Route = createFileRoute('/_authenticated/reports')({
+export const Route = createFileRoute('/_authenticated/budget/reports')({
   validateSearch,
   component: ReportsPage,
 })

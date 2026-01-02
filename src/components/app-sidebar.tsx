@@ -61,7 +61,7 @@ export function AppSidebar() {
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
                       <Wallet weight="duotone" />
-                      <span>Expenses/Incomes</span>
+                      <span>Budget</span>
                       <CaretDown className="ml-auto size-3.5! text-muted-foreground transition-transform group-data-[state=open]/collapsible:rotate-180" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
@@ -70,9 +70,9 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={currentPath === '/calendar'}
+                          isActive={currentPath === '/budget/calendar'}
                         >
-                          <Link to="/calendar">
+                          <Link to="/budget/calendar">
                             <CalendarDots weight="duotone" />
                             <span>Calendar</span>
                           </Link>
@@ -81,9 +81,9 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={currentPath === '/subscriptions'}
+                          isActive={currentPath === '/budget/subscriptions'}
                         >
-                          <Link to="/subscriptions">
+                          <Link to="/budget/subscriptions">
                             <Repeat weight="duotone" />
                             <span>Subscriptions</span>
                           </Link>
@@ -92,9 +92,9 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={currentPath === '/reports'}
+                          isActive={currentPath === '/budget/reports'}
                         >
-                          <Link to="/reports">
+                          <Link to="/budget/reports">
                             <ChartBar weight="duotone" />
                             <span>Reports</span>
                           </Link>
