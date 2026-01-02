@@ -1,5 +1,11 @@
 import { useNavigate } from '@tanstack/react-router'
-import { CurrencyDollar, Monitor, Moon, SignOut, Sun } from '@phosphor-icons/react'
+import {
+  CurrencyDollar,
+  Monitor,
+  Moon,
+  SignOut,
+  Sun,
+} from '@phosphor-icons/react'
 import { useTheme } from '@/components/theme-provider'
 import { useAuth } from '@/lib/auth'
 import { useExchangeRateValue } from '@/lib/hooks/use-exchange-rate'

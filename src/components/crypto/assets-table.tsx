@@ -104,7 +104,7 @@ function SortableHeader({
         'flex w-full cursor-pointer items-center justify-end gap-1 text-right text-xs font-medium uppercase tracking-wide whitespace-nowrap transition-colors',
         isActive
           ? 'text-foreground'
-          : 'text-muted-foreground hover:text-foreground'
+          : 'text-muted-foreground hover:text-foreground',
       )}
     >
       <span>{label}</span>
@@ -222,31 +222,31 @@ export function AssetsTable({
             </span>
             <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground"></span>
           </div>
-        {/* Loading skeleton */}
-        <div className="divide-y divide-border">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="grid min-w-[1400px] grid-cols-[200px_100px_90px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 px-4 py-3"
-            >
-              <div className="flex items-center gap-3">
-                <div className="size-8 animate-pulse rounded-full bg-muted" />
-                <div className="space-y-1">
-                  <div className="h-4 w-20 animate-pulse rounded bg-muted" />
-                  <div className="h-3 w-10 animate-pulse rounded bg-muted" />
+          {/* Loading skeleton */}
+          <div className="divide-y divide-border">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="grid min-w-[1400px] grid-cols-[200px_100px_90px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="size-8 animate-pulse rounded-full bg-muted" />
+                  <div className="space-y-1">
+                    <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+                    <div className="h-3 w-10 animate-pulse rounded bg-muted" />
+                  </div>
+                </div>
+                {[...Array(10)].map((_, j) => (
+                  <div key={j} className="flex items-center justify-end">
+                    <div className="h-4 w-14 animate-pulse rounded bg-muted" />
+                  </div>
+                ))}
+                <div className="flex items-center justify-center">
+                  <div className="size-6 animate-pulse rounded bg-muted" />
                 </div>
               </div>
-              {[...Array(10)].map((_, j) => (
-                <div key={j} className="flex items-center justify-end">
-                  <div className="h-4 w-14 animate-pulse rounded bg-muted" />
-                </div>
-              ))}
-              <div className="flex items-center justify-center">
-                <div className="size-6 animate-pulse rounded bg-muted" />
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -350,104 +350,104 @@ export function AssetsTable({
         {/* Table Body */}
         <div className="divide-y divide-border">
           {sortedAssets.map((asset) => (
-          <div
-            key={asset.id}
-            className="grid min-w-[1400px] grid-cols-[200px_100px_90px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 px-4 py-3 transition-colors hover:bg-muted/30"
-          >
-            {/* Asset (icon + symbol) */}
-            <div className="flex items-center gap-3">
-              {asset.iconUrl ? (
-                <img
-                  src={asset.iconUrl}
-                  alt={asset.name}
-                  className="size-8 rounded-full"
-                />
-              ) : (
-                <div className="flex size-8 items-center justify-center rounded-full bg-muted text-sm font-semibold">
-                  {asset.symbol.charAt(0)}
-                </div>
-              )}
-              <div className="min-w-0">
-                <div className="truncate font-medium">{asset.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {asset.symbol}
+            <div
+              key={asset.id}
+              className="grid min-w-[1400px] grid-cols-[200px_100px_90px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 px-4 py-3 transition-colors hover:bg-muted/30"
+            >
+              {/* Asset (icon + symbol) */}
+              <div className="flex items-center gap-3">
+                {asset.iconUrl ? (
+                  <img
+                    src={asset.iconUrl}
+                    alt={asset.name}
+                    className="size-8 rounded-full"
+                  />
+                ) : (
+                  <div className="flex size-8 items-center justify-center rounded-full bg-muted text-sm font-semibold">
+                    {asset.symbol.charAt(0)}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <div className="truncate font-medium">{asset.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {asset.symbol}
+                  </div>
                 </div>
               </div>
+
+              {/* Price (USD) */}
+              <div className={cellClasses}>
+                <span
+                  className="tooltip-fast font-medium"
+                  data-tooltip={formatUsdPrice(asset.currentPriceUsd)}
+                >
+                  {formatUsdPrice(asset.currentPriceUsd)}
+                </span>
+              </div>
+
+              {/* 24h Change */}
+              <PriceChangeCell change={asset.priceChange24h} />
+
+              {/* 7d Change */}
+              <PriceChangeCell change={asset.priceChange7d} />
+
+              {/* 30d Change */}
+              <PriceChangeCell change={asset.priceChange30d} />
+
+              {/* 60d Change */}
+              <PriceChangeCell change={asset.priceChange60d} />
+
+              {/* 1y Change */}
+              <PriceChangeCell change={asset.priceChange1y} />
+
+              {/* Market Cap */}
+              <div className={cellClasses}>
+                <span className="text-sm text-muted-foreground">
+                  {asset.marketCapUsd > 0
+                    ? formatUsdCompact(asset.marketCapUsd)
+                    : '—'}
+                </span>
+              </div>
+
+              {/* Balance */}
+              <div className={cellClasses}>
+                <span className="text-sm">
+                  {formatCryptoAmount(asset.balance, asset.symbol)}
+                </span>
+              </div>
+
+              {/* Value (VND) */}
+              <div className={cellClasses}>
+                <span
+                  className="tooltip-fast font-medium"
+                  data-tooltip={formatCurrency(asset.valueVnd)}
+                >
+                  {formatCompact(asset.valueVnd)}
+                </span>
+              </div>
+
+              {/* Portfolio % */}
+              <div className={cellClasses}>
+                <span className="text-sm text-muted-foreground">
+                  {asset.portfolioPercentage > 0
+                    ? `${asset.portfolioPercentage.toFixed(1)}%`
+                    : '—'}
+                </span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-center">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => onDelete(asset)}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash weight="duotone" className="size-4" />
+                </Button>
+              </div>
             </div>
-
-            {/* Price (USD) */}
-            <div className={cellClasses}>
-              <span
-                className="tooltip-fast font-medium"
-                data-tooltip={formatUsdPrice(asset.currentPriceUsd)}
-              >
-                {formatUsdPrice(asset.currentPriceUsd)}
-              </span>
-            </div>
-
-            {/* 24h Change */}
-            <PriceChangeCell change={asset.priceChange24h} />
-
-            {/* 7d Change */}
-            <PriceChangeCell change={asset.priceChange7d} />
-
-            {/* 30d Change */}
-            <PriceChangeCell change={asset.priceChange30d} />
-
-            {/* 60d Change */}
-            <PriceChangeCell change={asset.priceChange60d} />
-
-            {/* 1y Change */}
-            <PriceChangeCell change={asset.priceChange1y} />
-
-            {/* Market Cap */}
-            <div className={cellClasses}>
-              <span className="text-sm text-muted-foreground">
-                {asset.marketCapUsd > 0
-                  ? formatUsdCompact(asset.marketCapUsd)
-                  : '—'}
-              </span>
-            </div>
-
-            {/* Balance */}
-            <div className={cellClasses}>
-              <span className="text-sm">
-                {formatCryptoAmount(asset.balance, asset.symbol)}
-              </span>
-            </div>
-
-            {/* Value (VND) */}
-            <div className={cellClasses}>
-              <span
-                className="tooltip-fast font-medium"
-                data-tooltip={formatCurrency(asset.valueVnd)}
-              >
-                {formatCompact(asset.valueVnd)}
-              </span>
-            </div>
-
-            {/* Portfolio % */}
-            <div className={cellClasses}>
-              <span className="text-sm text-muted-foreground">
-                {asset.portfolioPercentage > 0
-                  ? `${asset.portfolioPercentage.toFixed(1)}%`
-                  : '—'}
-              </span>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center justify-center">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => onDelete(asset)}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash weight="duotone" className="size-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
+          ))}
         </div>
       </div>
 

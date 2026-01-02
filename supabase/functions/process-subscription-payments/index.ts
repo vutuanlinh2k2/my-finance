@@ -80,7 +80,9 @@ async function fetchExchangeRate(
   // In local dev, DNS resolution fails for external APIs
   // Skip API call and use database/default directly
   if (isLocalDevelopment()) {
-    console.log('Local dev detected: skipping external API (DNS fails in Docker)')
+    console.log(
+      'Local dev detected: skipping external API (DNS fails in Docker)',
+    )
     const dbRate = await fetchRateFromDatabase(supabase)
     if (dbRate !== null) {
       console.log(`Using database rate: ${dbRate}`)

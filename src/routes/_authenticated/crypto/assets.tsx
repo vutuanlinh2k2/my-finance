@@ -4,11 +4,13 @@ import { Plus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import type { CryptoAsset } from '@/lib/crypto/types'
 import type { CreateCryptoAssetInput } from '@/lib/api/crypto-assets'
+import { calculateAssetBalance } from '@/lib/crypto/utils'
 import {
   useCreateCryptoAsset,
   useCryptoAssets,
   useDeleteCryptoAsset,
 } from '@/lib/hooks/use-crypto-assets'
+import { useAllCryptoTransactions } from '@/lib/hooks/use-crypto-transactions'
 import { useCryptoMarkets } from '@/lib/hooks/use-coingecko'
 import { useExchangeRateValue } from '@/lib/hooks/use-exchange-rate'
 import { Button } from '@/components/ui/button'
@@ -38,18 +40,17 @@ function CryptoAssetsPage() {
   // Crypto assets from database
   const { data: assets = [], isLoading: isLoadingAssets } = useCryptoAssets()
 
+  // All crypto transactions for balance calculation
+  const { data: transactions = [], isLoading: isLoadingTransactions } =
+    useAllCryptoTransactions()
+
   // Exchange rate for USD to VND conversion
   const exchangeRate = useExchangeRateValue()
 
   // Fetch market data for all assets (includes extended price changes)
-  const coingeckoIds = useMemo(
-    () => assets.map((a) => a.coingeckoId),
-    [assets],
-  )
-  const { data: marketData = [], isLoading: isLoadingPrices } = useCryptoMarkets(
-    coingeckoIds,
-    coingeckoIds.length > 0,
-  )
+  const coingeckoIds = useMemo(() => assets.map((a) => a.coingeckoId), [assets])
+  const { data: marketData = [], isLoading: isLoadingPrices } =
+    useCryptoMarkets(coingeckoIds, coingeckoIds.length > 0)
 
   // Create a map for quick lookup of market data by coingecko ID
   const marketDataMap = useMemo(() => {
@@ -79,8 +80,8 @@ function CryptoAssetsPage() {
       const currentPriceVnd = currentPriceUsd * exchangeRate.rate
       const marketCapUsd = coinData?.market_cap ?? 0
 
-      // Balance is 0 until transactions are implemented in Phase 4
-      const balance = 0
+      // Calculate balance from transactions (across all storages)
+      const balance = calculateAssetBalance(asset.id, null, transactions)
       const valueVnd = balance * currentPriceVnd
 
       return {
@@ -98,7 +99,7 @@ function CryptoAssetsPage() {
         color: getAssetColor(index),
       }
     })
-  }, [assets, marketDataMap, exchangeRate.rate])
+  }, [assets, marketDataMap, exchangeRate.rate, transactions])
 
   // Calculate portfolio totals
   const totalValueVnd = useMemo(
@@ -123,7 +124,8 @@ function CryptoAssetsPage() {
       name: asset.name,
       symbol: asset.symbol,
       valueVnd: asset.valueVnd,
-      percentage: totalValueVnd > 0 ? (asset.valueVnd / totalValueVnd) * 100 : 0,
+      percentage:
+        totalValueVnd > 0 ? (asset.valueVnd / totalValueVnd) * 100 : 0,
       color: asset.color,
       iconUrl: asset.iconUrl,
     }))
@@ -158,7 +160,7 @@ function CryptoAssetsPage() {
     }
   }
 
-  const isLoading = isLoadingAssets || isLoadingPrices
+  const isLoading = isLoadingAssets || isLoadingTransactions || isLoadingPrices
 
   return (
     <div className="flex flex-col gap-6">

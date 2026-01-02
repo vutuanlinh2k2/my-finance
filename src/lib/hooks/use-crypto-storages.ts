@@ -106,4 +106,8 @@ export function useDeleteCryptoStorage() {
 }
 
 // Re-export types for convenience
-export type { CryptoStorage, CreateCryptoStorageInput, UpdateCryptoStorageInput }
+export type {
+  CryptoStorage,
+  CreateCryptoStorageInput,
+  UpdateCryptoStorageInput,
+}

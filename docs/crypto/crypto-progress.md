@@ -2,16 +2,16 @@
 
 ## Overview
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| Phase 1 | Project Setup & CoinGecko API | Complete |
-| Phase 2 | Assets Page (incl. DB migration) | Complete |
-| Phase 3 | Storage Page (incl. DB migration) | Complete |
-| Phase 4 | Transactions Page - Basic UI (incl. DB migration) | Pending |
-| Phase 5 | Transaction Types Logic | Pending |
-| Phase 6 | Charts & Historical Data (incl. DB migration) | Pending |
-| Phase 7 | Edge Function (Daily Snapshots) | Pending |
-| Phase 8 | Testing & Polish | Pending |
+| Phase   | Description                                       | Status   |
+| ------- | ------------------------------------------------- | -------- |
+| Phase 1 | Project Setup & CoinGecko API                     | Complete |
+| Phase 2 | Assets Page (incl. DB migration)                  | Complete |
+| Phase 3 | Storage Page (incl. DB migration)                 | Complete |
+| Phase 4 | Transactions Page - Basic UI (incl. DB migration) | Pending  |
+| Phase 5 | Transaction Types Logic                           | Pending  |
+| Phase 6 | Charts & Historical Data (incl. DB migration)     | Pending  |
+| Phase 7 | Edge Function (Daily Snapshots)                   | Pending  |
+| Phase 8 | Testing & Polish                                  | Pending  |
 
 **Note:** Database schema is created incrementally with each feature phase. This allows us to validate each table design with real usage before building dependent features.
 
@@ -20,12 +20,15 @@
 ## Phase 1: Project Setup & CoinGecko API
 
 ### Goal
+
 Set up the project structure, create shared types, and implement CoinGecko API integration.
 
 ### Summary
+
 Set up the foundational project structure for the crypto portfolio feature. Created folder structure, added sidebar navigation with Crypto section (Assets, Storage, Transactions links), implemented CoinGecko API integration with rate limit handling, created React Query hooks for data fetching, and defined shared TypeScript types and utility functions.
 
 ### Success Criteria
+
 - [x] Crypto folder structure created
 - [x] CoinGecko API functions work
 - [x] Sidebar navigation added (links won't work yet)
@@ -34,21 +37,25 @@ Set up the foundational project structure for the crypto portfolio feature. Crea
 ### Implementation Steps
 
 #### Step 1.1: Create Folder Structure
+
 - [x] Create `src/lib/crypto/` directory
 - [x] Create `src/components/crypto/` directory
 - [x] Create placeholder route files
 
 #### Step 1.2: Sidebar Navigation
+
 - [x] Edit `src/components/app-sidebar.tsx`
 - [x] Add collapsible "Crypto" section
 - [x] Add links: Assets, Storage, Transactions (routes created later)
 
 #### Step 1.3: Shared TypeScript Types
+
 - [x] Create `src/lib/crypto/types.ts`
 - [x] Define `CryptoTransactionType` enum
 - [x] Define shared interfaces (will be extended per phase)
 
 #### Step 1.4: CoinGecko API Functions
+
 - [x] Create `src/lib/api/coingecko.ts`
 - [x] Implement `fetchCoinGeckoAssetMetadata(id)` - get name, symbol, icon
 - [x] Implement `fetchCoinGeckoPrices(ids[])` - batch price fetch
@@ -56,41 +63,47 @@ Set up the foundational project structure for the crypto portfolio feature. Crea
 - [x] Add error handling for rate limits (429)
 
 #### Step 1.5: CoinGecko Query Hooks
+
 - [x] Create `src/lib/hooks/use-coingecko.ts`
 - [x] Implement `useCoinGeckoAsset(id)` - metadata fetch
 - [x] Implement `useCryptoPrices(ids[])` - batch prices
 - [x] Configure staleTime (60s for prices, longer for metadata)
 
 #### Step 1.6: Crypto Utilities
+
 - [x] Create `src/lib/crypto/utils.ts`
 - [x] Implement `convertUsdToVnd(usdAmount, exchangeRate)`
 - [x] Implement `formatCryptoAmount(amount, symbol)` - handles decimals
 
 #### Step 1.7: Update Query Keys
+
 - [x] Update `src/lib/query-keys.ts` with crypto keys
 
 ### Files Created/Modified
 
-| Action | File |
-|--------|------|
-| Created | `src/lib/crypto/types.ts` |
-| Created | `src/lib/crypto/utils.ts` |
-| Created | `src/lib/api/coingecko.ts` |
-| Created | `src/lib/hooks/use-coingecko.ts` |
+| Action   | File                             |
+| -------- | -------------------------------- |
+| Created  | `src/lib/crypto/types.ts`        |
+| Created  | `src/lib/crypto/utils.ts`        |
+| Created  | `src/lib/api/coingecko.ts`       |
+| Created  | `src/lib/hooks/use-coingecko.ts` |
 | Modified | `src/components/app-sidebar.tsx` |
-| Modified | `src/lib/query-keys.ts` |
+| Modified | `src/lib/query-keys.ts`          |
 
 ---
 
 ## Phase 2: Assets Page (incl. DB Migration)
 
 ### Goal
+
 Create the `crypto_assets` table and build the complete Assets page with all components.
 
 ### Summary
+
 Created the `crypto_assets` database table with RLS policies, built the complete Assets page with all UI components. Implemented CoinGecko search integration for adding assets, portfolio summary cards showing total value and price changes, allocation pie chart with interactive tooltips, and a sortable assets table. All values display in VND using the existing exchange rate integration.
 
 ### Success Criteria
+
 - [x] `crypto_assets` table created with RLS
 - [x] Route accessible at `/crypto/assets`
 - [x] Add Asset modal works with CoinGecko search (search-based UI instead of ID input)
@@ -103,9 +116,11 @@ Created the `crypto_assets` database table with RLS policies, built the complete
 ### Implementation Steps
 
 #### Step 2.1: Database Migration - crypto_assets
+
 - [x] Create `supabase/migrations/20260102100000_create_crypto_assets.sql`
 
 **Schema:**
+
 ```sql
 -- Crypto Assets
 CREATE TABLE public.crypto_assets (
@@ -144,26 +159,31 @@ CREATE INDEX idx_crypto_assets_user ON public.crypto_assets(user_id);
 - [x] Verify Security Advisor → 0 errors/warnings
 
 #### Step 2.2: Update TypeScript Types
+
 - [x] Update `src/lib/crypto/types.ts` with `CryptoAsset` type
 - [x] Define input/update types
 
 #### Step 2.3: Create Route
+
 - [x] Create `src/routes/_authenticated/crypto/assets.tsx`
 - [x] Set up basic page layout
 
 #### Step 2.4: Create API Layer
+
 - [x] Create `src/lib/api/crypto-assets.ts`
 - [x] Implement `fetchCryptoAssets()`
 - [x] Implement `createCryptoAsset(input)`
 - [x] Implement `deleteCryptoAsset(id)`
 
 #### Step 2.5: Create Hooks
+
 - [x] Create `src/lib/hooks/use-crypto-assets.ts`
 - [x] Implement `useCryptoAssets()` query
 - [x] Implement `useCreateCryptoAsset()` mutation
 - [x] Implement `useDeleteCryptoAsset()` mutation
 
 #### Step 2.6: Add Asset Modal (Search-Based)
+
 - [x] Create `src/components/crypto/add-asset-modal.tsx`
 - [x] CoinGecko search input with 300ms debounce
 - [x] Search results list with icons (using `searchCoinGeckoCoins` API)
@@ -174,6 +194,7 @@ CREATE INDEX idx_crypto_assets_user ON public.crypto_assets(user_id);
 - [x] Submit handler with loading state
 
 #### Step 2.7: Summary Cards
+
 - [x] Create `src/components/crypto/portfolio-summary-cards.tsx`
 - [x] Portfolio Value card (total value in VND with formatCompact/formatCurrency tooltip)
 - [x] 24h Change card (percentage with green/red color coding)
@@ -182,12 +203,14 @@ CREATE INDEX idx_crypto_assets_user ON public.crypto_assets(user_id);
 - [x] Loading skeletons for all cards
 
 #### Step 2.8: Allocation Pie Chart
+
 - [x] Create `src/components/crypto/allocation-pie-chart.tsx`
 - [x] Use recharts PieChart
 - [x] Interactive segments with hover tooltips
 - [x] Center label with total value
 
 #### Step 2.9: Assets Table
+
 - [x] Create `src/components/crypto/assets-table.tsx`
 - [x] Columns: Asset (icon + symbol), Price, 24h, 7d, 30d, 60d, 1y, Market Cap, Balance, Value, % Portfolio, Actions
 - [x] VND formatting with tooltips (formatCompact/formatCurrency)
@@ -199,6 +222,7 @@ CREATE INDEX idx_crypto_assets_user ON public.crypto_assets(user_id);
 **Note:** Balance column shows 0 until transactions are implemented in Phase 4. Uses `useCryptoMarkets` hook for extended price change data.
 
 #### Step 2.10: History Charts Placeholder
+
 - [x] Create `src/components/crypto/portfolio-history-chart.tsx`
 - [x] Tab interface (Allocation / Total Value) - UI only
 - [x] Time range selector (7d, 30d, 60d, 1y, All) - disabled
@@ -207,6 +231,7 @@ CREATE INDEX idx_crypto_assets_user ON public.crypto_assets(user_id);
 **Note:** This is a placeholder component. Full functionality will be implemented in Phase 6 when portfolio snapshots are available.
 
 #### Step 2.11: Wire Up Page
+
 - [x] Import all components
 - [x] Fetch data with hooks (useCryptoAssets, useCryptoMarkets, useExchangeRateValue)
 - [x] Integrate CoinGecko market data for prices and changes
@@ -215,6 +240,7 @@ CREATE INDEX idx_crypto_assets_user ON public.crypto_assets(user_id);
 - [x] Delete confirmation dialog with AlertDialog component
 
 #### Step 2.12: Visual Testing
+
 - [x] Test in browser with Playwright
 - [x] Verify page layout and components render correctly
 - [x] Verify CoinGecko search works
@@ -223,35 +249,38 @@ CREATE INDEX idx_crypto_assets_user ON public.crypto_assets(user_id);
 
 ### Files Created/Modified
 
-| Action | File |
-|--------|------|
-| Created | `supabase/migrations/20260102100000_create_crypto_assets.sql` |
-| Created | `src/routes/_authenticated/crypto/assets.tsx` |
-| Created | `src/lib/api/crypto-assets.ts` |
-| Created | `src/lib/hooks/use-crypto-assets.ts` |
-| Created | `src/components/crypto/add-asset-modal.tsx` |
-| Created | `src/components/crypto/portfolio-summary-cards.tsx` |
-| Created | `src/components/crypto/allocation-pie-chart.tsx` |
-| Created | `src/components/crypto/assets-table.tsx` |
-| Created | `src/components/crypto/portfolio-history-chart.tsx` (placeholder) |
-| Created | `src/components/crypto/index.ts` |
-| Modified | `src/lib/crypto/types.ts` (added CryptoAsset, CryptoAssetWithPrice) |
-| Modified | `src/lib/api/coingecko.ts` (added search, markets endpoints) |
-| Modified | `src/lib/hooks/use-coingecko.ts` (added useCryptoMarkets, useCoinGeckoSearch) |
+| Action   | File                                                                               |
+| -------- | ---------------------------------------------------------------------------------- |
+| Created  | `supabase/migrations/20260102100000_create_crypto_assets.sql`                      |
+| Created  | `src/routes/_authenticated/crypto/assets.tsx`                                      |
+| Created  | `src/lib/api/crypto-assets.ts`                                                     |
+| Created  | `src/lib/hooks/use-crypto-assets.ts`                                               |
+| Created  | `src/components/crypto/add-asset-modal.tsx`                                        |
+| Created  | `src/components/crypto/portfolio-summary-cards.tsx`                                |
+| Created  | `src/components/crypto/allocation-pie-chart.tsx`                                   |
+| Created  | `src/components/crypto/assets-table.tsx`                                           |
+| Created  | `src/components/crypto/portfolio-history-chart.tsx` (placeholder)                  |
+| Created  | `src/components/crypto/index.ts`                                                   |
+| Modified | `src/lib/crypto/types.ts` (added CryptoAsset, CryptoAssetWithPrice)                |
+| Modified | `src/lib/api/coingecko.ts` (added search, markets endpoints)                       |
+| Modified | `src/lib/hooks/use-coingecko.ts` (added useCryptoMarkets, useCoinGeckoSearch)      |
 | Modified | `src/lib/query-keys.ts` (added crypto.assets, coingecko.markets, coingecko.search) |
-| Modified | `src/types/database.ts` (auto-generated) |
+| Modified | `src/types/database.ts` (auto-generated)                                           |
 
 ---
 
 ## Phase 3: Storage Page (incl. DB Migration)
 
 ### Goal
+
 Create the `crypto_storages` table and build the complete Storage page with two-panel layout.
 
 ### Summary
+
 Created the `crypto_storages` database table with RLS policies, built the complete Storage page with two-panel layout. Implemented Add Storage modal with CEX/Wallet type toggle and conditional fields. Built storage pie chart with click-to-select functionality, storage list with type icons and selection highlighting, and storage assets panel showing holdings per storage. Selection state is persisted in URL search params. All values display in VND with proper formatting.
 
 ### Success Criteria
+
 - [x] `crypto_storages` table created with RLS
 - [x] Route accessible at `/crypto/storage`
 - [x] Add Storage modal works (CEX/Wallet toggle)
@@ -262,9 +291,11 @@ Created the `crypto_storages` database table with RLS policies, built the comple
 ### Implementation Steps
 
 #### Step 3.1: Database Migration - crypto_storages
+
 - [x] Create `supabase/migrations/20260102150000_create_crypto_storages.sql`
 
 **Schema:**
+
 ```sql
 -- Crypto Storages
 CREATE TABLE public.crypto_storages (
@@ -302,15 +333,18 @@ CREATE INDEX idx_crypto_storages_user ON public.crypto_storages(user_id);
 - [x] Verify Security Advisor → 0 errors/warnings
 
 #### Step 3.2: Update TypeScript Types
+
 - [x] Update `src/lib/crypto/types.ts` with `CryptoStorage` type
 - [x] Define `StorageType = 'cex' | 'wallet'`
 
 #### Step 3.3: Create Route
+
 - [x] Create `src/routes/_authenticated/crypto/storage.tsx`
 - [x] Set up two-panel layout (similar to Reports page)
 - [x] URL search params for selected storage
 
 #### Step 3.4: Create API Layer
+
 - [x] Create `src/lib/api/crypto-storages.ts`
 - [x] Implement `fetchCryptoStorages()`
 - [x] Implement `createCryptoStorage(input)`
@@ -318,11 +352,13 @@ CREATE INDEX idx_crypto_storages_user ON public.crypto_storages(user_id);
 - [x] Implement `deleteCryptoStorage(id)`
 
 #### Step 3.5: Create Hooks
+
 - [x] Create `src/lib/hooks/use-crypto-storages.ts`
 - [x] Implement `useCryptoStorages()` query
 - [x] Implement CRUD mutations
 
 #### Step 3.6: Add Storage Modal
+
 - [x] Create `src/components/crypto/add-storage-modal.tsx`
 - [x] CEX/Wallet type toggle
 - [x] Conditional fields based on type
@@ -330,18 +366,21 @@ CREATE INDEX idx_crypto_storages_user ON public.crypto_storages(user_id);
 - [x] Explorer URL sanitization with `sanitizeUrl()`
 
 #### Step 3.7: Storage Pie Chart
+
 - [x] Create `src/components/crypto/storage-pie-chart.tsx`
 - [x] Distribution by storage
 - [x] Interactive segments
 - [x] Click to select
 
 #### Step 3.8: Storage List
+
 - [x] Create `src/components/crypto/storage-list.tsx`
 - [x] Show storage type icon, name, value, percentage
 - [x] Selected state highlighting
 - [x] Empty state
 
 #### Step 3.9: Storage Assets Panel
+
 - [x] Create `src/components/crypto/storage-assets-panel.tsx`
 - [x] Show assets in selected storage
 - [x] Sort by value descending
@@ -351,12 +390,14 @@ CREATE INDEX idx_crypto_storages_user ON public.crypto_storages(user_id);
 **Note:** Asset values per storage will show 0 until transactions are implemented in Phase 4.
 
 #### Step 3.10: Wire Up Page
+
 - [x] Layout components
 - [x] Handle selection state
 - [x] URL param persistence
 - [x] Loading states
 
 #### Step 3.11: Visual Testing
+
 - [x] Test in browser with Playwright
 - [x] Add CEX and Wallet storages
 - [x] Test selection behavior
@@ -364,32 +405,35 @@ CREATE INDEX idx_crypto_storages_user ON public.crypto_storages(user_id);
 
 ### Files Created/Modified
 
-| Action | File |
-|--------|------|
-| Created | `supabase/migrations/20260102150000_create_crypto_storages.sql` |
-| Created | `src/routes/_authenticated/crypto/storage.tsx` |
-| Created | `src/lib/api/crypto-storages.ts` |
-| Created | `src/lib/hooks/use-crypto-storages.ts` |
-| Created | `src/components/crypto/add-storage-modal.tsx` |
-| Created | `src/components/crypto/storage-pie-chart.tsx` |
-| Created | `src/components/crypto/storage-list.tsx` |
-| Created | `src/components/crypto/storage-assets-panel.tsx` |
-| Modified | `src/lib/crypto/types.ts` |
-| Modified | `src/components/crypto/index.ts` |
-| Modified | `src/lib/query-keys.ts` |
-| Modified | `src/types/database.ts` (auto-generated) |
+| Action   | File                                                            |
+| -------- | --------------------------------------------------------------- |
+| Created  | `supabase/migrations/20260102150000_create_crypto_storages.sql` |
+| Created  | `src/routes/_authenticated/crypto/storage.tsx`                  |
+| Created  | `src/lib/api/crypto-storages.ts`                                |
+| Created  | `src/lib/hooks/use-crypto-storages.ts`                          |
+| Created  | `src/components/crypto/add-storage-modal.tsx`                   |
+| Created  | `src/components/crypto/storage-pie-chart.tsx`                   |
+| Created  | `src/components/crypto/storage-list.tsx`                        |
+| Created  | `src/components/crypto/storage-assets-panel.tsx`                |
+| Modified | `src/lib/crypto/types.ts`                                       |
+| Modified | `src/components/crypto/index.ts`                                |
+| Modified | `src/lib/query-keys.ts`                                         |
+| Modified | `src/types/database.ts` (auto-generated)                        |
 
 ---
 
 ## Phase 4: Transactions Page (incl. DB Migration)
 
 ### Goal
+
 Create the `crypto_transactions` table and build the transactions page with list, filters, and all 6 transaction type forms.
 
 ### Summary
+
 [To be filled during implementation]
 
 ### Success Criteria
+
 - [ ] `crypto_transactions` table created with RLS
 - [ ] Route accessible at `/crypto/transactions`
 - [ ] Filter bar works (type, date range)
@@ -402,9 +446,11 @@ Create the `crypto_transactions` table and build the transactions page with list
 ### Implementation Steps
 
 #### Step 4.1: Database Migration - crypto_transactions
+
 - [ ] Create `supabase/migrations/<timestamp>_create_crypto_transactions.sql`
 
 **Schema:**
+
 ```sql
 -- Crypto Transaction Types
 CREATE TYPE public.crypto_transaction_type AS ENUM (
@@ -476,16 +522,19 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] Verify Security Advisor → 0 errors/warnings
 
 #### Step 4.2: Update TypeScript Types
+
 - [ ] Update `src/lib/crypto/types.ts` with `CryptoTransaction` type
 - [ ] Define type-specific field interfaces
 - [ ] Define input types for each transaction type
 
 #### Step 4.3: Create Route
+
 - [ ] Create `src/routes/_authenticated/crypto/transactions.tsx`
 - [ ] Set up page layout with filters bar
 - [ ] URL search params for filters
 
 #### Step 4.4: Create API Layer
+
 - [ ] Create `src/lib/api/crypto-transactions.ts`
 - [ ] Implement `fetchCryptoTransactions(filters, pagination)`
 - [ ] Implement `createCryptoTransaction(input)` - handles all 6 types
@@ -493,12 +542,14 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] Implement `deleteCryptoTransaction(id)`
 
 #### Step 4.5: Create Hooks
+
 - [ ] Create `src/lib/hooks/use-crypto-transactions.ts`
 - [ ] Implement `useCryptoTransactions(filters)` query
 - [ ] Implement CRUD mutations
 - [ ] Add cache invalidation for assets query (balance recalc)
 
 #### Step 4.6: Filter Bar
+
 - [ ] Create `src/components/crypto/transaction-filters.tsx`
 - [ ] Type filter (multi-select dropdown)
 - [ ] Start date picker
@@ -506,6 +557,7 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] Clear filters button
 
 #### Step 4.7: Transaction Type Badge
+
 - [ ] Create `src/components/crypto/transaction-type-badge.tsx`
 - [ ] Use CVA (Class Variance Authority) for badge variants
 - [ ] **Badge Colors & Icons per Type:**
@@ -519,6 +571,7 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] Consistent sizing across all badges
 
 #### Step 4.8: Transaction List
+
 - [ ] Create `src/components/crypto/transaction-list.tsx`
 - [ ] **Columns:**
   - Date column (formatted consistently, e.g., "Jan 5, 2024")
@@ -555,6 +608,7 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] **Loading State:** Skeleton rows
 
 #### Step 4.9: Add Transaction Modal
+
 - [ ] Create `src/components/crypto/add-transaction-modal.tsx`
 - [ ] Step 1: Type selection (6 buttons)
 - [ ] Step 2: Type-specific form
@@ -562,6 +616,7 @@ CREATE INDEX idx_crypto_transactions_storage
 #### Step 4.10: Transaction Type Forms
 
 ##### Step 4.10.1: Buy Form (`buy-form.tsx`)
+
 - [ ] Create `src/components/crypto/transaction-forms/buy-form.tsx`
 - [ ] **Fields:**
   - Asset dropdown (select from user's existing assets, required)
@@ -578,6 +633,7 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] **Note:** Buy creates linked expense - handled in Phase 5
 
 ##### Step 4.10.2: Sell Form (`sell-form.tsx`)
+
 - [ ] Create `src/components/crypto/transaction-forms/sell-form.tsx`
 - [ ] **Fields:**
   - Asset dropdown (select from user's existing assets, required)
@@ -596,6 +652,7 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] **Note:** Sell creates linked income - handled in Phase 5
 
 ##### Step 4.10.3: Transfer Between Form (`transfer-between-form.tsx`)
+
 - [ ] Create `src/components/crypto/transaction-forms/transfer-between-form.tsx`
 - [ ] **Fields:**
   - Asset dropdown (select from user's existing assets, required)
@@ -614,6 +671,7 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] **Balance Effect:** Decreases From Storage, increases To Storage (net zero for total)
 
 ##### Step 4.10.4: Swap Form (`swap-form.tsx`)
+
 - [ ] Create `src/components/crypto/transaction-forms/swap-form.tsx`
 - [ ] **Fields:**
   - From Asset dropdown (asset being swapped away, required)
@@ -634,6 +692,7 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] **Balance Effect:** Decreases From Asset balance, increases To Asset balance in same storage
 
 ##### Step 4.10.5: Transfer In Form (`transfer-in-form.tsx`)
+
 - [ ] Create `src/components/crypto/transaction-forms/transfer-in-form.tsx`
 - [ ] **Fields:**
   - Asset dropdown (asset being received, required)
@@ -650,6 +709,7 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] **Note:** Does NOT create linked income transaction (unlike Sell)
 
 ##### Step 4.10.6: Transfer Out Form (`transfer-out-form.tsx`)
+
 - [ ] Create `src/components/crypto/transaction-forms/transfer-out-form.tsx`
 - [ ] **Fields:**
   - Asset dropdown (asset being sent out, required)
@@ -670,6 +730,7 @@ CREATE INDEX idx_crypto_transactions_storage
 #### Step 4.11: Balance Calculation Utility
 
 ##### Step 4.11.1: Core Balance Function
+
 - [ ] Create `calculateAssetBalance(assetId, storageId, transactions)` in `src/lib/crypto/utils.ts`
 - [ ] Parameters:
   - `assetId: string` - The asset to calculate balance for
@@ -678,6 +739,7 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] Returns: `number` - The calculated balance
 
 ##### Step 4.11.2: Buy Transaction Effect
+
 - [ ] **Logic:** Adds `amount` to asset balance in `storage_id`
 - [ ] **Code:**
   ```typescript
@@ -688,6 +750,7 @@ CREATE INDEX idx_crypto_transactions_storage
   ```
 
 ##### Step 4.11.3: Sell Transaction Effect
+
 - [ ] **Logic:** Subtracts `amount` from asset balance in `storage_id`
 - [ ] **Code:**
   ```typescript
@@ -698,6 +761,7 @@ CREATE INDEX idx_crypto_transactions_storage
   ```
 
 ##### Step 4.11.4: Transfer Between Transaction Effect
+
 - [ ] **Logic:** Moves amount between storages (net zero for total balance)
 - [ ] **Code:**
   ```typescript
@@ -713,6 +777,7 @@ CREATE INDEX idx_crypto_transactions_storage
   ```
 
 ##### Step 4.11.5: Swap Transaction Effect
+
 - [ ] **Logic:** Decreases from_asset, increases to_asset in same storage
 - [ ] **Code:**
   ```typescript
@@ -728,6 +793,7 @@ CREATE INDEX idx_crypto_transactions_storage
   ```
 
 ##### Step 4.11.6: Transfer In Transaction Effect
+
 - [ ] **Logic:** Adds `amount` to asset balance in `storage_id`
 - [ ] **Code:**
   ```typescript
@@ -738,6 +804,7 @@ CREATE INDEX idx_crypto_transactions_storage
   ```
 
 ##### Step 4.11.7: Transfer Out Transaction Effect
+
 - [ ] **Logic:** Subtracts `amount` from asset balance in `storage_id`
 - [ ] **Code:**
   ```typescript
@@ -748,11 +815,13 @@ CREATE INDEX idx_crypto_transactions_storage
   ```
 
 ##### Step 4.11.8: Helper Functions
+
 - [ ] Create `calculateStorageBalance(storageId, transactions, prices, exchangeRate)` - total VND value in a storage
 - [ ] Create `calculatePortfolioBalance(transactions, prices, exchangeRate)` - total VND value across all storages
 - [ ] Create `getAvailableBalance(assetId, storageId, transactions)` - for validation in forms
 
 ##### Step 4.11.9: Negative Balance Prevention
+
 - [ ] Before creating Sell: Validate `amount ≤ getAvailableBalance(assetId, storageId)`
 - [ ] Before creating Transfer Between: Validate `amount ≤ getAvailableBalance(assetId, fromStorageId)`
 - [ ] Before creating Swap: Validate `fromAmount ≤ getAvailableBalance(fromAssetId, storageId)`
@@ -760,6 +829,7 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] Show user-friendly error messages with current available balance
 
 ##### Step 4.11.10: Testing Balance Calculations
+
 - [ ] Test Buy: Balance increases correctly
 - [ ] Test Sell: Balance decreases, cannot go negative
 - [ ] Test Transfer Between: From decreases, To increases, total unchanged
@@ -770,16 +840,19 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] Test per-storage vs total balance calculations
 
 #### Step 4.12: Update Assets Page
+
 - [ ] Now Balance column shows real calculated values
 - [ ] Value column = Balance × Price
 - [ ] Verify portfolio totals are correct
 
 #### Step 4.13: Update Storage Page
+
 - [ ] Storage values now show real totals
 - [ ] Asset list in right panel shows real balances
 - [ ] Pie chart reflects actual distribution
 
 #### Step 4.14: Visual Testing
+
 - [ ] Test all 6 transaction types
 - [ ] Verify balance calculations
 - [ ] Test filters and pagination
@@ -787,42 +860,45 @@ CREATE INDEX idx_crypto_transactions_storage
 
 ### Files Created/Modified
 
-| Action | File |
-|--------|------|
-| Created | `supabase/migrations/<timestamp>_create_crypto_transactions.sql` |
-| Created | `src/routes/_authenticated/crypto/transactions.tsx` |
-| Created | `src/lib/api/crypto-transactions.ts` |
-| Created | `src/lib/hooks/use-crypto-transactions.ts` |
-| Created | `src/components/crypto/transaction-filters.tsx` |
-| Created | `src/components/crypto/transaction-list.tsx` |
-| Created | `src/components/crypto/transaction-type-badge.tsx` |
-| Created | `src/components/crypto/add-transaction-modal.tsx` |
-| Created | `src/components/crypto/transaction-forms/buy-form.tsx` |
-| Created | `src/components/crypto/transaction-forms/sell-form.tsx` |
-| Created | `src/components/crypto/transaction-forms/transfer-between-form.tsx` |
-| Created | `src/components/crypto/transaction-forms/swap-form.tsx` |
-| Created | `src/components/crypto/transaction-forms/transfer-in-form.tsx` |
-| Created | `src/components/crypto/transaction-forms/transfer-out-form.tsx` |
-| Created | `src/components/crypto/transaction-forms/index.ts` |
-| Modified | `src/lib/crypto/utils.ts` (balance calculation functions) |
-| Modified | `src/lib/crypto/types.ts` (CryptoTransaction, input types) |
-| Modified | `src/lib/query-keys.ts` (crypto.transactions keys) |
-| Modified | `src/components/crypto/index.ts` (export new components) |
-| Modified | `src/routes/_authenticated/crypto/assets.tsx` (real balances) |
-| Modified | `src/routes/_authenticated/crypto/storage.tsx` (real balances) |
-| Modified | `src/types/database.ts` (auto-generated) |
+| Action   | File                                                                |
+| -------- | ------------------------------------------------------------------- |
+| Created  | `supabase/migrations/<timestamp>_create_crypto_transactions.sql`    |
+| Created  | `src/routes/_authenticated/crypto/transactions.tsx`                 |
+| Created  | `src/lib/api/crypto-transactions.ts`                                |
+| Created  | `src/lib/hooks/use-crypto-transactions.ts`                          |
+| Created  | `src/components/crypto/transaction-filters.tsx`                     |
+| Created  | `src/components/crypto/transaction-list.tsx`                        |
+| Created  | `src/components/crypto/transaction-type-badge.tsx`                  |
+| Created  | `src/components/crypto/add-transaction-modal.tsx`                   |
+| Created  | `src/components/crypto/transaction-forms/buy-form.tsx`              |
+| Created  | `src/components/crypto/transaction-forms/sell-form.tsx`             |
+| Created  | `src/components/crypto/transaction-forms/transfer-between-form.tsx` |
+| Created  | `src/components/crypto/transaction-forms/swap-form.tsx`             |
+| Created  | `src/components/crypto/transaction-forms/transfer-in-form.tsx`      |
+| Created  | `src/components/crypto/transaction-forms/transfer-out-form.tsx`     |
+| Created  | `src/components/crypto/transaction-forms/index.ts`                  |
+| Modified | `src/lib/crypto/utils.ts` (balance calculation functions)           |
+| Modified | `src/lib/crypto/types.ts` (CryptoTransaction, input types)          |
+| Modified | `src/lib/query-keys.ts` (crypto.transactions keys)                  |
+| Modified | `src/components/crypto/index.ts` (export new components)            |
+| Modified | `src/routes/_authenticated/crypto/assets.tsx` (real balances)       |
+| Modified | `src/routes/_authenticated/crypto/storage.tsx` (real balances)      |
+| Modified | `src/types/database.ts` (auto-generated)                            |
 
 ---
 
 ## Phase 5: Buy/Sell Transaction Integration
 
 ### Goal
+
 Implement the Buy/Sell ↔ Expense/Income integration with "Investing" tag validation and cascade behavior.
 
 ### Summary
+
 [To be filled during implementation]
 
 ### Success Criteria
+
 - [ ] Buy creates linked expense transaction with "Investing" tag
 - [ ] Sell creates linked income transaction with "Investing" tag
 - [ ] Missing tag shows clear error message
@@ -835,11 +911,13 @@ Implement the Buy/Sell ↔ Expense/Income integration with "Investing" tag valid
 ### Implementation Steps
 
 #### Step 5.1: Tag Validation Utility
+
 - [ ] Create function to find "Investing" tag by type
 - [ ] Case-insensitive search
 - [ ] Return tag or null
 
 #### Step 5.2: Buy Transaction Logic
+
 - [ ] Before creating: Check "Investing" expense tag exists
 - [ ] If missing: Show error "Please create an 'Investing' tag for expenses first"
 - [ ] Create expense transaction first with:
@@ -851,6 +929,7 @@ Implement the Buy/Sell ↔ Expense/Income integration with "Investing" tag valid
 - [ ] Both in atomic transaction (all or nothing)
 
 #### Step 5.3: Sell Transaction Logic
+
 - [ ] Before creating: Check "Investing" income tag exists
 - [ ] If missing: Show error "Please create an 'Investing' tag for income first"
 - [ ] Create income transaction first with:
@@ -862,16 +941,19 @@ Implement the Buy/Sell ↔ Expense/Income integration with "Investing" tag valid
 - [ ] Both in atomic transaction
 
 #### Step 5.4: Edit Buy/Sell Updates Linked Transaction
+
 - [ ] When editing fiat_amount → update linked expense/income amount
 - [ ] When editing date → update linked transaction date
 - [ ] Changes are atomic
 
 #### Step 5.5: Delete Cascade
+
 - [ ] Update delete logic to also delete linked transaction
 - [ ] Confirm dialog mentions linked expense/income will be deleted
 - [ ] Verify no orphaned records
 
 #### Step 5.6: Edit Transaction Modal
+
 - [ ] Create `src/components/crypto/edit-transaction-modal.tsx`
 - [ ] **Common Behavior (All Types):**
   - Pre-populate all fields with existing transaction data
@@ -900,6 +982,7 @@ Implement the Buy/Sell ↔ Expense/Income integration with "Investing" tag valid
   - After delete: Refresh transaction list, recalculate balances
 
 #### Step 5.7: Calendar Integration Verification
+
 - [ ] Test Buy expense appears on calendar
 - [ ] Test Sell income appears on calendar
 - [ ] Verify amounts display correctly
@@ -908,26 +991,29 @@ Implement the Buy/Sell ↔ Expense/Income integration with "Investing" tag valid
 
 ### Files Created/Modified
 
-| Action | File |
-|--------|------|
-| Created | `src/components/crypto/edit-transaction-modal.tsx` |
+| Action   | File                                                                     |
+| -------- | ------------------------------------------------------------------------ |
+| Created  | `src/components/crypto/edit-transaction-modal.tsx`                       |
 | Modified | `src/lib/api/crypto-transactions.ts` (Buy/Sell linked transaction logic) |
-| Modified | `src/lib/crypto/utils.ts` (tag validation utility) |
-| Modified | `src/lib/hooks/use-crypto-transactions.ts` (edit/delete mutations) |
-| Modified | `src/components/crypto/transaction-list.tsx` (wire up edit modal) |
-| Modified | `src/components/crypto/index.ts` (export edit modal) |
+| Modified | `src/lib/crypto/utils.ts` (tag validation utility)                       |
+| Modified | `src/lib/hooks/use-crypto-transactions.ts` (edit/delete mutations)       |
+| Modified | `src/components/crypto/transaction-list.tsx` (wire up edit modal)        |
+| Modified | `src/components/crypto/index.ts` (export edit modal)                     |
 
 ---
 
 ## Phase 6: Charts & Historical Data (incl. DB Migration)
 
 ### Goal
+
 Implement the Allocation History and Total Value History charts with time range selection.
 
 ### Summary
+
 [To be filled during implementation]
 
 ### Success Criteria
+
 - [ ] Time range selector works (7d, 30d, 60d, 1y, all)
 - [ ] Allocation History area chart renders
 - [ ] Total Value History line chart renders
@@ -938,9 +1024,11 @@ Implement the Allocation History and Total Value History charts with time range 
 ### Implementation Steps
 
 #### Step 6.1: Database Migration - crypto_portfolio_snapshots
+
 - [ ] Create `supabase/migrations/<timestamp>_create_crypto_portfolio_snapshots.sql`
 
 **Schema:**
+
 ```sql
 -- Crypto Portfolio Snapshots (for historical charts)
 CREATE TABLE public.crypto_portfolio_snapshots (
@@ -972,12 +1060,14 @@ CREATE INDEX idx_crypto_portfolio_snapshots_user_date
 - [ ] Verify Security Advisor → 0 errors/warnings
 
 #### Step 6.2: History Charts Container
+
 - [ ] Create `src/components/crypto/history-charts.tsx`
 - [ ] Tab interface (Allocation / Total Value)
 - [ ] Time range selector buttons
 - [ ] Loading states
 
 #### Step 6.3: Allocation History Chart
+
 - [ ] Create `src/components/crypto/allocation-history-chart.tsx`
 - [ ] Stacked area chart (recharts)
 - [ ] One area per asset
@@ -985,6 +1075,7 @@ CREATE INDEX idx_crypto_portfolio_snapshots_user_date
 - [ ] Interactive tooltip showing breakdown
 
 #### Step 6.4: Total Value History Chart
+
 - [ ] Create `src/components/crypto/value-history-chart.tsx`
 - [ ] Line chart (recharts)
 - [ ] Value in VND on Y-axis
@@ -992,39 +1083,44 @@ CREATE INDEX idx_crypto_portfolio_snapshots_user_date
 - [ ] Tooltip with formatted value
 
 #### Step 6.5: Historical Data Hook
+
 - [ ] Create `usePortfolioHistory(range)` hook
 - [ ] Fetch from `crypto_portfolio_snapshots`
 - [ ] Calculate allocation percentages
 - [ ] Convert to VND
 
 #### Step 6.6: Wire Up to Assets Page
+
 - [ ] Add charts section to Assets page
 - [ ] Time range state management
 - [ ] Data integration
 
 ### Files Created/Modified
 
-| Action | File |
-|--------|------|
-| Created | `supabase/migrations/<timestamp>_create_crypto_portfolio_snapshots.sql` |
-| Created | `src/components/crypto/history-charts.tsx` |
-| Created | `src/components/crypto/allocation-history-chart.tsx` |
-| Created | `src/components/crypto/value-history-chart.tsx` |
-| Modified | `src/lib/hooks/use-crypto-assets.ts` |
-| Modified | `src/routes/_authenticated/crypto/assets.tsx` |
-| Modified | `src/types/database.ts` (auto-generated) |
+| Action   | File                                                                    |
+| -------- | ----------------------------------------------------------------------- |
+| Created  | `supabase/migrations/<timestamp>_create_crypto_portfolio_snapshots.sql` |
+| Created  | `src/components/crypto/history-charts.tsx`                              |
+| Created  | `src/components/crypto/allocation-history-chart.tsx`                    |
+| Created  | `src/components/crypto/value-history-chart.tsx`                         |
+| Modified | `src/lib/hooks/use-crypto-assets.ts`                                    |
+| Modified | `src/routes/_authenticated/crypto/assets.tsx`                           |
+| Modified | `src/types/database.ts` (auto-generated)                                |
 
 ---
 
 ## Phase 7: Edge Function (Daily Snapshots)
 
 ### Goal
+
 Create Supabase edge function for daily portfolio snapshots.
 
 ### Summary
+
 [To be filled during implementation]
 
 ### Success Criteria
+
 - [ ] Edge function deployed
 - [ ] Cron job configured
 - [ ] Snapshots created daily
@@ -1034,10 +1130,12 @@ Create Supabase edge function for daily portfolio snapshots.
 ### Implementation Steps
 
 #### Step 7.1: Create Edge Function
+
 - [ ] Run `supabase functions new snapshot-crypto-portfolio`
 - [ ] Implement snapshot logic
 
 **Logic:**
+
 ```typescript
 // For each user with crypto assets:
 // 1. Fetch all crypto transactions
@@ -1049,38 +1147,44 @@ Create Supabase edge function for daily portfolio snapshots.
 ```
 
 #### Step 7.2: Configure Cron Job
+
 - [ ] Add to `supabase/config.toml`
 - [ ] Set schedule (daily at midnight UTC)
 - [ ] Add CRON_SECRET validation
 
 #### Step 7.3: Error Handling
+
 - [ ] Handle CoinGecko rate limits
 - [ ] Handle partial failures (some users succeed, others fail)
 - [ ] Log errors for debugging
 
 #### Step 7.4: Testing
+
 - [ ] Test locally with `supabase functions serve`
 - [ ] Verify snapshot creation
 - [ ] Verify data accuracy
 
 ### Files Created/Modified
 
-| Action | File |
-|--------|------|
-| Created | `supabase/functions/snapshot-crypto-portfolio/index.ts` |
-| Modified | `supabase/config.toml` |
+| Action   | File                                                    |
+| -------- | ------------------------------------------------------- |
+| Created  | `supabase/functions/snapshot-crypto-portfolio/index.ts` |
+| Modified | `supabase/config.toml`                                  |
 
 ---
 
 ## Phase 8: Testing & Polish
 
 ### Goal
+
 Comprehensive testing against UI and QA checklists, bug fixes, and final polish.
 
 ### Summary
+
 [To be filled during implementation]
 
 ### Success Criteria
+
 - [ ] All UI checklist items pass
 - [ ] All QA checklist items pass
 - [ ] No console errors or warnings
@@ -1091,12 +1195,14 @@ Comprehensive testing against UI and QA checklists, bug fixes, and final polish.
 ### Implementation Steps
 
 #### Step 8.1: UI/UX Testing
+
 - [ ] Run through `crypto-ui-checklist.md`
 - [ ] Fix all visual issues
 - [ ] Test responsive design (mobile/tablet/desktop)
 - [ ] Verify dark mode
 
 #### Step 8.2: Functional Testing
+
 - [ ] Run through `crypto-qa-checklist.md`
 - [ ] Test all CRUD operations
 - [ ] Test all transaction types
@@ -1104,12 +1210,14 @@ Comprehensive testing against UI and QA checklists, bug fixes, and final polish.
 - [ ] Test Buy/Sell integration
 
 #### Step 8.3: Currency Testing
+
 - [ ] Verify all values display in VND
 - [ ] Check formatCompact/formatCurrency usage
 - [ ] Test with fallback exchange rate
 - [ ] Verify tooltips show full values
 
 #### Step 8.4: Edge Case Testing
+
 - [ ] Test with no assets
 - [ ] Test with no storages
 - [ ] Test with no transactions
@@ -1117,18 +1225,21 @@ Comprehensive testing against UI and QA checklists, bug fixes, and final polish.
 - [ ] Test very small crypto amounts
 
 #### Step 8.5: Performance Testing
+
 - [ ] Test with many assets
 - [ ] Test with many transactions
 - [ ] Verify chart rendering performance
 - [ ] Check for unnecessary re-renders
 
 #### Step 8.6: Accessibility Testing
+
 - [ ] Keyboard navigation
 - [ ] Screen reader testing
 - [ ] Color contrast verification
 - [ ] ARIA labels
 
 #### Step 8.7: Final Polish
+
 - [ ] Fix any remaining bugs
 - [ ] Improve error messages
 - [ ] Add helpful tooltips
@@ -1136,8 +1247,8 @@ Comprehensive testing against UI and QA checklists, bug fixes, and final polish.
 
 ### Files Created/Modified
 
-| Action | File |
-|--------|------|
+| Action   | File                                |
+| -------- | ----------------------------------- |
 | Modified | Various files based on issues found |
 
 ---
@@ -1174,6 +1285,7 @@ Phase 6 (Charts)        Phase 7 (Edge Function)
 ```
 
 **DB Migration Order:**
+
 1. Phase 2: `crypto_assets` table
 2. Phase 3: `crypto_storages` table
 3. Phase 4: `crypto_transactions` table (depends on assets & storages)

@@ -96,10 +96,7 @@ export function PortfolioSummaryCards({
             }`}
           >
             {change24h >= 0 ? (
-              <ArrowUp
-                weight="bold"
-                className="size-4 text-emerald-600"
-              />
+              <ArrowUp weight="bold" className="size-4 text-emerald-600" />
             ) : (
               <ArrowDown weight="bold" className="size-4 text-rose-600" />
             )}

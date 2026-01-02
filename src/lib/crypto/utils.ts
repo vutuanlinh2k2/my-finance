@@ -4,7 +4,16 @@
  * @param exchangeRate - USD to VND exchange rate
  * @returns Amount in VND
  */
-export function convertUsdToVnd(usdAmount: number, exchangeRate: number): number {
+// ============================================
+// Balance Calculation Utilities
+// ============================================
+
+import type { CryptoTransaction } from './types'
+
+export function convertUsdToVnd(
+  usdAmount: number,
+  exchangeRate: number,
+): number {
   return Math.round(usdAmount * exchangeRate)
 }
 
@@ -83,7 +92,7 @@ export function parseCryptoAmount(value: string): number | null {
  */
 export function calculatePercentageChange(
   current: number,
-  previous: number
+  previous: number,
 ): number {
   if (previous === 0) {
     return current > 0 ? 100 : current < 0 ? -100 : 0
@@ -99,7 +108,7 @@ export function calculatePercentageChange(
  */
 export function formatPercentage(
   percentage: number,
-  includeSign = true
+  includeSign = true,
 ): string {
   const sign = includeSign && percentage > 0 ? '+' : ''
   return `${sign}${percentage.toFixed(2)}%`
@@ -169,4 +178,219 @@ export function formatUsdPrice(price: number): string {
     return `$${price.toFixed(6)}`
   }
   return `$${price.toFixed(8)}`
+}
+
+/**
+ * Calculate the balance of a specific asset in a specific storage (or all storages)
+ *
+ * @param assetId - The asset ID to calculate balance for
+ * @param storageId - Specific storage ID (null = all storages combined)
+ * @param transactions - All user's crypto transactions
+ * @returns The calculated balance
+ */
+export function calculateAssetBalance(
+  assetId: string,
+  storageId: string | null,
+  transactions: Array<CryptoTransaction>,
+): number {
+  let balance = 0
+
+  for (const tx of transactions) {
+    switch (tx.type) {
+      case 'buy':
+        // Adds amount to asset balance in storage_id
+        if (
+          tx.assetId === assetId &&
+          tx.amount != null &&
+          (!storageId || tx.storageId === storageId)
+        ) {
+          balance += tx.amount
+        }
+        break
+
+      case 'sell':
+        // Subtracts amount from asset balance in storage_id
+        if (
+          tx.assetId === assetId &&
+          tx.amount != null &&
+          (!storageId || tx.storageId === storageId)
+        ) {
+          balance -= tx.amount
+        }
+        break
+
+      case 'transfer_between':
+        // Moves amount between storages (net zero for total balance)
+        if (tx.assetId === assetId && tx.amount != null) {
+          if (storageId === tx.fromStorageId) {
+            balance -= tx.amount // Leaving from_storage
+          } else if (storageId === tx.toStorageId) {
+            balance += tx.amount // Arriving at to_storage
+          }
+          // If storageId is null (total), net effect is 0
+        }
+        break
+
+      case 'swap':
+        // Decreases from_asset, increases to_asset in same storage
+        if (!storageId || tx.storageId === storageId) {
+          if (tx.fromAssetId === assetId && tx.fromAmount != null) {
+            balance -= tx.fromAmount // Swapping away
+          }
+          if (tx.toAssetId === assetId && tx.toAmount != null) {
+            balance += tx.toAmount // Receiving
+          }
+        }
+        break
+
+      case 'transfer_in':
+        // Adds amount to asset balance in storage_id
+        if (
+          tx.assetId === assetId &&
+          tx.amount != null &&
+          (!storageId || tx.storageId === storageId)
+        ) {
+          balance += tx.amount
+        }
+        break
+
+      case 'transfer_out':
+        // Subtracts amount from asset balance in storage_id
+        if (
+          tx.assetId === assetId &&
+          tx.amount != null &&
+          (!storageId || tx.storageId === storageId)
+        ) {
+          balance -= tx.amount
+        }
+        break
+    }
+  }
+
+  return balance
+}
+
+/**
+ * Get the available balance of an asset in a specific storage
+ * This is used for validation in forms (e.g., sell, transfer_out)
+ *
+ * @param assetId - The asset ID
+ * @param storageId - The storage ID
+ * @param transactions - All user's crypto transactions
+ * @returns The available balance
+ */
+export function getAvailableBalance(
+  assetId: string,
+  storageId: string,
+  transactions: Array<CryptoTransaction>,
+): number {
+  return calculateAssetBalance(assetId, storageId, transactions)
+}
+
+/**
+ * Calculate the total VND value in a specific storage
+ *
+ * @param storageId - The storage ID
+ * @param transactions - All user's crypto transactions
+ * @param prices - Map of asset ID to USD price
+ * @param exchangeRate - USD to VND exchange rate
+ * @returns Total VND value in the storage
+ */
+export function calculateStorageValue(
+  storageId: string,
+  transactions: Array<CryptoTransaction>,
+  prices: Map<string, number>,
+  exchangeRate: number,
+): number {
+  // Get all unique asset IDs from transactions
+  const assetIds = new Set<string>()
+  for (const tx of transactions) {
+    if (tx.assetId) assetIds.add(tx.assetId)
+    if (tx.fromAssetId) assetIds.add(tx.fromAssetId)
+    if (tx.toAssetId) assetIds.add(tx.toAssetId)
+  }
+
+  // Calculate total value
+  let totalValue = 0
+  for (const assetId of assetIds) {
+    const balance = calculateAssetBalance(assetId, storageId, transactions)
+    const priceUsd = prices.get(assetId) ?? 0
+    totalValue += balance * priceUsd * exchangeRate
+  }
+
+  return totalValue
+}
+
+/**
+ * Calculate the total portfolio value in VND
+ *
+ * @param transactions - All user's crypto transactions
+ * @param prices - Map of asset ID to USD price
+ * @param exchangeRate - USD to VND exchange rate
+ * @returns Total portfolio VND value
+ */
+export function calculatePortfolioValue(
+  transactions: Array<CryptoTransaction>,
+  prices: Map<string, number>,
+  exchangeRate: number,
+): number {
+  // Get all unique asset IDs from transactions
+  const assetIds = new Set<string>()
+  for (const tx of transactions) {
+    if (tx.assetId) assetIds.add(tx.assetId)
+    if (tx.fromAssetId) assetIds.add(tx.fromAssetId)
+    if (tx.toAssetId) assetIds.add(tx.toAssetId)
+  }
+
+  // Calculate total value (across all storages)
+  let totalValue = 0
+  for (const assetId of assetIds) {
+    const balance = calculateAssetBalance(assetId, null, transactions)
+    const priceUsd = prices.get(assetId) ?? 0
+    totalValue += balance * priceUsd * exchangeRate
+  }
+
+  return totalValue
+}
+
+/**
+ * Get all balances per asset per storage
+ * Useful for showing asset distribution across storages
+ *
+ * @param transactions - All user's crypto transactions
+ * @returns Map of assetId -> Map of storageId -> balance
+ */
+export function getAllBalances(
+  transactions: Array<CryptoTransaction>,
+): Map<string, Map<string, number>> {
+  const balances = new Map<string, Map<string, number>>()
+
+  // Get all unique asset IDs and storage IDs
+  const assetIds = new Set<string>()
+  const storageIds = new Set<string>()
+
+  for (const tx of transactions) {
+    if (tx.assetId) assetIds.add(tx.assetId)
+    if (tx.fromAssetId) assetIds.add(tx.fromAssetId)
+    if (tx.toAssetId) assetIds.add(tx.toAssetId)
+    if (tx.storageId) storageIds.add(tx.storageId)
+    if (tx.fromStorageId) storageIds.add(tx.fromStorageId)
+    if (tx.toStorageId) storageIds.add(tx.toStorageId)
+  }
+
+  // Calculate balance for each asset in each storage
+  for (const assetId of assetIds) {
+    const storageBalances = new Map<string, number>()
+    for (const storageId of storageIds) {
+      const balance = calculateAssetBalance(assetId, storageId, transactions)
+      if (balance !== 0) {
+        storageBalances.set(storageId, balance)
+      }
+    }
+    if (storageBalances.size > 0) {
+      balances.set(assetId, storageBalances)
+    }
+  }
+
+  return balances
 }

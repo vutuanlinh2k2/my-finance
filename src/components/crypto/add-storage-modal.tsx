@@ -144,7 +144,11 @@ export function AddStorageModal({
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={type === 'cex' ? 'e.g. Binance, Coinbase' : 'e.g. MetaMask, Ledger'}
+              placeholder={
+                type === 'cex'
+                  ? 'e.g. Binance, Coinbase'
+                  : 'e.g. MetaMask, Ledger'
+              }
               className="h-10 rounded-lg text-sm"
               disabled={isSubmitting}
             />
@@ -170,12 +174,18 @@ export function AddStorageModal({
           <div>
             <label className="mb-1.5 block text-sm font-medium">
               {type === 'cex' ? 'Link' : 'Explorer URL'}{' '}
-              <span className="font-normal text-muted-foreground">(optional)</span>
+              <span className="font-normal text-muted-foreground">
+                (optional)
+              </span>
             </label>
             <Input
               value={explorerUrl}
               onChange={(e) => setExplorerUrl(e.target.value)}
-              placeholder={type === 'cex' ? 'https://www.binance.com/...' : 'https://etherscan.io/address/...'}
+              placeholder={
+                type === 'cex'
+                  ? 'https://www.binance.com/...'
+                  : 'https://etherscan.io/address/...'
+              }
               className="h-10 rounded-lg text-sm"
               disabled={isSubmitting}
             />

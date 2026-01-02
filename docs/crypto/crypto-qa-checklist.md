@@ -271,13 +271,13 @@ This document provides a comprehensive QA checklist for testing the Crypto Portf
 
 ### 5.3 Transaction List Display
 
-| Column | Verification |
-|--------|--------------|
-| Date | - [ ] Transaction date displayed correctly |
-| Type | - [ ] Badge with type name (color-coded) |
-| Details | - [ ] Type-specific summary (see 5.4) |
-| TX ID/Link | - [ ] Truncated ID or link icon if exists |
-| Actions | - [ ] Edit and Delete buttons visible |
+| Column     | Verification                               |
+| ---------- | ------------------------------------------ |
+| Date       | - [ ] Transaction date displayed correctly |
+| Type       | - [ ] Badge with type name (color-coded)   |
+| Details    | - [ ] Type-specific summary (see 5.4)      |
+| TX ID/Link | - [ ] Truncated ID or link icon if exists  |
+| Actions    | - [ ] Edit and Delete buttons visible      |
 
 ### 5.4 Type-Specific Details Display
 
@@ -610,6 +610,7 @@ valueVnd = usdAmount * exchangeRate
 ### 10.2 Pre-populated Data by Type
 
 #### Buy Transaction
+
 - [ ] Asset shows selected asset
 - [ ] Amount shows existing amount
 - [ ] Storage shows existing storage
@@ -618,9 +619,11 @@ valueVnd = usdAmount * exchangeRate
 - [ ] TX ID/URL shows existing values
 
 #### Sell Transaction
+
 - [ ] Same as Buy with correct data
 
 #### Transfer Between
+
 - [ ] Asset shows selected asset
 - [ ] Amount shows existing amount
 - [ ] From Storage shows existing source
@@ -628,12 +631,14 @@ valueVnd = usdAmount * exchangeRate
 - [ ] Date shows existing date
 
 #### Swap
+
 - [ ] From Asset and To Asset shown
 - [ ] From Amount and To Amount shown
 - [ ] Storage shows existing storage
 - [ ] Date shows existing date
 
 #### Transfer In/Out
+
 - [ ] Asset, Amount, Storage, Date shown correctly
 
 ### 10.3 Edit Validation
@@ -694,16 +699,16 @@ valueVnd = usdAmount * exchangeRate
 
 ### 12.1 Required Fields
 
-| Entity | Required Fields |
-|--------|-----------------|
-| Asset | coingecko_id, name, symbol |
-| Storage (CEX) | type, name |
-| Storage (Wallet) | type, address |
-| Transaction (all) | type, date, asset_id, amount |
-| Transaction (Buy/Sell) | storage_id, fiat_amount |
-| Transaction (Transfer Between) | from_storage_id, to_storage_id |
-| Transaction (Swap) | from_asset_id, from_amount, to_asset_id, to_amount, storage_id |
-| Transaction (In/Out) | storage_id |
+| Entity                         | Required Fields                                                |
+| ------------------------------ | -------------------------------------------------------------- |
+| Asset                          | coingecko_id, name, symbol                                     |
+| Storage (CEX)                  | type, name                                                     |
+| Storage (Wallet)               | type, address                                                  |
+| Transaction (all)              | type, date, asset_id, amount                                   |
+| Transaction (Buy/Sell)         | storage_id, fiat_amount                                        |
+| Transaction (Transfer Between) | from_storage_id, to_storage_id                                 |
+| Transaction (Swap)             | from_asset_id, from_amount, to_asset_id, to_amount, storage_id |
+| Transaction (In/Out)           | storage_id                                                     |
 
 ### 12.2 Field Validation Rules
 
@@ -1070,28 +1075,28 @@ valueVnd = usdAmount * exchangeRate
 
 ## Checklist Summary
 
-| Category | Total Items |
-|----------|-------------|
-| Assets Page | ~50 |
-| Storage Page | ~30 |
-| Transactions Page | ~40 |
-| Add Asset Modal | ~25 |
-| Add/Edit Storage Modal | ~20 |
-| Add Transaction Modal | ~50 |
-| Buy/Sell Integration | ~30 |
-| Balance Calculation | ~35 |
-| Currency Conversion | ~25 |
-| Edit/Delete Transaction | ~25 |
-| Data Validation | ~25 |
-| Error Handling | ~20 |
-| Edge Cases | ~25 |
-| State Management | ~20 |
-| Security | ~15 |
-| Performance | ~15 |
-| Snapshot Edge Function | ~20 |
-| Integration Tests | ~20 |
-| Browser Compatibility | ~10 |
-| **Total** | **~500** |
+| Category                | Total Items |
+| ----------------------- | ----------- |
+| Assets Page             | ~50         |
+| Storage Page            | ~30         |
+| Transactions Page       | ~40         |
+| Add Asset Modal         | ~25         |
+| Add/Edit Storage Modal  | ~20         |
+| Add Transaction Modal   | ~50         |
+| Buy/Sell Integration    | ~30         |
+| Balance Calculation     | ~35         |
+| Currency Conversion     | ~25         |
+| Edit/Delete Transaction | ~25         |
+| Data Validation         | ~25         |
+| Error Handling          | ~20         |
+| Edge Cases              | ~25         |
+| State Management        | ~20         |
+| Security                | ~15         |
+| Performance             | ~15         |
+| Snapshot Edge Function  | ~20         |
+| Integration Tests       | ~20         |
+| Browser Compatibility   | ~10         |
+| **Total**               | **~500**    |
 
 ---
 

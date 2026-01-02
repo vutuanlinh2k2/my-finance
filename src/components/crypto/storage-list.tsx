@@ -52,7 +52,9 @@ export function StorageList({
         <button
           key={storage.id}
           type="button"
-          onClick={() => onSelect(selectedId === storage.id ? null : storage.id)}
+          onClick={() =>
+            onSelect(selectedId === storage.id ? null : storage.id)
+          }
           className={cn(
             'flex min-h-14 items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-colors hover:bg-muted/50',
             selectedId === storage.id && 'border-primary bg-primary/5',

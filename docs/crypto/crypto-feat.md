@@ -5,6 +5,7 @@
 A comprehensive cryptocurrency portfolio tracking system integrated into the my-finance app. This feature allows users to track their crypto assets, storage locations (CEXs and wallets), and all related transactions. The system integrates with CoinGecko API for real-time price data and converts all values to VND using the existing exchange rate system.
 
 **Key Integration Points:**
+
 - CoinGecko API for crypto price data (returns USD)
 - Existing USD→VND exchange rate converter for display
 - Existing expense/income transaction system for Buy/Sell operations
@@ -13,6 +14,7 @@ A comprehensive cryptocurrency portfolio tracking system integrated into the my-
 ## User Stories
 
 ### Assets
+
 - As a user, I want to add crypto assets by their CoinGecko ID so I can track their prices
 - As a user, I want to auto-fetch asset metadata (name, symbol, icon) from CoinGecko
 - As a user, I want to see my total portfolio value in VND
@@ -22,11 +24,13 @@ A comprehensive cryptocurrency portfolio tracking system integrated into the my-
 - As a user, I want to see a detailed table of all my assets with price metrics
 
 ### Storage
+
 - As a user, I want to create storage locations (CEX or Wallet) to track where my crypto is stored
 - As a user, I want to see how my portfolio is distributed across storage locations
 - As a user, I want to click a storage and see all assets within it
 
 ### Transactions
+
 - As a user, I want to record Buy transactions and have them auto-create expense items
 - As a user, I want to record Sell transactions and have them auto-create income items
 - As a user, I want to transfer assets between my storage locations
@@ -40,69 +44,69 @@ A comprehensive cryptocurrency portfolio tracking system integrated into the my-
 
 ### CryptoAsset
 
-| Field | Type | Description |
-|-------|------|-------------|
-| id | uuid | Primary key (internal) |
-| user_id | uuid | Owner user reference |
-| coingecko_id | string | CoinGecko asset identifier |
-| name | string | Asset name (e.g., "Bitcoin") |
-| symbol | string | Asset symbol (e.g., "BTC") |
-| icon_url | string? | URL to asset icon from CoinGecko |
-| created_at | timestamptz | Creation timestamp |
-| updated_at | timestamptz | Last update timestamp |
+| Field        | Type        | Description                      |
+| ------------ | ----------- | -------------------------------- |
+| id           | uuid        | Primary key (internal)           |
+| user_id      | uuid        | Owner user reference             |
+| coingecko_id | string      | CoinGecko asset identifier       |
+| name         | string      | Asset name (e.g., "Bitcoin")     |
+| symbol       | string      | Asset symbol (e.g., "BTC")       |
+| icon_url     | string?     | URL to asset icon from CoinGecko |
+| created_at   | timestamptz | Creation timestamp               |
+| updated_at   | timestamptz | Last update timestamp            |
 
 **Note:** Balance is calculated from transactions, not stored directly.
 
 ### CryptoStorage
 
-| Field | Type | Description |
-|-------|------|-------------|
-| id | uuid | Primary key |
-| user_id | uuid | Owner user reference |
-| type | 'cex' \| 'wallet' | Storage type |
-| name | string | Storage name (e.g., "Binance", "MetaMask") |
-| address | string? | Wallet address (required for wallet type) |
-| explorer_url | string? | Block explorer URL (optional for wallet) |
-| created_at | timestamptz | Creation timestamp |
-| updated_at | timestamptz | Last update timestamp |
+| Field        | Type              | Description                                |
+| ------------ | ----------------- | ------------------------------------------ |
+| id           | uuid              | Primary key                                |
+| user_id      | uuid              | Owner user reference                       |
+| type         | 'cex' \| 'wallet' | Storage type                               |
+| name         | string            | Storage name (e.g., "Binance", "MetaMask") |
+| address      | string?           | Wallet address (required for wallet type)  |
+| explorer_url | string?           | Block explorer URL (optional for wallet)   |
+| created_at   | timestamptz       | Creation timestamp                         |
+| updated_at   | timestamptz       | Last update timestamp                      |
 
 ### CryptoTransaction
 
-| Field | Type | Description |
-|-------|------|-------------|
-| id | uuid | Primary key |
-| user_id | uuid | Owner user reference |
-| type | enum | Transaction type (see below) |
-| date | date | Transaction date |
-| tx_id | string? | On-chain transaction ID |
-| tx_explorer_url | string? | Link to block explorer |
-| created_at | timestamptz | Creation timestamp |
-| updated_at | timestamptz | Last update timestamp |
-| linked_transaction_id | uuid? | FK to transactions table (for Buy/Sell) |
+| Field                 | Type        | Description                             |
+| --------------------- | ----------- | --------------------------------------- |
+| id                    | uuid        | Primary key                             |
+| user_id               | uuid        | Owner user reference                    |
+| type                  | enum        | Transaction type (see below)            |
+| date                  | date        | Transaction date                        |
+| tx_id                 | string?     | On-chain transaction ID                 |
+| tx_explorer_url       | string?     | Link to block explorer                  |
+| created_at            | timestamptz | Creation timestamp                      |
+| updated_at            | timestamptz | Last update timestamp                   |
+| linked_transaction_id | uuid?       | FK to transactions table (for Buy/Sell) |
 
 **Transaction Type-Specific Fields:**
 
-| Type | Additional Fields |
-|------|-------------------|
-| buy | asset_id, amount, storage_id, fiat_amount (VND paid) |
-| sell | asset_id, amount, storage_id, fiat_amount (VND received) |
-| transfer_between | asset_id, amount, from_storage_id, to_storage_id |
-| swap | from_asset_id, from_amount, to_asset_id, to_amount, storage_id |
-| transfer_in | asset_id, amount, storage_id |
-| transfer_out | asset_id, amount, storage_id |
+| Type             | Additional Fields                                              |
+| ---------------- | -------------------------------------------------------------- |
+| buy              | asset_id, amount, storage_id, fiat_amount (VND paid)           |
+| sell             | asset_id, amount, storage_id, fiat_amount (VND received)       |
+| transfer_between | asset_id, amount, from_storage_id, to_storage_id               |
+| swap             | from_asset_id, from_amount, to_asset_id, to_amount, storage_id |
+| transfer_in      | asset_id, amount, storage_id                                   |
+| transfer_out     | asset_id, amount, storage_id                                   |
 
 **Implementation Note:** Consider using a JSONB `details` column or separate junction tables for type-specific fields.
 
 ### CryptoPortfolioSnapshot (for historical charts)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| id | uuid | Primary key |
-| user_id | uuid | Owner user reference |
-| date | date | Snapshot date |
-| total_value_usd | numeric | Total portfolio value in USD |
-| allocations | jsonb | Per-asset allocation data |
-| created_at | timestamptz | Creation timestamp |
+| Field           | Type        | Description                  |
+| --------------- | ----------- | ---------------------------- |
+| id              | uuid        | Primary key                  |
+| user_id         | uuid        | Owner user reference         |
+| date            | date        | Snapshot date                |
+| total_value_usd | numeric     | Total portfolio value in USD |
+| allocations     | jsonb       | Per-asset allocation data    |
+| created_at      | timestamptz | Creation timestamp           |
 
 ---
 
@@ -111,20 +115,25 @@ A comprehensive cryptocurrency portfolio tracking system integrated into the my-
 ### CoinGecko Integration
 
 **Search Coins:**
+
 ```typescript
-async function searchCoinGeckoCoins(query: string): Promise<Array<{
-  id: string
-  name: string
-  symbol: string
-  thumb: string // Icon URL
-}>>
+async function searchCoinGeckoCoins(query: string): Promise<
+  Array<{
+    id: string
+    name: string
+    symbol: string
+    thumb: string // Icon URL
+  }>
+>
 ```
+
 - Endpoint: `https://api.coingecko.com/api/v3/search`
 - Query params: `query={query}`
 - Used in Add Asset Modal for coin search
 - Stale time: 5 minutes
 
 **Fetch Asset Metadata:**
+
 ```typescript
 async function fetchCoinGeckoAsset(coingeckoId: string): Promise<{
   id: string
@@ -133,28 +142,34 @@ async function fetchCoinGeckoAsset(coingeckoId: string): Promise<{
   image: { thumb: string; small: string; large: string }
 }>
 ```
+
 - Endpoint: `https://api.coingecko.com/api/v3/coins/{id}`
 - Cache aggressively - metadata rarely changes (24 hours stale time)
 
 **Fetch Market Data (Primary for Assets Table):**
+
 ```typescript
-async function fetchCoinGeckoMarkets(ids: string[]): Promise<Array<{
-  id: string
-  current_price: number
-  market_cap: number
-  price_change_percentage_24h: number
-  price_change_percentage_7d_in_currency: number
-  price_change_percentage_30d_in_currency: number
-  price_change_percentage_60d_in_currency: number
-  price_change_percentage_1y_in_currency: number
-  // ... more fields
-}>>
+async function fetchCoinGeckoMarkets(ids: string[]): Promise<
+  Array<{
+    id: string
+    current_price: number
+    market_cap: number
+    price_change_percentage_24h: number
+    price_change_percentage_7d_in_currency: number
+    price_change_percentage_30d_in_currency: number
+    price_change_percentage_60d_in_currency: number
+    price_change_percentage_1y_in_currency: number
+    // ... more fields
+  }>
+>
 ```
+
 - Endpoint: `https://api.coingecko.com/api/v3/coins/markets`
 - Query params: `vs_currency=usd&ids={csv}&price_change_percentage=7d,30d,60d,1y`
 - Stale time: ~60 seconds, auto-refresh
 
 **Fetch Simple Prices:**
+
 ```typescript
 async function fetchCoinGeckoPrices(coingeckoIds: string[]): Promise<{
   [id: string]: {
@@ -164,19 +179,22 @@ async function fetchCoinGeckoPrices(coingeckoIds: string[]): Promise<{
   }
 }>
 ```
+
 - Endpoint: `https://api.coingecko.com/api/v3/simple/price`
 - Query params: `ids={csv}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`
 - Stale time: ~60 seconds for price data
 
 **Fetch Historical Prices (for charts):**
+
 ```typescript
 async function fetchCoinGeckoMarketChart(
   coingeckoId: string,
-  days: number
+  days: number,
 ): Promise<{
   prices: [timestamp: number, price: number][]
 }>
 ```
+
 - Endpoint: `https://api.coingecko.com/api/v3/coins/{id}/market_chart`
 - Query params: `vs_currency=usd&days={days}`
 - Used for historical charts (Phase 6)
@@ -184,23 +202,27 @@ async function fetchCoinGeckoMarketChart(
 ### Supabase API Functions
 
 **Assets:**
+
 - `fetchCryptoAssets()` - Get all user's assets
 - `createCryptoAsset(input)` - Add new asset
 - `deleteCryptoAsset(id)` - Remove asset
 
 **Storages:**
+
 - `fetchCryptoStorages()` - Get all user's storages
 - `createCryptoStorage(input)` - Add new storage
 - `updateCryptoStorage(id, updates)` - Edit storage
 - `deleteCryptoStorage(id)` - Remove storage
 
 **Transactions:**
+
 - `fetchCryptoTransactions(filters)` - Get transactions with filters
 - `createCryptoTransaction(input)` - Create transaction (handles linked expense/income)
 - `updateCryptoTransaction(id, updates)` - Update transaction
 - `deleteCryptoTransaction(id)` - Delete transaction (cascade deletes linked item)
 
 **Calculated Data:**
+
 - `calculateAssetBalances(transactions)` - Compute current balance per asset per storage
 - `calculateStorageTotals(balances, prices, exchangeRate)` - Compute storage values in VND
 
@@ -211,6 +233,7 @@ async function fetchCoinGeckoMarketChart(
 ### Sidebar Navigation
 
 Add "Crypto" section to `app-sidebar.tsx`:
+
 ```
 Crypto (collapsible)
 ├── Assets
@@ -221,10 +244,12 @@ Crypto (collapsible)
 ### Assets Page (`/crypto/assets`)
 
 #### Header Section
+
 - **Page Title**: "Crypto Assets" (top-left)
 - **Add Asset Button**: Opens AddCryptoAssetModal (top-right)
 
 #### AddCryptoAssetModal (Search-Based)
+
 - Search input with debounce (300ms)
 - Search results list with coin icons from CoinGecko
 - Click to select coin - auto-fills Name, Symbol, Icon
@@ -234,6 +259,7 @@ Crypto (collapsible)
 - Cancel / Add Asset buttons
 
 #### Summary Cards (4 cards row)
+
 1. **Portfolio Value**: Total value of all crypto assets in VND
 2. **24h Change**: Price change percentage with color indicator (green/red)
 3. **7d Change**: Price change percentage with color indicator (green/red)
@@ -242,6 +268,7 @@ Crypto (collapsible)
 **Note:** Change cards show percentage changes (not value changes) since balances are 0 until transactions are implemented. The USD Rate card includes an "Offline" badge when using fallback/default rate.
 
 **Display Pattern:**
+
 ```tsx
 // Portfolio Value
 <p className="tooltip-fast" data-tooltip={formatCurrency(totalValueVnd)}>
@@ -257,12 +284,14 @@ Crypto (collapsible)
 #### Charts Section (flex row)
 
 **Allocation Pie Chart** (1/3 width)
+
 - Shows current portfolio allocation by asset
 - Interactive segments (hover for details)
 - Center label shows total value
 - Color per asset (consistent across app)
 
 **History Charts** (2/3 width, tabbed)
+
 - Tab 1: **Allocation History** (stacked area chart)
   - Shows how allocation percentages changed over time
   - Hover shows allocation breakdown at that point
@@ -272,20 +301,20 @@ Crypto (collapsible)
 
 #### Assets Table
 
-| Column | Description |
-|--------|-------------|
-| Asset | Icon + Symbol (e.g., [BTC icon] BTC) |
-| Price | Current price in VND (formatCompact with tooltip) |
-| 24h | % change with color (green positive, red negative) |
-| 7d | % change with color |
-| 30d | % change with color |
-| 60d | % change with color |
-| 1y | % change with color |
-| Market Cap | In VND (compact format with tooltip) |
-| Balance | User's holding amount (0 until Phase 4) |
-| Value | Balance × Price in VND |
-| % Portfolio | Allocation percentage |
-| Actions | Delete button (opens confirmation dialog) |
+| Column      | Description                                        |
+| ----------- | -------------------------------------------------- |
+| Asset       | Icon + Symbol (e.g., [BTC icon] BTC)               |
+| Price       | Current price in VND (formatCompact with tooltip)  |
+| 24h         | % change with color (green positive, red negative) |
+| 7d          | % change with color                                |
+| 30d         | % change with color                                |
+| 60d         | % change with color                                |
+| 1y          | % change with color                                |
+| Market Cap  | In VND (compact format with tooltip)               |
+| Balance     | User's holding amount (0 until Phase 4)            |
+| Value       | Balance × Price in VND                             |
+| % Portfolio | Allocation percentage                              |
+| Actions     | Delete button (opens confirmation dialog)          |
 
 - Uses `useCryptoMarkets` hook for extended price change data (CoinGecko /coins/markets endpoint)
 - Sortable by any column (planned, not yet implemented)
@@ -294,10 +323,12 @@ Crypto (collapsible)
 ### Storage Page (`/crypto/storage`)
 
 #### Header Section
+
 - **Page Title**: "Crypto Storage" (top-left)
 - **Add Storage Button**: Opens AddCryptoStorageModal (top-right)
 
 #### AddCryptoStorageModal
+
 - Type toggle: CEX / Wallet
 - **CEX fields**: Name only (e.g., "Binance", "OKX")
 - **Wallet fields**:
@@ -309,6 +340,7 @@ Crypto (collapsible)
 #### Main Content (two-panel layout like Reports page)
 
 **Left Panel** (50% width)
+
 - **Storage Pie Chart**: Distribution of value across storages
 - **Storage List**: Below the chart
   - Each item: Storage icon/type, name, total value, % of portfolio
@@ -316,6 +348,7 @@ Crypto (collapsible)
   - Selected item highlighted
 
 **Right Panel** (50% width)
+
 - Shows assets in selected storage
 - Empty state if no selection
 - List of assets sorted by value (descending):
@@ -324,10 +357,12 @@ Crypto (collapsible)
 ### Transactions Page (`/crypto/transactions`)
 
 #### Header Section
+
 - **Page Title**: "Crypto Transactions" (top-left)
 - **Add Transaction Button**: Opens AddCryptoTransactionModal (top-right)
 
 #### Filters Bar
+
 - **Type Filter**: All, Buy, Sell, Transfer, Swap (multi-select or dropdown)
 - **Date Range**: Start date, End date pickers
 - **Clear Filters** button
@@ -335,35 +370,38 @@ Crypto (collapsible)
 #### AddCryptoTransactionModal
 
 **Step 1: Select Transaction Type**
+
 - 6 type buttons: Buy, Sell, Transfer Between, Swap, Transfer In, Transfer Out
 
 **Step 2: Type-Specific Form**
 
-| Type | Fields |
-|------|--------|
-| Buy | Asset (select), Amount, Storage (select), Fiat Amount (VND), Date, TX ID/URL |
-| Sell | Asset (select), Amount, Storage (select), Fiat Amount (VND), Date, TX ID/URL |
-| Transfer Between | Asset (select), Amount, From Storage, To Storage, Date, TX ID/URL |
-| Swap | From Asset, From Amount, To Asset, To Amount, Storage, Date, TX ID/URL |
-| Transfer In | Asset (select), Amount, Storage (select), Date, TX ID/URL |
-| Transfer Out | Asset (select), Amount, Storage (select), Date, TX ID/URL |
+| Type             | Fields                                                                       |
+| ---------------- | ---------------------------------------------------------------------------- |
+| Buy              | Asset (select), Amount, Storage (select), Fiat Amount (VND), Date, TX ID/URL |
+| Sell             | Asset (select), Amount, Storage (select), Fiat Amount (VND), Date, TX ID/URL |
+| Transfer Between | Asset (select), Amount, From Storage, To Storage, Date, TX ID/URL            |
+| Swap             | From Asset, From Amount, To Asset, To Amount, Storage, Date, TX ID/URL       |
+| Transfer In      | Asset (select), Amount, Storage (select), Date, TX ID/URL                    |
+| Transfer Out     | Asset (select), Amount, Storage (select), Date, TX ID/URL                    |
 
 **Buy/Sell Special Behavior:**
+
 1. Before creating, check if "Investing" tag exists for appropriate type
 2. If not: Show error toast "Please create an 'Investing' tag for [expense/income] first"
 3. If exists: Create crypto transaction + linked expense/income transaction atomically
 
 #### Transaction List
 
-| Column | Description |
-|--------|-------------|
-| Date | Transaction date |
-| Type | Badge with type (color-coded) |
-| Details | Type-specific summary (see below) |
-| TX ID/Link | Truncated ID or link icon |
-| Actions | Edit, Delete buttons |
+| Column     | Description                       |
+| ---------- | --------------------------------- |
+| Date       | Transaction date                  |
+| Type       | Badge with type (color-coded)     |
+| Details    | Type-specific summary (see below) |
+| TX ID/Link | Truncated ID or link icon         |
+| Actions    | Edit, Delete buttons              |
 
 **Type-Specific Details Display:**
+
 - **Buy**: "Bought 0.5 BTC for 250M" + storage icon
 - **Sell**: "Sold 0.5 BTC for 300M" + storage icon
 - **Transfer**: "0.5 BTC: Binance → Ledger"
@@ -372,11 +410,13 @@ Crypto (collapsible)
 - **Transfer Out**: "Sent 0.5 BTC" + storage icon
 
 #### Edit Transaction Modal
+
 - Same form as Add, pre-filled with existing data
 - Save / Cancel buttons
 - Delete button (with confirmation)
 
 #### Pagination
+
 - Page size: 20 items
 - Page navigation at bottom
 
@@ -403,8 +443,10 @@ export const queryKeys = {
   },
   coingecko: {
     asset: (id: string) => ['coingecko', 'asset', id] as const,
-    prices: (ids: string[]) => ['coingecko', 'prices', ids.sort().join(',')] as const,
-    markets: (ids: string[]) => ['coingecko', 'markets', ids.sort().join(',')] as const,
+    prices: (ids: string[]) =>
+      ['coingecko', 'prices', ids.sort().join(',')] as const,
+    markets: (ids: string[]) =>
+      ['coingecko', 'markets', ids.sort().join(',')] as const,
     marketData: (id: string, days: number | 'max') =>
       ['coingecko', 'market-data', id, days] as const,
     search: (query: string) => ['coingecko', 'search', query] as const,
@@ -468,6 +510,7 @@ const valueVnd = convertUsdToVnd(price * balance, exchangeRate)
 ## Edge Cases
 
 ### Empty States
+
 - [ ] No assets: "Add your first crypto asset to start tracking"
 - [ ] No storages: "Add a storage location to organize your assets"
 - [ ] No transactions: "Record your first transaction"
@@ -475,12 +518,14 @@ const valueVnd = convertUsdToVnd(price * balance, exchangeRate)
 - [ ] Storage with zero balance: Show with 0 value
 
 ### Error States
+
 - [ ] CoinGecko rate limit: Show cached prices with "Price data may be delayed" warning
 - [ ] Invalid CoinGecko ID: Show error during asset creation
 - [ ] Network failure: Show cached data with offline indicator
 - [ ] Missing "Investing" tag: Block Buy/Sell with clear error message
 
 ### Edge Cases
+
 - [ ] Very small balances (< 0.00001): Show in scientific notation or hide
 - [ ] Very large values (> trillions VND): formatCompact handles this
 - [ ] Negative balance (more sells than buys): Should not be possible with validation
@@ -489,6 +534,7 @@ const valueVnd = convertUsdToVnd(price * balance, exchangeRate)
 - [ ] Delete asset with transactions: Warn user, cascade delete or block
 
 ### Data Integrity
+
 - [ ] Transaction-derived balance: Sum of all transaction amounts
 - [ ] Linked transaction sync: Buy/Sell ↔ expense/income always in sync
 - [ ] Cascade deletes: Deleting crypto tx deletes linked expense/income
@@ -498,6 +544,7 @@ const valueVnd = convertUsdToVnd(price * balance, exchangeRate)
 ## Security Considerations
 
 ### Input Validation
+
 - Validate CoinGecko ID format before API call
 - Sanitize wallet addresses (prevent XSS)
 - Sanitize explorer URLs using existing `sanitizeUrl()` utility
@@ -505,11 +552,13 @@ const valueVnd = convertUsdToVnd(price * balance, exchangeRate)
 - Validate fiat amounts for Buy/Sell (positive VND)
 
 ### Authorization
+
 - All tables have RLS policies for user isolation
 - Use `(SELECT auth.uid())` pattern for performance
 - Validate user owns referenced assets/storages before transactions
 
 ### Rate Limiting
+
 - Cache CoinGecko responses aggressively
 - Implement client-side request queuing if hitting limits
 - Use batch endpoints when possible (e.g., multi-coin price fetch)
@@ -524,6 +573,7 @@ const valueVnd = convertUsdToVnd(price * balance, exchangeRate)
 **Schedule:** Daily at 00:00 UTC
 
 **Logic:**
+
 1. For each user with crypto assets:
    - Fetch current prices from CoinGecko
    - Calculate total portfolio value (USD)
@@ -532,6 +582,7 @@ const valueVnd = convertUsdToVnd(price * balance, exchangeRate)
 2. Prune snapshots older than 2 years (optional)
 
 **Config (config.toml):**
+
 ```toml
 [functions.snapshot-crypto-portfolio]
 enabled = true
@@ -547,10 +598,12 @@ command = "SELECT net.http_post(...)"
 ## Dependencies
 
 ### External Libraries (may need user approval)
+
 - **recharts**: For pie charts, area charts, line charts (check if already used)
 - No new libraries expected - leverage existing shadcn/ui components
 
 ### Internal Modules
+
 - `@/lib/currency` - formatCompact, formatCurrency
 - `@/lib/hooks/use-exchange-rate` - USD→VND rate
 - `@/lib/api/transactions` - For linked Buy/Sell transactions
@@ -566,8 +619,8 @@ command = "SELECT net.http_post(...)"
 ```typescript
 async function createBuyTransaction(input: BuyTransactionInput) {
   // 1. Check for Investing expense tag
-  const investingTag = tags.find(t =>
-    t.name.toLowerCase() === 'investing' && t.type === 'expense'
+  const investingTag = tags.find(
+    (t) => t.name.toLowerCase() === 'investing' && t.type === 'expense',
   )
   if (!investingTag) {
     throw new Error('Please create an "Investing" tag for expenses first')
@@ -605,10 +658,10 @@ async function createBuyTransaction(input: BuyTransactionInput) {
 function calculateAssetBalance(
   assetId: string,
   storageId: string | null, // null = all storages
-  transactions: CryptoTransaction[]
+  transactions: CryptoTransaction[],
 ): number {
   return transactions
-    .filter(tx => {
+    .filter((tx) => {
       // Filter by asset
       const matchesAsset =
         tx.asset_id === assetId ||
@@ -616,7 +669,8 @@ function calculateAssetBalance(
         tx.to_asset_id === assetId
 
       // Filter by storage if specified
-      const matchesStorage = !storageId ||
+      const matchesStorage =
+        !storageId ||
         tx.storage_id === storageId ||
         tx.from_storage_id === storageId ||
         tx.to_storage_id === storageId

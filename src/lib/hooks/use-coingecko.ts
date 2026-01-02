@@ -92,7 +92,7 @@ export function useCryptoMarkets(ids: Array<string>, enabled = true) {
 export function useCoinGeckoMarketData(
   id: string | undefined,
   days: number | 'max' = 30,
-  enabled = true
+  enabled = true,
 ) {
   return useQuery<CoinGeckoMarketData>({
     queryKey: queryKeys.coingecko.marketData(id ?? '', days),

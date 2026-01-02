@@ -4,12 +4,17 @@ import { Plus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import type { CryptoStorage } from '@/lib/crypto/types'
 import type { CreateCryptoStorageInput } from '@/lib/api/crypto-storages'
+import { calculateAssetBalance, getAllBalances } from '@/lib/crypto/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
+import { useCryptoAssets } from '@/lib/hooks/use-crypto-assets'
 import {
   useCreateCryptoStorage,
   useCryptoStorages,
   useDeleteCryptoStorage,
 } from '@/lib/hooks/use-crypto-storages'
+import { useAllCryptoTransactions } from '@/lib/hooks/use-crypto-transactions'
+import { useCryptoMarkets } from '@/lib/hooks/use-coingecko'
+import { useExchangeRateValue } from '@/lib/hooks/use-exchange-rate'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -52,7 +57,35 @@ function CryptoStoragePage() {
   const search = Route.useSearch()
 
   // Crypto storages from database
-  const { data: storages = [], isLoading } = useCryptoStorages()
+  const { data: storages = [], isLoading: isLoadingStorages } =
+    useCryptoStorages()
+
+  // Crypto assets from database
+  const { data: assets = [], isLoading: isLoadingAssets } = useCryptoAssets()
+
+  // All crypto transactions for balance calculation
+  const { data: transactions = [], isLoading: isLoadingTransactions } =
+    useAllCryptoTransactions()
+
+  // Exchange rate for USD to VND conversion
+  const exchangeRate = useExchangeRateValue()
+
+  // Fetch market data for all assets
+  const coingeckoIds = useMemo(() => assets.map((a) => a.coingeckoId), [assets])
+  const { data: marketData = [], isLoading: isLoadingPrices } =
+    useCryptoMarkets(coingeckoIds, coingeckoIds.length > 0)
+
+  // Create a map for quick lookup of price by asset ID
+  const pricesByAssetId = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const asset of assets) {
+      const coin = marketData.find((m) => m.id === asset.coingeckoId)
+      if (coin) {
+        map.set(asset.id, coin.current_price * exchangeRate.rate)
+      }
+    }
+    return map
+  }, [assets, marketData, exchangeRate.rate])
 
   // Mutations
   const createMutation = useCreateCryptoStorage()
@@ -67,11 +100,26 @@ function CryptoStoragePage() {
   // Check if any mutation is pending
   const isMutating = createMutation.isPending || deleteMutation.isPending
 
-  // Transform storages with value data (values will be 0 until transactions are implemented)
+  // Get all balances by storage and asset
+  const allBalances = useMemo(
+    () => getAllBalances(transactions),
+    [transactions],
+  )
+
+  // Transform storages with value data
   const storagesWithValues = useMemo(() => {
     return storages.map((storage, index) => {
-      // Until transactions are implemented, all values are 0
-      const totalValueVnd = 0
+      // Calculate total value in this storage
+      // allBalances is Map<assetId, Map<storageId, balance>>
+      let totalValueVnd = 0
+
+      for (const [assetId, storageBalances] of allBalances) {
+        const balance = storageBalances.get(storage.id)
+        if (balance && balance > 0) {
+          const priceVnd = pricesByAssetId.get(assetId) ?? 0
+          totalValueVnd += balance * priceVnd
+        }
+      }
 
       return {
         ...storage,
@@ -80,7 +128,7 @@ function CryptoStoragePage() {
         color: getStorageColor(index),
       }
     })
-  }, [storages])
+  }, [storages, allBalances, pricesByAssetId])
 
   // Calculate total value and percentages
   const totalValueVnd = useMemo(
@@ -104,17 +152,59 @@ function CryptoStoragePage() {
     [storagesWithPercentages, selectedId],
   )
 
-  // Assets in selected storage (empty until transactions are implemented)
-  const assetsInStorage: Array<{
-    id: string
-    name: string
-    symbol: string
-    iconUrl: string | null
-    balance: number
-    valueVnd: number
-    percentage: number
-    color: string
-  }> = []
+  // Assets in selected storage
+  const assetsInStorage = useMemo(() => {
+    if (!selectedId) return []
+
+    const assetsList: Array<{
+      id: string
+      name: string
+      symbol: string
+      iconUrl: string | null
+      balance: number
+      valueVnd: number
+      percentage: number
+      color: string
+    }> = []
+
+    // allBalances is Map<assetId, Map<storageId, balance>>
+    let index = 0
+    for (const [assetId, storageBalances] of allBalances) {
+      const balance = storageBalances.get(selectedId)
+      if (!balance || balance <= 0) continue
+
+      const asset = assets.find((a) => a.id === assetId)
+      if (!asset) continue
+
+      const priceVnd = pricesByAssetId.get(assetId) ?? 0
+      const valueVnd = balance * priceVnd
+
+      assetsList.push({
+        id: asset.id,
+        name: asset.name,
+        symbol: asset.symbol,
+        iconUrl: asset.iconUrl,
+        balance,
+        valueVnd,
+        percentage:
+          selectedStorage && selectedStorage.totalValueVnd > 0
+            ? (valueVnd / selectedStorage.totalValueVnd) * 100
+            : 0,
+        color: getStorageColor(index),
+      })
+      index++
+    }
+
+    // Sort by value descending
+    return assetsList.sort((a, b) => b.valueVnd - a.valueVnd)
+  }, [selectedId, allBalances, assets, pricesByAssetId, selectedStorage])
+
+  // Combined loading state
+  const isLoading =
+    isLoadingStorages ||
+    isLoadingAssets ||
+    isLoadingTransactions ||
+    isLoadingPrices
 
   // Handlers
   const handleSelect = (id: string | null) => {

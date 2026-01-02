@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedCryptoTransactionsRouteImport } from './routes/_authenticated/crypto/transactions'
 import { Route as AuthenticatedCryptoStorageRouteImport } from './routes/_authenticated/crypto/storage'
 import { Route as AuthenticatedCryptoAssetsRouteImport } from './routes/_authenticated/crypto/assets'
 import { Route as AuthenticatedBudgetSubscriptionsRouteImport } from './routes/_authenticated/budget/subscriptions'
@@ -32,6 +33,12 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCryptoTransactionsRoute =
+  AuthenticatedCryptoTransactionsRouteImport.update({
+    id: '/crypto/transactions',
+    path: '/crypto/transactions',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCryptoStorageRoute =
   AuthenticatedCryptoStorageRouteImport.update({
     id: '/crypto/storage',
@@ -71,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/budget/subscriptions': typeof AuthenticatedBudgetSubscriptionsRoute
   '/crypto/assets': typeof AuthenticatedCryptoAssetsRoute
   '/crypto/storage': typeof AuthenticatedCryptoStorageRoute
+  '/crypto/transactions': typeof AuthenticatedCryptoTransactionsRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -80,6 +88,7 @@ export interface FileRoutesByTo {
   '/budget/subscriptions': typeof AuthenticatedBudgetSubscriptionsRoute
   '/crypto/assets': typeof AuthenticatedCryptoAssetsRoute
   '/crypto/storage': typeof AuthenticatedCryptoStorageRoute
+  '/crypto/transactions': typeof AuthenticatedCryptoTransactionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -91,6 +100,7 @@ export interface FileRoutesById {
   '/_authenticated/budget/subscriptions': typeof AuthenticatedBudgetSubscriptionsRoute
   '/_authenticated/crypto/assets': typeof AuthenticatedCryptoAssetsRoute
   '/_authenticated/crypto/storage': typeof AuthenticatedCryptoStorageRoute
+  '/_authenticated/crypto/transactions': typeof AuthenticatedCryptoTransactionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -102,6 +112,7 @@ export interface FileRouteTypes {
     | '/budget/subscriptions'
     | '/crypto/assets'
     | '/crypto/storage'
+    | '/crypto/transactions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -111,6 +122,7 @@ export interface FileRouteTypes {
     | '/budget/subscriptions'
     | '/crypto/assets'
     | '/crypto/storage'
+    | '/crypto/transactions'
   id:
     | '__root__'
     | '/_authenticated'
@@ -121,6 +133,7 @@ export interface FileRouteTypes {
     | '/_authenticated/budget/subscriptions'
     | '/_authenticated/crypto/assets'
     | '/_authenticated/crypto/storage'
+    | '/_authenticated/crypto/transactions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -149,6 +162,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/crypto/transactions': {
+      id: '/_authenticated/crypto/transactions'
+      path: '/crypto/transactions'
+      fullPath: '/crypto/transactions'
+      preLoaderRoute: typeof AuthenticatedCryptoTransactionsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/crypto/storage': {
@@ -196,6 +216,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBudgetSubscriptionsRoute: typeof AuthenticatedBudgetSubscriptionsRoute
   AuthenticatedCryptoAssetsRoute: typeof AuthenticatedCryptoAssetsRoute
   AuthenticatedCryptoStorageRoute: typeof AuthenticatedCryptoStorageRoute
+  AuthenticatedCryptoTransactionsRoute: typeof AuthenticatedCryptoTransactionsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -205,6 +226,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBudgetSubscriptionsRoute: AuthenticatedBudgetSubscriptionsRoute,
   AuthenticatedCryptoAssetsRoute: AuthenticatedCryptoAssetsRoute,
   AuthenticatedCryptoStorageRoute: AuthenticatedCryptoStorageRoute,
+  AuthenticatedCryptoTransactionsRoute: AuthenticatedCryptoTransactionsRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

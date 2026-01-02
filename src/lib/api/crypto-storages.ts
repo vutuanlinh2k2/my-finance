@@ -88,10 +88,7 @@ export async function updateCryptoStorage(
  * Delete a crypto storage
  */
 export async function deleteCryptoStorage(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('crypto_storages')
-    .delete()
-    .eq('id', id)
+  const { error } = await supabase.from('crypto_storages').delete().eq('id', id)
 
   if (error) {
     throw new Error(`Failed to delete crypto storage: ${error.message}`)

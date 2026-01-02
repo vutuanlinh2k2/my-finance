@@ -198,11 +198,7 @@ export function AddAssetModal({
           {selectedCoin && (
             <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
               {iconUrl && (
-                <img
-                  src={iconUrl}
-                  alt={name}
-                  className="size-8 rounded-full"
-                />
+                <img src={iconUrl} alt={name} className="size-8 rounded-full" />
               )}
               <div className="flex-1">
                 <div className="text-sm font-medium">{name}</div>

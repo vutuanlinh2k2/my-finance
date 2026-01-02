@@ -99,7 +99,6 @@ export function SubscriptionSummaryCards({
           </p>
         )}
       </div>
-
     </div>
   )
 }

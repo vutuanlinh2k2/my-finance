@@ -13,7 +13,7 @@ export class CoinGeckoError extends Error {
   constructor(
     message: string,
     public status?: number,
-    public isRateLimited: boolean = false
+    public isRateLimited: boolean = false,
   ) {
     super(message)
     this.name = 'CoinGeckoError'
@@ -28,14 +28,14 @@ async function handleResponse<T>(response: Response): Promise<T> {
     throw new CoinGeckoError(
       'Rate limit exceeded. Please try again later.',
       429,
-      true
+      true,
     )
   }
 
   if (!response.ok) {
     throw new CoinGeckoError(
       `CoinGecko API error: ${response.statusText}`,
-      response.status
+      response.status,
     )
   }
 
@@ -48,7 +48,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
  * @returns Asset metadata including name, symbol, and images
  */
 export async function fetchCoinGeckoAssetMetadata(
-  id: string
+  id: string,
 ): Promise<CoinGeckoAssetMetadata> {
   const url = `${COINGECKO_API_URL}/coins/${encodeURIComponent(id)}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false`
 
@@ -78,7 +78,7 @@ export async function fetchCoinGeckoAssetMetadata(
  * @returns Map of coin ID to price data
  */
 export async function fetchCoinGeckoPrices(
-  ids: Array<string>
+  ids: Array<string>,
 ): Promise<CoinGeckoPriceMap> {
   if (ids.length === 0) {
     return {}
@@ -100,7 +100,7 @@ export async function fetchCoinGeckoPrices(
  */
 export async function fetchCoinGeckoMarketData(
   id: string,
-  days: number | 'max' = 30
+  days: number | 'max' = 30,
 ): Promise<CoinGeckoMarketData> {
   const url = `${COINGECKO_API_URL}/coins/${encodeURIComponent(id)}/market_chart?vs_currency=usd&days=${days}`
 
@@ -134,7 +134,7 @@ export interface CoinGeckoMarketCoin {
  * @returns Array of market data for each coin
  */
 export async function fetchCoinGeckoMarkets(
-  ids: Array<string>
+  ids: Array<string>,
 ): Promise<Array<CoinGeckoMarketCoin>> {
   if (ids.length === 0) {
     return []
@@ -154,7 +154,7 @@ export async function fetchCoinGeckoMarkets(
  * @returns Array of matching coins
  */
 export async function searchCoinGeckoCoins(
-  query: string
+  query: string,
 ): Promise<Array<{ id: string; name: string; symbol: string; thumb: string }>> {
   if (!query || query.length < 2) {
     return []
