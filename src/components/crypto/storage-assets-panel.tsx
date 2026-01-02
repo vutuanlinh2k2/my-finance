@@ -83,8 +83,8 @@ export function StorageAssetsPanel({
             {storage.address && (
               <>
                 <span>•</span>
-                <span className="truncate font-mono text-xs">
-                  {storage.address}
+                <span className="font-mono text-xs">
+                  {storage.address.slice(0, 6)}...{storage.address.slice(-4)}
                 </span>
               </>
             )}

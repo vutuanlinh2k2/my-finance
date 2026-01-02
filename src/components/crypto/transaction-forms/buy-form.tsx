@@ -9,6 +9,7 @@ import type {
 import { formatDateToISO } from '@/lib/api/transactions'
 import { sanitizeUrl } from '@/lib/subscriptions/utils'
 import { Button } from '@/components/ui/button'
+import { DateInput } from '@/components/ui/date-input'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
@@ -161,11 +162,10 @@ export function BuyForm({
       {/* Date */}
       <div>
         <label className="mb-1.5 block text-sm font-medium">Date *</label>
-        <Input
-          type="date"
+        <DateInput
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="h-10"
+          className="[&>div]:h-10"
           disabled={isSubmitting}
         />
       </div>

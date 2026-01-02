@@ -9,7 +9,7 @@ import type {
   CryptoTransactionType,
 } from '@/lib/crypto/types'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { DateInput } from '@/components/ui/date-input'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -109,19 +109,17 @@ export function TransactionFilters({
 
       {/* Date Range Filters */}
       <div className="flex items-center gap-1">
-        <Input
-          type="date"
+        <DateInput
           value={filters.startDate ?? ''}
           onChange={handleStartDateChange}
-          className={cn('h-8 w-36', filters.startDate && 'border-primary')}
+          className={cn('w-36', filters.startDate && '[&>div]:border-primary')}
           placeholder="Start date"
         />
         <span className="text-muted-foreground">to</span>
-        <Input
-          type="date"
+        <DateInput
           value={filters.endDate ?? ''}
           onChange={handleEndDateChange}
-          className={cn('h-8 w-36', filters.endDate && 'border-primary')}
+          className={cn('w-36', filters.endDate && '[&>div]:border-primary')}
           placeholder="End date"
         />
       </div>
