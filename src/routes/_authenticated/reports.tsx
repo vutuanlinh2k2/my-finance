@@ -277,7 +277,7 @@ function ReportsPage() {
         {/* Left Panel - Chart & Tag List */}
         <div className="flex flex-1 flex-col rounded-xl border border-border bg-card p-6">
           {/* Total Display with Period Selector */}
-          <div className="mb-6 flex items-start justify-between">
+          <div className="mb-2 flex items-start justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-primary">
                 {transactionType === 'expense'
@@ -307,11 +307,11 @@ function ReportsPage() {
 
           {/* Pie Chart */}
           {isLoading ? (
-            <div className="mb-6 flex flex-col items-center justify-center py-8">
-              <Skeleton className="size-[280px] rounded-full" />
+            <div className="mb-2 flex flex-col items-center justify-center py-2">
+              <Skeleton className="size-70 rounded-full" />
             </div>
           ) : hasData ? (
-            <div className="mb-6 flex flex-col items-center justify-center py-8">
+            <div className="mb-2 flex flex-col items-center justify-center py-2">
               <DistributionPieChart
                 distributions={distributions}
                 centerLabel={getPeriodLabel()}
@@ -342,7 +342,7 @@ function ReportsPage() {
         </div>
 
         {/* Right Panel - Transaction List or Monthly Totals */}
-        <div className="flex w-[400px] flex-col rounded-xl border border-dashed border-border bg-card">
+        <div className="flex w-100 flex-col rounded-xl border border-dashed border-border bg-card">
           <RightPanel
             timeMode={timeMode}
             hasData={hasData}
