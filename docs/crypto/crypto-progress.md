@@ -6,7 +6,7 @@
 |-------|-------------|--------|
 | Phase 1 | Project Setup & CoinGecko API | Complete |
 | Phase 2 | Assets Page (incl. DB migration) | Complete |
-| Phase 3 | Storage Page (incl. DB migration) | Pending |
+| Phase 3 | Storage Page (incl. DB migration) | Complete |
 | Phase 4 | Transactions Page - Basic UI (incl. DB migration) | Pending |
 | Phase 5 | Transaction Types Logic | Pending |
 | Phase 6 | Charts & Historical Data (incl. DB migration) | Pending |
@@ -249,20 +249,20 @@ CREATE INDEX idx_crypto_assets_user ON public.crypto_assets(user_id);
 Create the `crypto_storages` table and build the complete Storage page with two-panel layout.
 
 ### Summary
-[To be filled during implementation]
+Created the `crypto_storages` database table with RLS policies, built the complete Storage page with two-panel layout. Implemented Add Storage modal with CEX/Wallet type toggle and conditional fields. Built storage pie chart with click-to-select functionality, storage list with type icons and selection highlighting, and storage assets panel showing holdings per storage. Selection state is persisted in URL search params. All values display in VND with proper formatting.
 
 ### Success Criteria
-- [ ] `crypto_storages` table created with RLS
-- [ ] Route accessible at `/crypto/storage`
-- [ ] Add Storage modal works (CEX/Wallet toggle)
-- [ ] Left panel shows pie chart + storage list
-- [ ] Right panel shows assets in selected storage
-- [ ] Selection state persisted in URL
+- [x] `crypto_storages` table created with RLS
+- [x] Route accessible at `/crypto/storage`
+- [x] Add Storage modal works (CEX/Wallet toggle)
+- [x] Left panel shows pie chart + storage list
+- [x] Right panel shows assets in selected storage
+- [x] Selection state persisted in URL
 
 ### Implementation Steps
 
 #### Step 3.1: Database Migration - crypto_storages
-- [ ] Create `supabase/migrations/<timestamp>_create_crypto_storages.sql`
+- [x] Create `supabase/migrations/20260102150000_create_crypto_storages.sql`
 
 **Schema:**
 ```sql
@@ -297,76 +297,76 @@ CREATE POLICY "crypto_storages_delete_own" ON public.crypto_storages
 CREATE INDEX idx_crypto_storages_user ON public.crypto_storages(user_id);
 ```
 
-- [ ] Run `pnpm db:migrate`
-- [ ] Run `pnpm db:types`
-- [ ] Verify Security Advisor → 0 errors/warnings
+- [x] Run `pnpm db:reset` (applies migrations)
+- [x] Run `pnpm db:types`
+- [x] Verify Security Advisor → 0 errors/warnings
 
 #### Step 3.2: Update TypeScript Types
-- [ ] Update `src/lib/crypto/types.ts` with `CryptoStorage` type
-- [ ] Define `StorageType = 'cex' | 'wallet'`
+- [x] Update `src/lib/crypto/types.ts` with `CryptoStorage` type
+- [x] Define `StorageType = 'cex' | 'wallet'`
 
 #### Step 3.3: Create Route
-- [ ] Create `src/routes/_authenticated/crypto/storage.tsx`
-- [ ] Set up two-panel layout (similar to Reports page)
-- [ ] URL search params for selected storage
+- [x] Create `src/routes/_authenticated/crypto/storage.tsx`
+- [x] Set up two-panel layout (similar to Reports page)
+- [x] URL search params for selected storage
 
 #### Step 3.4: Create API Layer
-- [ ] Create `src/lib/api/crypto-storages.ts`
-- [ ] Implement `fetchCryptoStorages()`
-- [ ] Implement `createCryptoStorage(input)`
-- [ ] Implement `updateCryptoStorage(id, updates)`
-- [ ] Implement `deleteCryptoStorage(id)`
+- [x] Create `src/lib/api/crypto-storages.ts`
+- [x] Implement `fetchCryptoStorages()`
+- [x] Implement `createCryptoStorage(input)`
+- [x] Implement `updateCryptoStorage(id, updates)`
+- [x] Implement `deleteCryptoStorage(id)`
 
 #### Step 3.5: Create Hooks
-- [ ] Create `src/lib/hooks/use-crypto-storages.ts`
-- [ ] Implement `useCryptoStorages()` query
-- [ ] Implement CRUD mutations
+- [x] Create `src/lib/hooks/use-crypto-storages.ts`
+- [x] Implement `useCryptoStorages()` query
+- [x] Implement CRUD mutations
 
 #### Step 3.6: Add Storage Modal
-- [ ] Create `src/components/crypto/add-storage-modal.tsx`
-- [ ] CEX/Wallet type toggle
-- [ ] Conditional fields based on type
-- [ ] Wallet address validation
-- [ ] Explorer URL sanitization with `sanitizeUrl()`
+- [x] Create `src/components/crypto/add-storage-modal.tsx`
+- [x] CEX/Wallet type toggle
+- [x] Conditional fields based on type
+- [x] Wallet address validation
+- [x] Explorer URL sanitization with `sanitizeUrl()`
 
 #### Step 3.7: Storage Pie Chart
-- [ ] Create `src/components/crypto/storage-pie-chart.tsx`
-- [ ] Distribution by storage
-- [ ] Interactive segments
-- [ ] Click to select
+- [x] Create `src/components/crypto/storage-pie-chart.tsx`
+- [x] Distribution by storage
+- [x] Interactive segments
+- [x] Click to select
 
 #### Step 3.8: Storage List
-- [ ] Create `src/components/crypto/storage-list.tsx`
-- [ ] Show storage type icon, name, value, percentage
-- [ ] Selected state highlighting
-- [ ] Empty state
+- [x] Create `src/components/crypto/storage-list.tsx`
+- [x] Show storage type icon, name, value, percentage
+- [x] Selected state highlighting
+- [x] Empty state
 
 #### Step 3.9: Storage Assets Panel
-- [ ] Create `src/components/crypto/storage-assets-panel.tsx`
-- [ ] Show assets in selected storage
-- [ ] Sort by value descending
-- [ ] Empty state if no selection
-- [ ] Empty state if no assets
+- [x] Create `src/components/crypto/storage-assets-panel.tsx`
+- [x] Show assets in selected storage
+- [x] Sort by value descending
+- [x] Empty state if no selection
+- [x] Empty state if no assets
 
 **Note:** Asset values per storage will show 0 until transactions are implemented in Phase 4.
 
 #### Step 3.10: Wire Up Page
-- [ ] Layout components
-- [ ] Handle selection state
-- [ ] URL param persistence
-- [ ] Loading states
+- [x] Layout components
+- [x] Handle selection state
+- [x] URL param persistence
+- [x] Loading states
 
 #### Step 3.11: Visual Testing
-- [ ] Test in browser with Playwright
-- [ ] Add CEX and Wallet storages
-- [ ] Test selection behavior
-- [ ] Test responsive design
+- [x] Test in browser with Playwright
+- [x] Add CEX and Wallet storages
+- [x] Test selection behavior
+- [x] Test responsive design
 
 ### Files Created/Modified
 
 | Action | File |
 |--------|------|
-| Created | `supabase/migrations/<timestamp>_create_crypto_storages.sql` |
+| Created | `supabase/migrations/20260102150000_create_crypto_storages.sql` |
 | Created | `src/routes/_authenticated/crypto/storage.tsx` |
 | Created | `src/lib/api/crypto-storages.ts` |
 | Created | `src/lib/hooks/use-crypto-storages.ts` |
@@ -375,6 +375,8 @@ CREATE INDEX idx_crypto_storages_user ON public.crypto_storages(user_id);
 | Created | `src/components/crypto/storage-list.tsx` |
 | Created | `src/components/crypto/storage-assets-panel.tsx` |
 | Modified | `src/lib/crypto/types.ts` |
+| Modified | `src/components/crypto/index.ts` |
+| Modified | `src/lib/query-keys.ts` |
 | Modified | `src/types/database.ts` (auto-generated) |
 
 ---

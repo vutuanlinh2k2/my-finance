@@ -99,14 +99,45 @@ export interface CryptoAssetWithPrice extends CryptoAsset {
 }
 
 /**
- * Crypto Storage (will be extended in Phase 3)
+ * Crypto Storage from database
  */
-export interface CryptoStorageBase {
+export interface CryptoStorage {
   id: string
+  userId: string
+  type: StorageType
+  name: string
+  address: string | null
+  explorerUrl: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * Input for creating a crypto storage
+ */
+export interface CryptoStorageInput {
   type: StorageType
   name: string
   address?: string
   explorerUrl?: string
+}
+
+/**
+ * Input for updating a crypto storage
+ */
+export interface CryptoStorageUpdate {
+  name?: string
+  address?: string
+  explorerUrl?: string
+}
+
+/**
+ * Crypto Storage with calculated value (for display)
+ */
+export interface CryptoStorageWithValue extends CryptoStorage {
+  totalValueVnd: number
+  percentage: number
+  color: string
 }
 
 /**

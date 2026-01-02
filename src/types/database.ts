@@ -88,6 +88,39 @@ export type Database = {
         }
         Relationships: []
       }
+      crypto_storages: {
+        Row: {
+          address: string | null
+          created_at: string
+          explorer_url: string | null
+          id: string
+          name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          explorer_url?: string | null
+          id?: string
+          name: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          explorer_url?: string | null
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       exchange_rates: {
         Row: {
           from_currency: string
