@@ -507,17 +507,52 @@ CREATE INDEX idx_crypto_transactions_storage
 
 #### Step 4.7: Transaction Type Badge
 - [ ] Create `src/components/crypto/transaction-type-badge.tsx`
-- [ ] Distinct color per type
-- [ ] Icon per type
+- [ ] Use CVA (Class Variance Authority) for badge variants
+- [ ] **Badge Colors & Icons per Type:**
+  - **Buy:** Green/Emerald background, ShoppingCart or ArrowDown icon
+  - **Sell:** Red background, CurrencyDollar or ArrowUp icon
+  - **Transfer Between:** Blue background, ArrowsLeftRight icon
+  - **Swap:** Purple background, ArrowsClockwise or Swap icon
+  - **Transfer In:** Teal/Cyan background, ArrowDownLeft or Download icon
+  - **Transfer Out:** Orange background, ArrowUpRight or Upload icon
+- [ ] Badge shows icon + type label (e.g., [icon] "Buy")
+- [ ] Consistent sizing across all badges
 
 #### Step 4.8: Transaction List
 - [ ] Create `src/components/crypto/transaction-list.tsx`
-- [ ] Date column
-- [ ] Type badge
-- [ ] Details column (type-specific formatting)
-- [ ] TX ID/Link column
-- [ ] Actions column (Edit, Delete)
-- [ ] Pagination
+- [ ] **Columns:**
+  - Date column (formatted consistently, e.g., "Jan 5, 2024")
+  - Type badge (colored, with icon)
+  - Details column (type-specific formatting - see below)
+  - TX ID/Link column (truncated ID or external link icon)
+  - Actions column (Edit, Delete buttons)
+- [ ] **Type-Specific Details Display:**
+  - **Buy:** "Bought {amount} {symbol} for {fiat_amount}" + storage icon
+    - Example: "Bought 0.5 BTC for 250M" [Binance icon]
+  - **Sell:** "Sold {amount} {symbol} for {fiat_amount}" + storage icon
+    - Example: "Sold 0.3 BTC for 180M" [Binance icon]
+  - **Transfer Between:** "{amount} {symbol}: {from_storage} → {to_storage}"
+    - Example: "0.2 BTC: Binance → Ledger"
+  - **Swap:** "{from_amount} {from_symbol} → {to_amount} {to_symbol}" + storage icon
+    - Example: "0.5 BTC → 8.5 ETH" [Binance icon]
+  - **Transfer In:** "Received {amount} {symbol}" + storage icon
+    - Example: "Received 0.1 BTC" [MetaMask icon]
+  - **Transfer Out:** "Sent {amount} {symbol}" + storage icon
+    - Example: "Sent 0.05 BTC" [MetaMask icon]
+- [ ] **TX ID/Link Column:**
+  - If tx_explorer_url exists: Show external link icon, opens in new tab
+  - If only tx_id exists: Show truncated ID (first 8 chars...) with copy button
+  - If neither: Show dash or empty
+- [ ] **Actions Column:**
+  - Edit button: Opens edit modal with pre-populated data
+  - Delete button: Opens confirmation dialog
+- [ ] **Pagination:**
+  - 20 items per page
+  - Page navigation controls (First, Prev, page numbers, Next, Last)
+  - Current page indicator
+  - Total count display
+- [ ] **Empty State:** "No transactions found" with Add Transaction CTA
+- [ ] **Loading State:** Skeleton rows
 
 #### Step 4.9: Add Transaction Modal
 - [ ] Create `src/components/crypto/add-transaction-modal.tsx`
@@ -525,17 +560,214 @@ CREATE INDEX idx_crypto_transactions_storage
 - [ ] Step 2: Type-specific form
 
 #### Step 4.10: Transaction Type Forms
+
+##### Step 4.10.1: Buy Form (`buy-form.tsx`)
 - [ ] Create `src/components/crypto/transaction-forms/buy-form.tsx`
+- [ ] **Fields:**
+  - Asset dropdown (select from user's existing assets, required)
+  - Amount input (crypto amount bought, required, positive decimal)
+  - Storage dropdown (where the asset is stored after buying, required)
+  - Fiat Amount input (VND paid, required, positive integer)
+  - Date picker (required, defaults to today)
+  - TX ID input (optional, for reference)
+  - TX Explorer URL input (optional, sanitized with `sanitizeUrl()`)
+- [ ] **Validation:**
+  - All required fields must be filled
+  - Amount must be positive number
+  - Fiat Amount must be positive integer
+- [ ] **Note:** Buy creates linked expense - handled in Phase 5
+
+##### Step 4.10.2: Sell Form (`sell-form.tsx`)
 - [ ] Create `src/components/crypto/transaction-forms/sell-form.tsx`
+- [ ] **Fields:**
+  - Asset dropdown (select from user's existing assets, required)
+  - Amount input (crypto amount sold, required, positive decimal)
+  - Storage dropdown (where the asset is sold from, required)
+  - Fiat Amount input (VND received, required, positive integer)
+  - Date picker (required, defaults to today)
+  - TX ID input (optional)
+  - TX Explorer URL input (optional, sanitized)
+- [ ] **Validation:**
+  - All required fields must be filled
+  - Amount must be positive and ≤ available balance in selected storage
+  - Show "Insufficient balance" error if amount > balance
+  - Fiat Amount must be positive integer
+- [ ] **UI Enhancement:** Show available balance for selected asset/storage
+- [ ] **Note:** Sell creates linked income - handled in Phase 5
+
+##### Step 4.10.3: Transfer Between Form (`transfer-between-form.tsx`)
 - [ ] Create `src/components/crypto/transaction-forms/transfer-between-form.tsx`
+- [ ] **Fields:**
+  - Asset dropdown (select from user's existing assets, required)
+  - Amount input (crypto amount to transfer, required, positive decimal)
+  - From Storage dropdown (source storage, required)
+  - To Storage dropdown (destination storage, required)
+  - Date picker (required, defaults to today)
+  - TX ID input (optional)
+  - TX Explorer URL input (optional, sanitized)
+- [ ] **Validation:**
+  - All required fields must be filled
+  - From Storage ≠ To Storage (show error "Source and destination must be different")
+  - Amount must be positive and ≤ available balance in From Storage
+  - Show "Insufficient balance in [storage name]" error if amount > balance
+- [ ] **UI Enhancement:** Show available balance for selected asset in From Storage
+- [ ] **Balance Effect:** Decreases From Storage, increases To Storage (net zero for total)
+
+##### Step 4.10.4: Swap Form (`swap-form.tsx`)
 - [ ] Create `src/components/crypto/transaction-forms/swap-form.tsx`
+- [ ] **Fields:**
+  - From Asset dropdown (asset being swapped away, required)
+  - From Amount input (amount of from_asset, required, positive decimal)
+  - To Asset dropdown (asset being received, required)
+  - To Amount input (amount of to_asset received, required, positive decimal)
+  - Storage dropdown (where the swap happens, required)
+  - Date picker (required, defaults to today)
+  - TX ID input (optional)
+  - TX Explorer URL input (optional, sanitized)
+- [ ] **Validation:**
+  - All required fields must be filled
+  - From Asset ≠ To Asset (show error "Cannot swap same asset")
+  - From Amount must be positive and ≤ available balance of From Asset in Storage
+  - To Amount must be positive
+  - Show "Insufficient balance" error if From Amount > balance
+- [ ] **UI Enhancement:** Show available balance for From Asset in selected Storage
+- [ ] **Balance Effect:** Decreases From Asset balance, increases To Asset balance in same storage
+
+##### Step 4.10.5: Transfer In Form (`transfer-in-form.tsx`)
 - [ ] Create `src/components/crypto/transaction-forms/transfer-in-form.tsx`
+- [ ] **Fields:**
+  - Asset dropdown (asset being received, required)
+  - Amount input (crypto amount received, required, positive decimal)
+  - Storage dropdown (where the asset is received, required)
+  - Date picker (required, defaults to today)
+  - TX ID input (optional)
+  - TX Explorer URL input (optional, sanitized)
+- [ ] **Validation:**
+  - All required fields must be filled
+  - Amount must be positive
+- [ ] **Use Cases:** Airdrops, gifts received, mining rewards, staking rewards
+- [ ] **Balance Effect:** Adds amount to asset balance in specified storage
+- [ ] **Note:** Does NOT create linked income transaction (unlike Sell)
+
+##### Step 4.10.6: Transfer Out Form (`transfer-out-form.tsx`)
 - [ ] Create `src/components/crypto/transaction-forms/transfer-out-form.tsx`
+- [ ] **Fields:**
+  - Asset dropdown (asset being sent out, required)
+  - Amount input (crypto amount sent, required, positive decimal)
+  - Storage dropdown (where the asset is sent from, required)
+  - Date picker (required, defaults to today)
+  - TX ID input (optional)
+  - TX Explorer URL input (optional, sanitized)
+- [ ] **Validation:**
+  - All required fields must be filled
+  - Amount must be positive and ≤ available balance in selected storage
+  - Show "Insufficient balance" error if amount > balance
+- [ ] **UI Enhancement:** Show available balance for selected asset/storage
+- [ ] **Use Cases:** Gifts sent, donations, lost funds, network fees paid in crypto
+- [ ] **Balance Effect:** Subtracts amount from asset balance in specified storage
+- [ ] **Note:** Does NOT create linked expense transaction (unlike Buy)
 
 #### Step 4.11: Balance Calculation Utility
-- [ ] Implement `calculateAssetBalance(assetId, storageId, transactions)` in utils
-- [ ] Handle all 6 transaction types correctly
-- [ ] Test with various transaction combinations
+
+##### Step 4.11.1: Core Balance Function
+- [ ] Create `calculateAssetBalance(assetId, storageId, transactions)` in `src/lib/crypto/utils.ts`
+- [ ] Parameters:
+  - `assetId: string` - The asset to calculate balance for
+  - `storageId: string | null` - Specific storage (null = all storages combined)
+  - `transactions: CryptoTransaction[]` - All user's crypto transactions
+- [ ] Returns: `number` - The calculated balance
+
+##### Step 4.11.2: Buy Transaction Effect
+- [ ] **Logic:** Adds `amount` to asset balance in `storage_id`
+- [ ] **Code:**
+  ```typescript
+  case 'buy':
+    if (tx.asset_id === assetId && (!storageId || tx.storage_id === storageId)) {
+      balance += tx.amount
+    }
+  ```
+
+##### Step 4.11.3: Sell Transaction Effect
+- [ ] **Logic:** Subtracts `amount` from asset balance in `storage_id`
+- [ ] **Code:**
+  ```typescript
+  case 'sell':
+    if (tx.asset_id === assetId && (!storageId || tx.storage_id === storageId)) {
+      balance -= tx.amount
+    }
+  ```
+
+##### Step 4.11.4: Transfer Between Transaction Effect
+- [ ] **Logic:** Moves amount between storages (net zero for total balance)
+- [ ] **Code:**
+  ```typescript
+  case 'transfer_between':
+    if (tx.asset_id === assetId) {
+      if (storageId === tx.from_storage_id) {
+        balance -= tx.amount  // Leaving from_storage
+      } else if (storageId === tx.to_storage_id) {
+        balance += tx.amount  // Arriving at to_storage
+      }
+      // If storageId is null (total), net effect is 0
+    }
+  ```
+
+##### Step 4.11.5: Swap Transaction Effect
+- [ ] **Logic:** Decreases from_asset, increases to_asset in same storage
+- [ ] **Code:**
+  ```typescript
+  case 'swap':
+    if (!storageId || tx.storage_id === storageId) {
+      if (tx.from_asset_id === assetId) {
+        balance -= tx.from_amount  // Swapping away
+      }
+      if (tx.to_asset_id === assetId) {
+        balance += tx.to_amount    // Receiving
+      }
+    }
+  ```
+
+##### Step 4.11.6: Transfer In Transaction Effect
+- [ ] **Logic:** Adds `amount` to asset balance in `storage_id`
+- [ ] **Code:**
+  ```typescript
+  case 'transfer_in':
+    if (tx.asset_id === assetId && (!storageId || tx.storage_id === storageId)) {
+      balance += tx.amount
+    }
+  ```
+
+##### Step 4.11.7: Transfer Out Transaction Effect
+- [ ] **Logic:** Subtracts `amount` from asset balance in `storage_id`
+- [ ] **Code:**
+  ```typescript
+  case 'transfer_out':
+    if (tx.asset_id === assetId && (!storageId || tx.storage_id === storageId)) {
+      balance -= tx.amount
+    }
+  ```
+
+##### Step 4.11.8: Helper Functions
+- [ ] Create `calculateStorageBalance(storageId, transactions, prices, exchangeRate)` - total VND value in a storage
+- [ ] Create `calculatePortfolioBalance(transactions, prices, exchangeRate)` - total VND value across all storages
+- [ ] Create `getAvailableBalance(assetId, storageId, transactions)` - for validation in forms
+
+##### Step 4.11.9: Negative Balance Prevention
+- [ ] Before creating Sell: Validate `amount ≤ getAvailableBalance(assetId, storageId)`
+- [ ] Before creating Transfer Between: Validate `amount ≤ getAvailableBalance(assetId, fromStorageId)`
+- [ ] Before creating Swap: Validate `fromAmount ≤ getAvailableBalance(fromAssetId, storageId)`
+- [ ] Before creating Transfer Out: Validate `amount ≤ getAvailableBalance(assetId, storageId)`
+- [ ] Show user-friendly error messages with current available balance
+
+##### Step 4.11.10: Testing Balance Calculations
+- [ ] Test Buy: Balance increases correctly
+- [ ] Test Sell: Balance decreases, cannot go negative
+- [ ] Test Transfer Between: From decreases, To increases, total unchanged
+- [ ] Test Swap: From asset decreases, To asset increases
+- [ ] Test Transfer In: Balance increases (no linked transaction)
+- [ ] Test Transfer Out: Balance decreases, cannot go negative
+- [ ] Test mixed transactions: Cumulative balance is correct
+- [ ] Test per-storage vs total balance calculations
 
 #### Step 4.12: Update Assets Page
 - [ ] Now Balance column shows real calculated values
@@ -565,9 +797,19 @@ CREATE INDEX idx_crypto_transactions_storage
 | Created | `src/components/crypto/transaction-list.tsx` |
 | Created | `src/components/crypto/transaction-type-badge.tsx` |
 | Created | `src/components/crypto/add-transaction-modal.tsx` |
-| Created | `src/components/crypto/transaction-forms/*.tsx` (6 files) |
-| Modified | `src/lib/crypto/utils.ts` |
-| Modified | `src/lib/crypto/types.ts` |
+| Created | `src/components/crypto/transaction-forms/buy-form.tsx` |
+| Created | `src/components/crypto/transaction-forms/sell-form.tsx` |
+| Created | `src/components/crypto/transaction-forms/transfer-between-form.tsx` |
+| Created | `src/components/crypto/transaction-forms/swap-form.tsx` |
+| Created | `src/components/crypto/transaction-forms/transfer-in-form.tsx` |
+| Created | `src/components/crypto/transaction-forms/transfer-out-form.tsx` |
+| Created | `src/components/crypto/transaction-forms/index.ts` |
+| Modified | `src/lib/crypto/utils.ts` (balance calculation functions) |
+| Modified | `src/lib/crypto/types.ts` (CryptoTransaction, input types) |
+| Modified | `src/lib/query-keys.ts` (crypto.transactions keys) |
+| Modified | `src/components/crypto/index.ts` (export new components) |
+| Modified | `src/routes/_authenticated/crypto/assets.tsx` (real balances) |
+| Modified | `src/routes/_authenticated/crypto/storage.tsx` (real balances) |
 | Modified | `src/types/database.ts` (auto-generated) |
 
 ---
@@ -584,9 +826,11 @@ Implement the Buy/Sell ↔ Expense/Income integration with "Investing" tag valid
 - [ ] Buy creates linked expense transaction with "Investing" tag
 - [ ] Sell creates linked income transaction with "Investing" tag
 - [ ] Missing tag shows clear error message
-- [ ] Edit updates linked transaction
-- [ ] Delete cascades to linked transaction
+- [ ] Edit modal works for all 6 transaction types
+- [ ] Edit Buy/Sell updates linked expense/income transaction
+- [ ] Delete Buy/Sell cascades to linked transaction
 - [ ] Calendar page shows Buy/Sell as expense/income
+- [ ] Edit validates balance for Sell, Transfer Between, Swap, Transfer Out
 
 ### Implementation Steps
 
@@ -629,10 +873,31 @@ Implement the Buy/Sell ↔ Expense/Income integration with "Investing" tag valid
 
 #### Step 5.6: Edit Transaction Modal
 - [ ] Create `src/components/crypto/edit-transaction-modal.tsx`
-- [ ] Pre-populate with existing data
-- [ ] Type cannot be changed
-- [ ] Save updates both records (Buy/Sell)
-- [ ] Delete button with cascade warning
+- [ ] **Common Behavior (All Types):**
+  - Pre-populate all fields with existing transaction data
+  - Transaction type is displayed but CANNOT be changed
+  - Date, TX ID, TX Explorer URL are editable
+  - Cancel discards changes, Save commits changes
+  - Delete button with confirmation dialog
+- [ ] **Type-Specific Edit Behavior:**
+  - **Buy:** Asset, Amount, Storage, Fiat Amount editable; updates linked expense on save
+  - **Sell:** Asset, Amount, Storage, Fiat Amount editable; updates linked income on save; validates balance
+  - **Transfer Between:** Asset, Amount, From/To Storage editable; validates balance in From Storage
+  - **Swap:** From/To Asset, From/To Amount, Storage editable; validates From Asset balance
+  - **Transfer In:** Asset, Amount, Storage editable (no balance validation needed)
+  - **Transfer Out:** Asset, Amount, Storage editable; validates balance
+- [ ] **Balance Validation on Edit:**
+  - When editing amount, check new amount doesn't exceed available balance
+  - Consider existing transaction's contribution to balance (can use same amount)
+  - Show error if edit would cause negative balance
+- [ ] **Buy/Sell Linked Transaction Sync:**
+  - Editing fiat_amount → update linked expense/income amount
+  - Editing date → update linked transaction date
+  - Changes must be atomic (both succeed or both fail)
+- [ ] **Delete Behavior:**
+  - For Buy/Sell: Show warning that linked expense/income will also be deleted
+  - For other types: Standard delete confirmation
+  - After delete: Refresh transaction list, recalculate balances
 
 #### Step 5.7: Calendar Integration Verification
 - [ ] Test Buy expense appears on calendar
@@ -646,8 +911,11 @@ Implement the Buy/Sell ↔ Expense/Income integration with "Investing" tag valid
 | Action | File |
 |--------|------|
 | Created | `src/components/crypto/edit-transaction-modal.tsx` |
-| Modified | `src/lib/api/crypto-transactions.ts` |
-| Modified | `src/lib/crypto/utils.ts` |
+| Modified | `src/lib/api/crypto-transactions.ts` (Buy/Sell linked transaction logic) |
+| Modified | `src/lib/crypto/utils.ts` (tag validation utility) |
+| Modified | `src/lib/hooks/use-crypto-transactions.ts` (edit/delete mutations) |
+| Modified | `src/components/crypto/transaction-list.tsx` (wire up edit modal) |
+| Modified | `src/components/crypto/index.ts` (export edit modal) |
 
 ---
 
