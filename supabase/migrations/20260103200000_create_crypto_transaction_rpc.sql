@@ -29,7 +29,7 @@ DECLARE
 BEGIN
   -- Insert linked transaction (expense for buy, income for sell)
   INSERT INTO public.transactions (user_id, title, amount, date, type, tag_id)
-  VALUES (p_user_id, p_linked_title, p_fiat_amount, p_date, p_linked_type::public.transaction_type, p_tag_id)
+  VALUES (p_user_id, p_linked_title, p_fiat_amount, p_date, p_linked_type, p_tag_id)
   RETURNING id INTO v_linked_id;
 
   -- Insert crypto transaction with link to the regular transaction
@@ -74,7 +74,7 @@ DECLARE
 BEGIN
   -- Insert linked transaction (income for transfer_in, expense for transfer_out)
   INSERT INTO public.transactions (user_id, title, amount, date, type, tag_id)
-  VALUES (p_user_id, p_linked_title, p_fiat_amount, p_date, p_linked_type::public.transaction_type, p_tag_id)
+  VALUES (p_user_id, p_linked_title, p_fiat_amount, p_date, p_linked_type, p_tag_id)
   RETURNING id INTO v_linked_id;
 
   -- Insert crypto transaction with link to the regular transaction
