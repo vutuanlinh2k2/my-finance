@@ -41,7 +41,10 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border p-4">
-        <span className="text-xl font-semibold">My Finance</span>
+        <div className="flex items-center gap-2">
+          <img src="/favicon.png" alt="" className="size-6" />
+          <span className="text-lg font-semibold">TLinh's Finance</span>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
