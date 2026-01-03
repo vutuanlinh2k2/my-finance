@@ -28,6 +28,10 @@ import {
   useDeleteTransaction,
   useUpdateTransaction,
 } from '@/lib/hooks/use-transactions'
+import { useExchangeRateValue } from '@/lib/hooks/use-exchange-rate'
+import { formatCompact, formatCurrency } from '@/lib/currency'
+
+type Currency = 'VND' | 'USD'
 
 interface EditTransactionModalProps {
   open: boolean
@@ -45,10 +49,12 @@ export function EditTransactionModal({
   const { data: tags = [] } = useTags()
   const updateMutation = useUpdateTransaction()
   const deleteMutation = useDeleteTransaction()
+  const { rate: exchangeRate, isLoading: isRateLoading } = useExchangeRateValue()
 
   const [type, setType] = useState<TransactionType>('expense')
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
+  const [currency, setCurrency] = useState<Currency>('VND')
   const [date, setDate] = useState('')
   const [tagId, setTagId] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -61,6 +67,7 @@ export function EditTransactionModal({
       setType(transaction.type as TransactionType)
       setTitle(transaction.title)
       setAmount(String(transaction.amount))
+      setCurrency('VND') // Always show existing amount in VND
       setDate(transaction.date)
       setTagId(transaction.tag_id)
       setIsDeleteDialogOpen(false)
@@ -79,10 +86,30 @@ export function EditTransactionModal({
   }, [type, tagId, tags])
 
   const handleAmountChange = (value: string) => {
-    // Only allow whole numbers (VND doesn't use decimals)
-    const cleaned = value.replace(/[^\d]/g, '')
-    setAmount(cleaned)
+    if (currency === 'VND') {
+      // Only allow whole numbers (VND doesn't use decimals)
+      const cleaned = value.replace(/[^\d]/g, '')
+      setAmount(cleaned)
+    } else {
+      // Allow decimals for USD (max 2 decimal places)
+      const cleaned = value.replace(/[^\d.]/g, '')
+      // Ensure only one decimal point and max 2 decimal places
+      const parts = cleaned.split('.')
+      if (parts.length > 2) {
+        setAmount(parts[0] + '.' + parts[1])
+      } else if (parts[1]?.length > 2) {
+        setAmount(parts[0] + '.' + parts[1].slice(0, 2))
+      } else {
+        setAmount(cleaned)
+      }
+    }
   }
+
+  // Calculate VND equivalent for USD amounts
+  const vndEquivalent =
+    currency === 'USD' && amount
+      ? Math.round(parseFloat(amount) * exchangeRate)
+      : null
 
   const handleSubmit = async () => {
     if (!transaction) return
@@ -92,7 +119,8 @@ export function EditTransactionModal({
       return
     }
 
-    const numAmount = parseInt(amount, 10)
+    const numAmount =
+      currency === 'VND' ? parseInt(amount, 10) : parseFloat(amount)
     if (isNaN(numAmount) || numAmount <= 0) {
       toast.error('Please enter a valid amount')
       return
@@ -103,12 +131,16 @@ export function EditTransactionModal({
       return
     }
 
+    // Convert USD to VND if needed
+    const finalAmount =
+      currency === 'USD' ? Math.round(numAmount * exchangeRate) : numAmount
+
     try {
       await updateMutation.mutateAsync({
         id: transaction.id,
         updates: {
           title: title.trim(),
-          amount: numAmount,
+          amount: finalAmount,
           date,
           type,
           tag_id: tagId,
@@ -204,18 +236,64 @@ export function EditTransactionModal({
             {/* Amount Input */}
             <div>
               <label className="mb-1.5 block text-sm font-medium">Amount</label>
-              <div className="relative">
-                <Input
-                  value={amount}
-                  onChange={(e) => handleAmountChange(e.target.value)}
-                  placeholder="0"
-                  className="h-10 rounded-lg pr-7 text-sm"
-                  disabled={isPending}
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                  ₫
-                </span>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    value={amount}
+                    onChange={(e) => handleAmountChange(e.target.value)}
+                    placeholder="0"
+                    className="h-10 rounded-lg pr-8 text-sm"
+                    disabled={isPending}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                    {currency === 'VND' ? '₫' : '$'}
+                  </span>
+                </div>
+                {/* Currency Toggle */}
+                <div className="flex rounded-lg border border-border">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrency('VND')
+                      setAmount('')
+                    }}
+                    className={cn(
+                      'rounded-l-md px-3 py-2 text-sm font-medium transition-colors',
+                      currency === 'VND'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    disabled={isPending}
+                  >
+                    VND
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrency('USD')
+                      setAmount('')
+                    }}
+                    className={cn(
+                      'rounded-r-md px-3 py-2 text-sm font-medium transition-colors',
+                      currency === 'USD'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    disabled={isPending || isRateLoading}
+                  >
+                    USD
+                  </button>
+                </div>
               </div>
+              {/* VND Conversion Preview */}
+              {currency === 'USD' && vndEquivalent !== null && !isNaN(vndEquivalent) && (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  ≈ {formatCompact(vndEquivalent)}{' '}
+                  <span className="tooltip-fast" data-tooltip={formatCurrency(vndEquivalent)}>
+                    (hover for full)
+                  </span>
+                </p>
+              )}
             </div>
 
             {/* Date and Tag Row */}
