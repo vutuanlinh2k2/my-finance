@@ -8,6 +8,7 @@ import {
 } from '@phosphor-icons/react'
 import type { CryptoStorage, CryptoStorageWithValue } from '@/lib/crypto/types'
 import { formatCompact, formatCurrency } from '@/lib/currency'
+import { sanitizeUrl } from '@/lib/subscriptions/utils'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -116,18 +117,23 @@ export function StorageList({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {storage.explorerUrl && (
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    window.open(storage.explorerUrl!, '_blank', 'noopener')
-                  }}
-                  className="gap-2"
-                >
-                  <ArrowSquareOut className="size-4" />
-                  Open Link
-                </DropdownMenuItem>
-              )}
+              {(() => {
+                const safeUrl = storage.explorerUrl
+                  ? sanitizeUrl(storage.explorerUrl)
+                  : null
+                return safeUrl ? (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      window.open(safeUrl, '_blank', 'noopener')
+                    }}
+                    className="gap-2"
+                  >
+                    <ArrowSquareOut className="size-4" />
+                    Open Link
+                  </DropdownMenuItem>
+                ) : null
+              })()}
               {onEdit && (
                 <DropdownMenuItem
                   onClick={(e) => {

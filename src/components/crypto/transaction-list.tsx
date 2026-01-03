@@ -17,6 +17,7 @@ import type {
 } from '@/lib/crypto/types'
 import { formatCryptoAmount, truncateAddress } from '@/lib/crypto/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
+import { sanitizeUrl } from '@/lib/subscriptions/utils'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -201,10 +202,15 @@ export function TransactionList({
 
   // Render TX ID/Link column
   const renderTxLink = (tx: CryptoTransactionWithDetails) => {
-    if (tx.txExplorerUrl) {
+    // Sanitize URL at render time as defense-in-depth
+    const safeExplorerUrl = tx.txExplorerUrl
+      ? sanitizeUrl(tx.txExplorerUrl)
+      : null
+
+    if (safeExplorerUrl) {
       return (
         <a
-          href={tx.txExplorerUrl}
+          href={safeExplorerUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
