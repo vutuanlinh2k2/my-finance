@@ -1,11 +1,16 @@
 import { useState } from 'react'
-import { ChartLine } from '@phosphor-icons/react'
+import { AllocationHistoryChart } from './allocation-history-chart'
+import { ValueHistoryChart } from './value-history-chart'
+import type { CryptoAsset, PortfolioTimeRange } from '@/lib/crypto/types'
 import { cn } from '@/lib/utils'
+import {
+  useAllocationHistory,
+  useValueHistory,
+} from '@/lib/hooks/use-portfolio-history'
 
 type ChartTab = 'allocation' | 'value'
-type TimeRange = '7d' | '30d' | '60d' | '1y' | 'all'
 
-const TIME_RANGES: Array<{ value: TimeRange; label: string }> = [
+const TIME_RANGES: Array<{ value: PortfolioTimeRange; label: string }> = [
   { value: '7d', label: '7d' },
   { value: '30d', label: '30d' },
   { value: '60d', label: '60d' },
@@ -13,15 +18,40 @@ const TIME_RANGES: Array<{ value: TimeRange; label: string }> = [
   { value: 'all', label: 'All' },
 ]
 
-export function PortfolioHistoryChart() {
+interface PortfolioHistoryChartProps {
+  assets?: Array<CryptoAsset>
+  exchangeRate?: number
+}
+
+export function PortfolioHistoryChart({
+  assets = [],
+  exchangeRate = 25500,
+}: PortfolioHistoryChartProps) {
   const [activeTab, setActiveTab] = useState<ChartTab>('allocation')
-  const [_timeRange, setTimeRange] = useState<TimeRange>('30d')
+  const [timeRange, setTimeRange] = useState<PortfolioTimeRange>('30d')
+
+  // Fetch data based on active tab
+  const allocationHistory = useAllocationHistory(timeRange)
+  const valueHistory = useValueHistory(timeRange, exchangeRate)
+
+  const isLoading =
+    activeTab === 'allocation'
+      ? allocationHistory.isLoading
+      : valueHistory.isLoading
+
+  // Prepare asset info for allocation chart tooltip
+  const assetInfo = assets.map((a) => ({
+    coingeckoId: a.coingeckoId,
+    name: a.name,
+    symbol: a.symbol,
+    iconUrl: a.iconUrl,
+  }))
 
   return (
     <div className="flex flex-1 flex-col rounded-lg border border-border bg-sidebar p-4">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        {/* Tabs - matching reports header style */}
+        {/* Tabs */}
         <div className="flex rounded-lg border border-border bg-card p-1">
           <button
             type="button"
@@ -49,17 +79,18 @@ export function PortfolioHistoryChart() {
           </button>
         </div>
 
-        {/* Time Range Selector (disabled for now) */}
+        {/* Time Range Selector */}
         <div className="flex rounded-lg border border-border bg-card p-1">
           {TIME_RANGES.map((range) => (
             <button
               key={range.value}
               type="button"
               onClick={() => setTimeRange(range.value)}
-              disabled
               className={cn(
                 'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-                'cursor-not-allowed text-muted-foreground/50',
+                timeRange === range.value
+                  ? 'bg-foreground text-background'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {range.label}
@@ -68,18 +99,18 @@ export function PortfolioHistoryChart() {
         </div>
       </div>
 
-      {/* Empty State / Coming Soon */}
-      <div className="flex flex-1 flex-col items-center justify-center">
-        <ChartLine
-          weight="duotone"
-          className="size-12 text-muted-foreground/30"
-        />
-        <p className="mt-3 font-medium text-muted-foreground">
-          Historical data coming soon
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground/70">
-          Portfolio snapshots will be collected daily
-        </p>
+      {/* Chart Content */}
+      <div className="flex-1">
+        {activeTab === 'allocation' ? (
+          <AllocationHistoryChart
+            data={allocationHistory.data}
+            assetIds={allocationHistory.assetIds}
+            assets={assetInfo}
+            isLoading={isLoading}
+          />
+        ) : (
+          <ValueHistoryChart data={valueHistory.data} isLoading={isLoading} />
+        )}
       </div>
     </div>
   )

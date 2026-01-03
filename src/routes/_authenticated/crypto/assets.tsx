@@ -202,7 +202,10 @@ function CryptoAssetsPage() {
         </div>
 
         {/* History Charts */}
-        <PortfolioHistoryChart />
+        <PortfolioHistoryChart
+          assets={assets}
+          exchangeRate={exchangeRate.rate}
+        />
       </div>
 
       {/* Assets Table */}
