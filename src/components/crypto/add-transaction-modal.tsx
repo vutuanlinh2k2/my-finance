@@ -26,6 +26,7 @@ import type {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -166,6 +167,11 @@ export function AddTransactionModal({
               'Add Transaction'
             )}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {selectedType
+              ? `Fill in the details for your ${selectedTypeConfig?.label.toLowerCase()} transaction`
+              : 'Select a transaction type to add'}
+          </DialogDescription>
         </DialogHeader>
 
         {/* Step 1: Type Selection */}

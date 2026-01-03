@@ -49,14 +49,21 @@ export function StorageList({
   return (
     <div className="flex flex-col gap-2">
       {storages.map((storage) => (
-        <button
+        <div
           key={storage.id}
-          type="button"
+          role="button"
+          tabIndex={0}
           onClick={() =>
             onSelect(selectedId === storage.id ? null : storage.id)
           }
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              onSelect(selectedId === storage.id ? null : storage.id)
+            }
+          }}
           className={cn(
-            'flex min-h-14 items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-colors hover:bg-muted/50',
+            'flex min-h-14 cursor-pointer items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             selectedId === storage.id && 'border-primary bg-primary/5',
           )}
         >
@@ -147,7 +154,7 @@ export function StorageList({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-        </button>
+        </div>
       ))}
     </div>
   )

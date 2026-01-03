@@ -24,6 +24,7 @@ import { formatCryptoAmount, getAvailableBalance } from '@/lib/crypto/utils'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -298,6 +299,9 @@ export function EditTransactionModal({
             </span>
             Edit {config.label} Transaction
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Modify the details of your {config.label.toLowerCase()} transaction
+          </DialogDescription>
         </DialogHeader>
 
         {/* Linked transaction notice */}

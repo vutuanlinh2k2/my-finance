@@ -12,6 +12,7 @@ import { isValidUrl, sanitizeUrl } from '@/lib/subscriptions'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -96,6 +97,9 @@ export function AddStorageModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Add Storage</DialogTitle>
+          <DialogDescription className="sr-only">
+            Add a new exchange or wallet to track your crypto holdings
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">

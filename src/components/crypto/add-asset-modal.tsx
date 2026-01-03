@@ -6,6 +6,7 @@ import { useCoinGeckoSearch } from '@/lib/hooks/use-coingecko'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -127,6 +128,9 @@ export function AddAssetModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Add Crypto Asset</DialogTitle>
+          <DialogDescription className="sr-only">
+            Search and add a cryptocurrency to track in your portfolio
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
