@@ -2,10 +2,7 @@ import { useMemo, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import type { TimeRange } from '@/lib/api/dashboard'
 import type { NetWorthSegment } from '@/lib/dashboard/types'
-import {
-  useDashboardData,
-  useNetWorthHistory,
-} from '@/lib/hooks/use-dashboard'
+import { useDashboardData, useNetWorthHistory } from '@/lib/hooks/use-dashboard'
 import { useCryptoAssets } from '@/lib/hooks/use-crypto-assets'
 import { useAllCryptoTransactions } from '@/lib/hooks/use-crypto-transactions'
 import { useCryptoMarkets } from '@/lib/hooks/use-coingecko'
@@ -76,9 +73,10 @@ function DashboardPage() {
   }
 
   // Calculate pie chart segments
+  // Guard against zero and negative totals (e.g., debt with no crypto)
   const segments: Array<NetWorthSegment> = useMemo(() => {
     const total = bankBalance + cryptoValueVnd
-    if (total === 0) return []
+    if (total <= 0) return []
 
     const result: Array<NetWorthSegment> = []
 
@@ -104,16 +102,6 @@ function DashboardPage() {
 
     return result
   }, [bankBalance, cryptoValueVnd])
-
-  // Transform history data to match chart format
-  const chartData = useMemo(() => {
-    return historyData.map((snapshot) => ({
-      date: snapshot.snapshotDate,
-      bankBalance: snapshot.bankBalance,
-      cryptoValue: snapshot.cryptoValueVnd,
-      totalNetWorth: snapshot.totalNetWorth,
-    }))
-  }, [historyData])
 
   const isLoading =
     isLoadingTotals ||
@@ -148,7 +136,7 @@ function DashboardPage() {
         {/* History Chart - 2/3 width on large screens */}
         <div className="h-[400px] lg:col-span-2">
           <NetWorthHistoryChart
-            data={chartData}
+            data={historyData}
             isLoading={isLoadingHistory}
             onTimeRangeChange={setTimeRange}
           />

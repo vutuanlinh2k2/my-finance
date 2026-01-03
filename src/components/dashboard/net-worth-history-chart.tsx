@@ -9,7 +9,7 @@ import {
   YAxis,
 } from 'recharts'
 import { ChartLineUp } from '@phosphor-icons/react'
-import type { NetWorthSnapshot, TimeRange } from '@/lib/dashboard/types'
+import type { NetWorthSnapshot, TimeRange } from '@/lib/api/dashboard'
 import { cn } from '@/lib/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
 
@@ -65,7 +65,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
         </span>
         <span className="flex items-center gap-1">
           <span className="size-2 rounded-full bg-blue-500" />
-          Crypto: {formatCompact(data.cryptoValue)}
+          Crypto: {formatCompact(data.cryptoValueVnd)}
         </span>
       </div>
     </div>
@@ -174,7 +174,7 @@ function ChartContent({ data }: { data: Array<NetWorthSnapshot> }) {
           stroke="var(--border)"
         />
         <XAxis
-          dataKey="date"
+          dataKey="snapshotDate"
           tickFormatter={formatDate}
           tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
           axisLine={false}

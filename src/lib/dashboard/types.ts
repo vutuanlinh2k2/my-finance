@@ -1,17 +1,9 @@
 /**
- * Time range options for the net worth history chart
+ * Dashboard Types
+ *
+ * Note: NetWorthSnapshot and TimeRange are defined in @/lib/api/dashboard
+ * and re-exported from @/lib/hooks/use-dashboard for convenience.
  */
-export type TimeRange = '1m' | '1y' | 'all'
-
-/**
- * Single data point for the net worth history chart
- */
-export interface NetWorthSnapshot {
-  date: string
-  bankBalance: number
-  cryptoValue: number
-  totalNetWorth: number
-}
 
 /**
  * Dashboard totals for the summary cards
