@@ -296,7 +296,9 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Verify authorization
+  // Verify authorization using custom CRON_SECRET
+  // JWT verification is disabled for this function (--no-verify-jwt)
+  // so we validate against our own secret for cron job security
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
     return new Response(JSON.stringify({ error: 'Missing authorization' }), {
@@ -305,13 +307,21 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Extract and validate the token
-  const token = authHeader.replace('Bearer ', '')
-  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+  const token = authHeader.replace('Bearer ', '').trim()
+  const cronSecret = Deno.env.get('CRON_SECRET')?.trim()
 
-  // Accept either service_role key (for manual invocation) or anon key (for cron jobs)
-  if (token !== serviceRoleKey && token !== anonKey) {
+  if (!cronSecret) {
+    console.error('CRON_SECRET environment variable is not set')
+    return new Response(
+      JSON.stringify({ error: 'Server configuration error' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+  }
+
+  if (token !== cronSecret) {
     return new Response(
       JSON.stringify({ error: 'Invalid authorization token' }),
       {
