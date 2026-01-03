@@ -20,7 +20,6 @@ type SortKey =
   | 'change24h'
   | 'change7d'
   | 'change30d'
-  | 'change60d'
   | 'change1y'
   | 'marketCap'
   | 'balance'
@@ -122,8 +121,6 @@ function getSortValue(asset: AssetWithPriceData, key: SortKey): number {
       return asset.priceChange7d ?? -Infinity
     case 'change30d':
       return asset.priceChange30d ?? -Infinity
-    case 'change60d':
-      return asset.priceChange60d ?? -Infinity
     case 'change1y':
       return asset.priceChange1y ?? -Infinity
     case 'marketCap':
@@ -142,7 +139,7 @@ export function AssetsTable({
   onDelete,
   isLoading = false,
 }: AssetsTableProps) {
-  const [sortKey, setSortKey] = useState<SortKey | null>(null)
+  const [sortKey, setSortKey] = useState<SortKey | null>('value')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   const handleSort = (key: SortKey) => {
@@ -177,7 +174,7 @@ export function AssetsTable({
       <div className="w-full overflow-hidden rounded-lg border border-border bg-sidebar">
         <div className="overflow-x-auto">
           {/* Header */}
-          <div className="grid min-w-[1400px] grid-cols-[200px_100px_90px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 border-b border-border px-4 py-3">
+          <div className="grid min-w-[1120px] grid-cols-[200px_100px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 border-b border-border px-4 py-3">
             <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Asset
             </span>
@@ -194,13 +191,10 @@ export function AssetsTable({
               30d
             </span>
             <span className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
-              60d
-            </span>
-            <span className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
               1y
             </span>
             <span className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
-              Market Cap
+              MCap
             </span>
             <span className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
               Balance
@@ -218,7 +212,7 @@ export function AssetsTable({
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="grid min-w-[1400px] grid-cols-[200px_100px_90px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 px-4 py-3"
+                className="grid min-w-[1120px] grid-cols-[200px_100px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 px-4 py-3"
               >
                 <div className="flex items-center gap-3">
                   <div className="size-8 animate-pulse rounded-full bg-muted" />
@@ -227,7 +221,7 @@ export function AssetsTable({
                     <div className="h-3 w-10 animate-pulse rounded bg-muted" />
                   </div>
                 </div>
-                {[...Array(10)].map((_, j) => (
+                {[...Array(9)].map((_, j) => (
                   <div key={j} className="flex items-center justify-end">
                     <div className="h-4 w-14 animate-pulse rounded bg-muted" />
                   </div>
@@ -261,7 +255,7 @@ export function AssetsTable({
     <div className="w-full overflow-hidden rounded-lg border border-border bg-sidebar">
       <div className="overflow-x-auto">
         {/* Table Header */}
-        <div className="grid min-w-[1400px] grid-cols-[200px_100px_90px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 border-b border-border px-4 py-3">
+        <div className="grid min-w-[1120px] grid-cols-[200px_100px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 border-b border-border px-4 py-3">
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Asset
           </span>
@@ -289,13 +283,6 @@ export function AssetsTable({
           <SortableHeader
             label="30d"
             sortKey="change30d"
-            currentSort={sortKey}
-            direction={sortDirection}
-            onSort={handleSort}
-          />
-          <SortableHeader
-            label="60d"
-            sortKey="change60d"
             currentSort={sortKey}
             direction={sortDirection}
             onSort={handleSort}
@@ -343,7 +330,7 @@ export function AssetsTable({
           {sortedAssets.map((asset) => (
             <div
               key={asset.id}
-              className="grid min-w-[1400px] grid-cols-[200px_100px_90px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 px-4 py-3 transition-colors hover:bg-muted/30"
+              className="grid min-w-[1120px] grid-cols-[200px_100px_90px_90px_90px_90px_100px_110px_110px_80px_60px] gap-2 px-4 py-3 transition-colors hover:bg-muted/30"
             >
               {/* Asset (icon + symbol) */}
               <div className="flex items-center gap-3">
@@ -385,9 +372,6 @@ export function AssetsTable({
               {/* 30d Change */}
               <PriceChangeCell change={asset.priceChange30d} />
 
-              {/* 60d Change */}
-              <PriceChangeCell change={asset.priceChange60d} />
-
               {/* 1y Change */}
               <PriceChangeCell change={asset.priceChange1y} />
 
@@ -403,7 +387,7 @@ export function AssetsTable({
               {/* Balance */}
               <div className={cellClasses}>
                 <span className="text-sm">
-                  {formatCryptoAmount(asset.balance, asset.symbol)}
+                  {formatCryptoAmount(asset.balance)}
                 </span>
               </div>
 
