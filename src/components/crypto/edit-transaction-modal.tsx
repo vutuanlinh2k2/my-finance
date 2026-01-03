@@ -248,7 +248,6 @@ export function EditTransactionModal({
           assetId,
           amount: parseFloat(amount),
           storageId,
-          fiatAmount: parseInt(fiatAmount, 10),
         })
         break
     }
@@ -305,20 +304,14 @@ export function EditTransactionModal({
         </DialogHeader>
 
         {/* Linked transaction notice */}
-        {(transaction.type === 'buy' ||
-          transaction.type === 'sell' ||
-          transaction.type === 'transfer_in' ||
-          transaction.type === 'transfer_out') &&
+        {(transaction.type === 'buy' || transaction.type === 'sell') &&
           transaction.linkedTransactionId && (
             <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
               <Warning className="mt-0.5 size-4 shrink-0" weight="bold" />
               <p>
                 This transaction is linked to a calendar{' '}
-                {transaction.type === 'buy' ||
-                transaction.type === 'transfer_out'
-                  ? 'expense'
-                  : 'income'}
-                . Changes to date and fiat amount will be synced.
+                {transaction.type === 'buy' ? 'expense' : 'income'}. Changes to
+                date and fiat amount will be synced.
               </p>
             </div>
           )}
@@ -338,9 +331,96 @@ export function EditTransactionModal({
           </div>
 
           {/* Type-specific fields */}
-          {(transaction.type === 'buy' ||
-            transaction.type === 'sell' ||
-            transaction.type === 'transfer_in' ||
+          {/* Buy/Sell fields - includes fiat amount */}
+          {(transaction.type === 'buy' || transaction.type === 'sell') && (
+            <>
+              {/* Asset Selection */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium">
+                  Asset *
+                </label>
+                <select
+                  value={assetId}
+                  onChange={(e) => setAssetId(e.target.value)}
+                  disabled={isSubmitting}
+                  className={cn(
+                    'h-10 w-full rounded-lg border border-border bg-background px-3 text-sm',
+                    'focus:outline-none focus:ring-2 focus:ring-primary',
+                    'disabled:cursor-not-allowed disabled:opacity-50',
+                  )}
+                >
+                  <option value="">Select asset</option>
+                  {assets.map((asset) => (
+                    <option key={asset.id} value={asset.id}>
+                      {asset.name} ({asset.symbol})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Amount */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium">
+                  Amount *
+                </label>
+                <Input
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="h-10"
+                  disabled={isSubmitting}
+                />
+                {transaction.type === 'sell' && showAvailableBalance()}
+              </div>
+
+              {/* Storage Selection */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium">
+                  Storage *
+                </label>
+                <select
+                  value={storageId}
+                  onChange={(e) => setStorageId(e.target.value)}
+                  disabled={isSubmitting}
+                  className={cn(
+                    'h-10 w-full rounded-lg border border-border bg-background px-3 text-sm',
+                    'focus:outline-none focus:ring-2 focus:ring-primary',
+                    'disabled:cursor-not-allowed disabled:opacity-50',
+                  )}
+                >
+                  <option value="">Select storage</option>
+                  {storages.map((storage) => (
+                    <option key={storage.id} value={storage.id}>
+                      {storage.name} ({storage.type.toUpperCase()})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Fiat Amount (Buy/Sell only) */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium">
+                  Fiat Amount (VND) *
+                </label>
+                <Input
+                  type="number"
+                  step="1"
+                  min="0"
+                  value={fiatAmount}
+                  onChange={(e) => setFiatAmount(e.target.value)}
+                  placeholder="0"
+                  className="h-10"
+                  disabled={isSubmitting}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Transfer In/Out fields - no fiat amount */}
+          {(transaction.type === 'transfer_in' ||
             transaction.type === 'transfer_out') && (
             <>
               {/* Asset Selection */}
@@ -382,9 +462,7 @@ export function EditTransactionModal({
                   className="h-10"
                   disabled={isSubmitting}
                 />
-                {(transaction.type === 'sell' ||
-                  transaction.type === 'transfer_out') &&
-                  showAvailableBalance()}
+                {transaction.type === 'transfer_out' && showAvailableBalance()}
               </div>
 
               {/* Storage Selection */}
@@ -409,35 +487,6 @@ export function EditTransactionModal({
                     </option>
                   ))}
                 </select>
-              </div>
-
-              {/* Fiat Amount (Buy/Sell/Transfer In/Out) */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">
-                  {transaction.type === 'transfer_in' ||
-                  transaction.type === 'transfer_out'
-                    ? 'Estimated Value (VND) *'
-                    : 'Fiat Amount (VND) *'}
-                </label>
-                <Input
-                  type="number"
-                  step="1"
-                  min="0"
-                  value={fiatAmount}
-                  onChange={(e) => setFiatAmount(e.target.value)}
-                  placeholder="0"
-                  className="h-10"
-                  disabled={isSubmitting}
-                />
-                {(transaction.type === 'transfer_in' ||
-                  transaction.type === 'transfer_out') && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Estimated VND value at time of{' '}
-                    {transaction.type === 'transfer_in'
-                      ? 'receiving'
-                      : 'sending'}
-                  </p>
-                )}
               </div>
             </>
           )}

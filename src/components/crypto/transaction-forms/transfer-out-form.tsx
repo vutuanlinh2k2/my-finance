@@ -35,7 +35,6 @@ export function TransferOutForm({
   const [assetId, setAssetId] = useState('')
   const [amount, setAmount] = useState('')
   const [storageId, setStorageId] = useState('')
-  const [fiatAmount, setFiatAmount] = useState('')
   const [date, setDate] = useState(formatDateToISO(new Date()))
   const [txId, setTxId] = useState('')
   const [txExplorerUrl, setTxExplorerUrl] = useState('')
@@ -77,12 +76,6 @@ export function TransferOutForm({
       return
     }
 
-    const parsedFiatAmount = parseInt(fiatAmount, 10)
-    if (isNaN(parsedFiatAmount) || parsedFiatAmount <= 0) {
-      toast.error('Please enter a valid fiat amount')
-      return
-    }
-
     if (!date) {
       toast.error('Please select a date')
       return
@@ -93,7 +86,6 @@ export function TransferOutForm({
       assetId,
       amount: parsedAmount,
       storageId,
-      fiatAmount: parsedFiatAmount,
       date,
       txId: txId.trim() || undefined,
       txExplorerUrl: txExplorerUrl.trim()
@@ -185,26 +177,6 @@ export function TransferOutForm({
             Insufficient balance
           </div>
         )}
-      </div>
-
-      {/* Fiat Amount (VND) */}
-      <div>
-        <label className="mb-1.5 block text-sm font-medium">
-          Estimated Value (VND) *
-        </label>
-        <Input
-          type="number"
-          step="1"
-          min="0"
-          value={fiatAmount}
-          onChange={(e) => setFiatAmount(e.target.value)}
-          placeholder="0"
-          className="h-10"
-          disabled={isSubmitting}
-        />
-        <p className="mt-1 text-xs text-muted-foreground">
-          Estimated VND value at time of sending (for expense tracking)
-        </p>
       </div>
 
       {/* Date */}

@@ -5,8 +5,6 @@ import type {
   CryptoTransactionInput,
   PaginationOptions,
   SellTransactionInput,
-  TransferInTransactionInput,
-  TransferOutTransactionInput,
 } from '@/lib/crypto/types'
 import { supabase } from '@/lib/supabase'
 
@@ -150,15 +148,6 @@ export async function createCryptoTransaction(
     return createBuySellTransaction(input, linkedOptions, userData.user.id)
   }
 
-  // For transfer_in/transfer_out, we also need to create linked transactions
-  if (input.type === 'transfer_in' || input.type === 'transfer_out') {
-    return createTransferInOutTransaction(
-      input,
-      linkedOptions,
-      userData.user.id,
-    )
-  }
-
   // Build insert data based on transaction type
   const insertData: TablesInsert<'crypto_transactions'> = {
     user_id: userData.user.id,
@@ -175,6 +164,13 @@ export async function createCryptoTransaction(
       insertData.amount = input.amount
       insertData.from_storage_id = input.fromStorageId
       insertData.to_storage_id = input.toStorageId
+      break
+
+    case 'transfer_in':
+    case 'transfer_out':
+      insertData.asset_id = input.assetId
+      insertData.amount = input.amount
+      insertData.storage_id = input.storageId
       break
 
     case 'swap':
@@ -256,68 +252,6 @@ async function createBuySellTransaction(
 }
 
 /**
- * Create a Transfer In or Transfer Out transaction with linked income/expense
- * - Transfer In creates a linked income transaction (value received from airdrop, gift, etc.)
- * - Transfer Out creates a linked expense transaction (value given away, lost, etc.)
- *
- * Uses PostgreSQL RPC function for atomic operation - either both succeed or both fail
- */
-async function createTransferInOutTransaction(
-  input: TransferInTransactionInput | TransferOutTransactionInput,
-  linkedOptions: LinkedTransactionOptions | undefined,
-  userId: string,
-): Promise<CryptoTransactionRow> {
-  if (!linkedOptions) {
-    throw new Error(
-      `Cannot create ${input.type} transaction without linked transaction options. ` +
-        `Please ensure an "Investing" tag exists for ${input.type === 'transfer_in' ? 'income' : 'expenses'}.`,
-    )
-  }
-
-  const linkedType = input.type === 'transfer_in' ? 'income' : 'expense'
-  const title =
-    input.type === 'transfer_in'
-      ? `Receive ${linkedOptions.assetSymbol.toUpperCase()}`
-      : `Send ${linkedOptions.assetSymbol.toUpperCase()}`
-
-  // Single atomic RPC call - no manual rollback needed
-  const { data: cryptoId, error } = await supabase.rpc(
-    'create_crypto_transfer_in_out_transaction',
-    {
-      p_user_id: userId,
-      p_crypto_type: input.type,
-      p_date: input.date,
-      p_tx_id: input.txId ?? null,
-      p_tx_explorer_url: input.txExplorerUrl ?? null,
-      p_asset_id: input.assetId,
-      p_amount: input.amount,
-      p_storage_id: input.storageId,
-      p_fiat_amount: input.fiatAmount,
-      p_linked_title: title,
-      p_linked_type: linkedType,
-      p_tag_id: linkedOptions.tagId,
-    },
-  )
-
-  if (error) {
-    throw new Error(`Failed to create ${input.type} transaction: ${error.message}`)
-  }
-
-  // Fetch the created transaction
-  const { data: transaction, error: fetchError } = await supabase
-    .from('crypto_transactions')
-    .select('*')
-    .eq('id', cryptoId)
-    .single()
-
-  if (fetchError) {
-    throw new Error(`Failed to fetch created transaction: ${fetchError.message}`)
-  }
-
-  return transaction
-}
-
-/**
  * Update options for Buy/Sell transactions
  */
 export interface UpdateLinkedTransactionOptions {
@@ -347,12 +281,8 @@ export async function updateCryptoTransaction(
     throw new Error(`Failed to fetch crypto transaction: ${fetchError.message}`)
   }
 
-  // If it's a transaction with linked expense/income and we need to update it
-  const hasLinkedType =
-    currentTx.type === 'buy' ||
-    currentTx.type === 'sell' ||
-    currentTx.type === 'transfer_in' ||
-    currentTx.type === 'transfer_out'
+  // If it's a buy/sell transaction with linked expense/income and we need to update it
+  const hasLinkedType = currentTx.type === 'buy' || currentTx.type === 'sell'
 
   if (
     hasLinkedType &&
@@ -372,23 +302,10 @@ export async function updateCryptoTransaction(
 
     // Update title if asset symbol changed
     if (linkedOptions.assetSymbol) {
-      let title: string
-      switch (currentTx.type) {
-        case 'buy':
-          title = `Buy ${linkedOptions.assetSymbol.toUpperCase()}`
-          break
-        case 'sell':
-          title = `Sell ${linkedOptions.assetSymbol.toUpperCase()}`
-          break
-        case 'transfer_in':
-          title = `Receive ${linkedOptions.assetSymbol.toUpperCase()}`
-          break
-        case 'transfer_out':
-          title = `Send ${linkedOptions.assetSymbol.toUpperCase()}`
-          break
-        default:
-          title = linkedOptions.assetSymbol.toUpperCase()
-      }
+      const title =
+        currentTx.type === 'buy'
+          ? `Buy ${linkedOptions.assetSymbol.toUpperCase()}`
+          : `Sell ${linkedOptions.assetSymbol.toUpperCase()}`
       linkedUpdates.title = title
     }
 

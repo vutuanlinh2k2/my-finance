@@ -136,19 +136,12 @@ function CryptoTransactionsPage() {
   // Handlers
   const handleAddTransaction = async (input: CryptoTransactionInput) => {
     try {
-      // For buy/sell/transfer_in/transfer_out, we need to link to expense/income
-      const needsLinkedTransaction =
-        input.type === 'buy' ||
-        input.type === 'sell' ||
-        input.type === 'transfer_in' ||
-        input.type === 'transfer_out'
+      // For buy/sell, we need to link to expense/income
+      const needsLinkedTransaction = input.type === 'buy' || input.type === 'sell'
 
       if (needsLinkedTransaction) {
-        // Determine tag type: buy/transfer_out = expense, sell/transfer_in = income
-        const tagType =
-          input.type === 'buy' || input.type === 'transfer_out'
-            ? 'expense'
-            : 'income'
+        // Determine tag type: buy = expense, sell = income
+        const tagType = input.type === 'buy' ? 'expense' : 'income'
         const investingTag =
           tagType === 'expense' ? investingExpenseTag : investingIncomeTag
 
@@ -174,7 +167,7 @@ function CryptoTransactionsPage() {
           },
         })
       } else {
-        // For other transaction types (transfer_between, swap), no linked transaction needed
+        // For other transaction types (transfer_between, swap, transfer_in, transfer_out), no linked transaction needed
         await createMutation.mutateAsync({
           transaction: input,
         })
@@ -200,12 +193,9 @@ function CryptoTransactionsPage() {
     updates: Partial<CryptoTransactionInput>,
   ) => {
     try {
-      // For buy/sell/transfer_in/transfer_out, also update the linked transaction
+      // For buy/sell, also update the linked transaction
       const shouldUpdateLinked =
-        transaction.type === 'buy' ||
-        transaction.type === 'sell' ||
-        transaction.type === 'transfer_in' ||
-        transaction.type === 'transfer_out'
+        transaction.type === 'buy' || transaction.type === 'sell'
 
       // Get asset symbol if we're updating it
       let assetSymbol: string | undefined
@@ -381,23 +371,15 @@ function CryptoTransactionsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
             <AlertDialogDescription>
-              {deletingTransaction?.linkedTransactionId ? (
+              {deletingTransaction?.linkedTransactionId &&
+              (deletingTransaction.type === 'buy' ||
+                deletingTransaction.type === 'sell') ? (
                 <>
                   Are you sure you want to delete this{' '}
-                  {deletingTransaction.type === 'buy'
-                    ? 'buy'
-                    : deletingTransaction.type === 'sell'
-                      ? 'sell'
-                      : deletingTransaction.type === 'transfer_in'
-                        ? 'transfer in'
-                        : 'transfer out'}{' '}
-                  transaction?{' '}
+                  {deletingTransaction.type} transaction?{' '}
                   <strong>
                     The linked{' '}
-                    {deletingTransaction.type === 'buy' ||
-                    deletingTransaction.type === 'transfer_out'
-                      ? 'expense'
-                      : 'income'}{' '}
+                    {deletingTransaction.type === 'buy' ? 'expense' : 'income'}{' '}
                     transaction will also be deleted.
                   </strong>{' '}
                   This action cannot be undone.

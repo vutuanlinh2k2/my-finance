@@ -314,26 +314,24 @@ export interface SwapTransactionInput extends TransactionInputBase {
 
 /**
  * Transfer In transaction input
- * Creates linked income transaction (value received)
+ * Records crypto received from external sources (airdrop, gift, mining rewards, etc.)
  */
 export interface TransferInTransactionInput extends TransactionInputBase {
   type: 'transfer_in'
   assetId: string
   amount: number
   storageId: string
-  fiatAmount: number
 }
 
 /**
  * Transfer Out transaction input
- * Creates linked expense transaction (value given away)
+ * Records crypto sent to external destinations (gift, donation, lost funds, etc.)
  */
 export interface TransferOutTransactionInput extends TransactionInputBase {
   type: 'transfer_out'
   assetId: string
   amount: number
   storageId: string
-  fiatAmount: number
 }
 
 /**
