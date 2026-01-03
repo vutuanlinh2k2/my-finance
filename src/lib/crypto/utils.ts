@@ -217,7 +217,11 @@ export function formatUsdPrice(price: number): string {
 }
 
 /**
- * Calculate the balance of a specific asset in a specific storage (or all storages)
+ * Calculate the balance of a specific asset in a specific storage (or all storages).
+ *
+ * IMPORTANT: This balance calculation logic is also used in the edge function
+ * supabase/functions/snapshot-crypto-portfolio/index.ts for daily snapshots.
+ * If you modify this logic, update the edge function as well.
  *
  * @param assetId - The asset ID to calculate balance for
  * @param storageId - Specific storage ID (null = all storages combined)
@@ -390,8 +394,8 @@ export function calculatePortfolioValue(
 }
 
 /**
- * Get all balances per asset per storage
- * Useful for showing asset distribution across storages
+ * Get all balances per asset per storage in a single pass through transactions.
+ * Optimized O(n) algorithm instead of O(n * assets * storages).
  *
  * @param transactions - All user's crypto transactions
  * @returns Map of assetId -> Map of storageId -> balance
@@ -401,30 +405,70 @@ export function getAllBalances(
 ): Map<string, Map<string, number>> {
   const balances = new Map<string, Map<string, number>>()
 
-  // Get all unique asset IDs and storage IDs
-  const assetIds = new Set<string>()
-  const storageIds = new Set<string>()
-
-  for (const tx of transactions) {
-    if (tx.assetId) assetIds.add(tx.assetId)
-    if (tx.fromAssetId) assetIds.add(tx.fromAssetId)
-    if (tx.toAssetId) assetIds.add(tx.toAssetId)
-    if (tx.storageId) storageIds.add(tx.storageId)
-    if (tx.fromStorageId) storageIds.add(tx.fromStorageId)
-    if (tx.toStorageId) storageIds.add(tx.toStorageId)
+  // Helper to update balance for an asset in a storage
+  const updateBalance = (
+    assetId: string,
+    storageId: string,
+    delta: number,
+  ) => {
+    if (!balances.has(assetId)) {
+      balances.set(assetId, new Map())
+    }
+    const storageBalances = balances.get(assetId)!
+    const current = storageBalances.get(storageId) ?? 0
+    const newBalance = current + delta
+    if (newBalance !== 0) {
+      storageBalances.set(storageId, newBalance)
+    } else {
+      storageBalances.delete(storageId)
+    }
   }
 
-  // Calculate balance for each asset in each storage
-  for (const assetId of assetIds) {
-    const storageBalances = new Map<string, number>()
-    for (const storageId of storageIds) {
-      const balance = calculateAssetBalance(assetId, storageId, transactions)
-      if (balance !== 0) {
-        storageBalances.set(storageId, balance)
-      }
+  // Single pass through all transactions
+  for (const tx of transactions) {
+    switch (tx.type) {
+      case 'buy':
+      case 'transfer_in':
+        if (tx.assetId && tx.storageId && tx.amount != null) {
+          updateBalance(tx.assetId, tx.storageId, tx.amount)
+        }
+        break
+
+      case 'sell':
+      case 'transfer_out':
+        if (tx.assetId && tx.storageId && tx.amount != null) {
+          updateBalance(tx.assetId, tx.storageId, -tx.amount)
+        }
+        break
+
+      case 'transfer_between':
+        if (tx.assetId && tx.amount != null) {
+          if (tx.fromStorageId) {
+            updateBalance(tx.assetId, tx.fromStorageId, -tx.amount)
+          }
+          if (tx.toStorageId) {
+            updateBalance(tx.assetId, tx.toStorageId, tx.amount)
+          }
+        }
+        break
+
+      case 'swap':
+        if (tx.storageId) {
+          if (tx.fromAssetId && tx.fromAmount != null) {
+            updateBalance(tx.fromAssetId, tx.storageId, -tx.fromAmount)
+          }
+          if (tx.toAssetId && tx.toAmount != null) {
+            updateBalance(tx.toAssetId, tx.storageId, tx.toAmount)
+          }
+        }
+        break
     }
-    if (storageBalances.size > 0) {
-      balances.set(assetId, storageBalances)
+  }
+
+  // Clean up empty asset entries
+  for (const [assetId, storageBalances] of balances) {
+    if (storageBalances.size === 0) {
+      balances.delete(assetId)
     }
   }
 
