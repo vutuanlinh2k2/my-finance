@@ -237,9 +237,9 @@ export function TransactionList({
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-hidden rounded-lg border border-border bg-card">
           <table className="w-full">
-            <thead className="border-b border-border bg-muted/50">
+            <thead className="border-b border-border bg-muted">
               <tr>
                 <th className="w-28 px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                   Date
@@ -300,9 +300,9 @@ export function TransactionList({
   return (
     <div className="space-y-4">
       {/* Transaction Table */}
-      <div className="overflow-hidden rounded-lg border border-border">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
         <table className="w-full">
-          <thead className="border-b border-border bg-muted/50">
+          <thead className="border-b border-border bg-muted">
             <tr>
               <th className="w-28 px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                 Date
