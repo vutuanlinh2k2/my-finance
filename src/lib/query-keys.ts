@@ -28,6 +28,14 @@ export const queryKeys = {
     byYear: (year: number, type: TransactionType) =>
       ['reports', 'yearly', year, type] as const,
   },
+  dashboard: {
+    all: ['dashboard'] as const,
+    allTimeTotals: ['dashboard', 'all-time-totals'] as const,
+    monthlyTotals: (year: number, month: number) =>
+      ['dashboard', 'monthly-totals', year, month] as const,
+    netWorthHistory: (range: string) =>
+      ['dashboard', 'net-worth-history', range] as const,
+  },
   // Crypto-related query keys
   crypto: {
     assets: {
