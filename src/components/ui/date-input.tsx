@@ -1,8 +1,10 @@
 import { CalendarBlank } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
-interface DateInputProps
-  extends Omit<React.ComponentProps<'input'>, 'type' | 'onChange'> {
+interface DateInputProps extends Omit<
+  React.ComponentProps<'input'>,
+  'type' | 'onChange'
+> {
   value?: string // ISO format: yyyy-mm-dd
   onChange?: (e: { target: { value: string } }) => void
 }

@@ -223,16 +223,32 @@ function CryptoTransactionsPage() {
             tx_explorer_url: updates.txExplorerUrl || null,
           }),
           // Type-specific fields
-          ...(('amount' in updates) && updates.amount !== undefined && { amount: updates.amount }),
-          ...(('fiatAmount' in updates) && updates.fiatAmount !== undefined && { fiat_amount: updates.fiatAmount }),
-          ...(('assetId' in updates) && updates.assetId && { asset_id: updates.assetId }),
-          ...(('storageId' in updates) && updates.storageId && { storage_id: updates.storageId }),
-          ...(('fromStorageId' in updates) && updates.fromStorageId && { from_storage_id: updates.fromStorageId }),
-          ...(('toStorageId' in updates) && updates.toStorageId && { to_storage_id: updates.toStorageId }),
-          ...(('fromAssetId' in updates) && updates.fromAssetId && { from_asset_id: updates.fromAssetId }),
-          ...(('fromAmount' in updates) && updates.fromAmount !== undefined && { from_amount: updates.fromAmount }),
-          ...(('toAssetId' in updates) && updates.toAssetId && { to_asset_id: updates.toAssetId }),
-          ...(('toAmount' in updates) && updates.toAmount !== undefined && { to_amount: updates.toAmount }),
+          ...('amount' in updates &&
+            updates.amount !== undefined && { amount: updates.amount }),
+          ...('fiatAmount' in updates &&
+            updates.fiatAmount !== undefined && {
+              fiat_amount: updates.fiatAmount,
+            }),
+          ...('assetId' in updates &&
+            updates.assetId && { asset_id: updates.assetId }),
+          ...('storageId' in updates &&
+            updates.storageId && { storage_id: updates.storageId }),
+          ...('fromStorageId' in updates &&
+            updates.fromStorageId && {
+              from_storage_id: updates.fromStorageId,
+            }),
+          ...('toStorageId' in updates &&
+            updates.toStorageId && { to_storage_id: updates.toStorageId }),
+          ...('fromAssetId' in updates &&
+            updates.fromAssetId && { from_asset_id: updates.fromAssetId }),
+          ...('fromAmount' in updates &&
+            updates.fromAmount !== undefined && {
+              from_amount: updates.fromAmount,
+            }),
+          ...('toAssetId' in updates &&
+            updates.toAssetId && { to_asset_id: updates.toAssetId }),
+          ...('toAmount' in updates &&
+            updates.toAmount !== undefined && { to_amount: updates.toAmount }),
         },
         linkedOptions: shouldUpdateLinked
           ? { updateLinked: true, assetSymbol }

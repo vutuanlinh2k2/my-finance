@@ -28,9 +28,7 @@ export function findInvestingTag(
   const lowerNames = ['investing', 'investments']
   return (
     tags.find(
-      (tag) =>
-        tag.type === type &&
-        lowerNames.includes(tag.name.toLowerCase()),
+      (tag) => tag.type === type && lowerNames.includes(tag.name.toLowerCase()),
     ) ?? null
   )
 }

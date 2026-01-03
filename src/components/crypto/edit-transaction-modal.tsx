@@ -137,7 +137,11 @@ export function EditTransactionModal({
     targetStorageId: string,
   ) => {
     // The available balance is what's in the storage excluding this transaction's effect
-    return getAvailableBalance(targetAssetId, targetStorageId, otherTransactions)
+    return getAvailableBalance(
+      targetAssetId,
+      targetStorageId,
+      otherTransactions,
+    )
   }
 
   // Validate balance for types that decrease balance
@@ -152,8 +156,7 @@ export function EditTransactionModal({
         if (!assetId || !storageId) return true
         requiredAmount = parseFloat(amount) || 0
         availableAmount = getAvailableBalanceForEdit(assetId, storageId)
-        assetName =
-          assets.find((a) => a.id === assetId)?.symbol ?? 'the asset'
+        assetName = assets.find((a) => a.id === assetId)?.symbol ?? 'the asset'
         if (requiredAmount > availableAmount) {
           toast.error(
             `Insufficient balance. Available: ${formatCryptoAmount(availableAmount, assetName)}`,
@@ -166,8 +169,7 @@ export function EditTransactionModal({
         if (!assetId || !fromStorageId) return true
         requiredAmount = parseFloat(amount) || 0
         availableAmount = getAvailableBalanceForEdit(assetId, fromStorageId)
-        assetName =
-          assets.find((a) => a.id === assetId)?.symbol ?? 'the asset'
+        assetName = assets.find((a) => a.id === assetId)?.symbol ?? 'the asset'
         if (requiredAmount > availableAmount) {
           toast.error(
             `Insufficient balance in source storage. Available: ${formatCryptoAmount(availableAmount, assetName)}`,
@@ -308,7 +310,8 @@ export function EditTransactionModal({
               <Warning className="mt-0.5 size-4 shrink-0" weight="bold" />
               <p>
                 This transaction is linked to a calendar{' '}
-                {transaction.type === 'buy' || transaction.type === 'transfer_out'
+                {transaction.type === 'buy' ||
+                transaction.type === 'transfer_out'
                   ? 'expense'
                   : 'income'}
                 . Changes to date and fiat amount will be synced.
@@ -426,7 +429,9 @@ export function EditTransactionModal({
                   transaction.type === 'transfer_out') && (
                   <p className="mt-1 text-xs text-muted-foreground">
                     Estimated VND value at time of{' '}
-                    {transaction.type === 'transfer_in' ? 'receiving' : 'sending'}
+                    {transaction.type === 'transfer_in'
+                      ? 'receiving'
+                      : 'sending'}
                   </p>
                 )}
               </div>

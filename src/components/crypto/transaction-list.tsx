@@ -314,7 +314,7 @@ export function TransactionList({
                 Details
               </th>
               <th className="w-24 px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                TX
+                Ref
               </th>
               <th className="w-24 px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                 Actions

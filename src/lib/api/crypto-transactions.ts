@@ -152,7 +152,11 @@ export async function createCryptoTransaction(
 
   // For transfer_in/transfer_out, we also need to create linked transactions
   if (input.type === 'transfer_in' || input.type === 'transfer_out') {
-    return createTransferInOutTransaction(input, linkedOptions, userData.user.id)
+    return createTransferInOutTransaction(
+      input,
+      linkedOptions,
+      userData.user.id,
+    )
   }
 
   // Build insert data based on transaction type

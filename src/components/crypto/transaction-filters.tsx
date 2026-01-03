@@ -112,14 +112,20 @@ export function TransactionFilters({
         <DateInput
           value={filters.startDate ?? ''}
           onChange={handleStartDateChange}
-          className={cn('w-36 [&>div]:bg-card', filters.startDate && '[&>div]:border-primary')}
+          className={cn(
+            'w-36 [&>div]:bg-card',
+            filters.startDate && '[&>div]:border-primary',
+          )}
           placeholder="Start date"
         />
         <span className="text-muted-foreground">to</span>
         <DateInput
           value={filters.endDate ?? ''}
           onChange={handleEndDateChange}
-          className={cn('w-36 [&>div]:bg-card', filters.endDate && '[&>div]:border-primary')}
+          className={cn(
+            'w-36 [&>div]:bg-card',
+            filters.endDate && '[&>div]:border-primary',
+          )}
           placeholder="End date"
         />
       </div>
