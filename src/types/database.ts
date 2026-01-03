@@ -291,6 +291,39 @@ export type Database = {
         }
         Relationships: []
       }
+      net_worth_snapshots: {
+        Row: {
+          bank_balance: number
+          created_at: string
+          crypto_value_vnd: number
+          exchange_rate: number
+          id: string
+          snapshot_date: string
+          total_net_worth: number
+          user_id: string
+        }
+        Insert: {
+          bank_balance?: number
+          created_at?: string
+          crypto_value_vnd?: number
+          exchange_rate?: number
+          id?: string
+          snapshot_date: string
+          total_net_worth?: number
+          user_id: string
+        }
+        Update: {
+          bank_balance?: number
+          created_at?: string
+          crypto_value_vnd?: number
+          exchange_rate?: number
+          id?: string
+          snapshot_date?: string
+          total_net_worth?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           amount: number
@@ -460,10 +493,41 @@ export type Database = {
         }
         Returns: string
       }
+      get_all_time_totals: {
+        Args: never
+        Returns: {
+          bank_balance: number
+          total_expenses: number
+          total_income: number
+        }[]
+      }
+      get_all_users_bank_balances: {
+        Args: never
+        Returns: {
+          bank_balance: number
+          user_id: string
+        }[]
+      }
       get_last_day_of_month: {
         Args: { p_month: number; p_year: number }
         Returns: number
       }
+      get_latest_crypto_snapshots: {
+        Args: never
+        Returns: {
+          snapshot_date: string
+          total_value_usd: number
+          user_id: string
+        }[]
+      }
+      get_monthly_totals: {
+        Args: { p_month: number; p_year: number }
+        Returns: {
+          total_expenses: number
+          total_income: number
+        }[]
+      }
+      invoke_net_worth_snapshot: { Args: never; Returns: number }
       invoke_subscription_payment_processor: { Args: never; Returns: number }
       is_subscription_due_today: {
         Args: {

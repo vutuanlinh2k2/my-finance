@@ -234,7 +234,9 @@ async function createBuySellTransaction(
   )
 
   if (error) {
-    throw new Error(`Failed to create ${input.type} transaction: ${error.message}`)
+    throw new Error(
+      `Failed to create ${input.type} transaction: ${error.message}`,
+    )
   }
 
   // Fetch the created transaction
@@ -245,7 +247,9 @@ async function createBuySellTransaction(
     .single()
 
   if (fetchError) {
-    throw new Error(`Failed to fetch created transaction: ${fetchError.message}`)
+    throw new Error(
+      `Failed to fetch created transaction: ${fetchError.message}`,
+    )
   }
 
   return transaction

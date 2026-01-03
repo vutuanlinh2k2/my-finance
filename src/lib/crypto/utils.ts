@@ -406,11 +406,7 @@ export function getAllBalances(
   const balances = new Map<string, Map<string, number>>()
 
   // Helper to update balance for an asset in a storage
-  const updateBalance = (
-    assetId: string,
-    storageId: string,
-    delta: number,
-  ) => {
+  const updateBalance = (assetId: string, storageId: string, delta: number) => {
     if (!balances.has(assetId)) {
       balances.set(assetId, new Map())
     }

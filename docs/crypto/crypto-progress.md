@@ -1098,19 +1098,19 @@ CREATE INDEX idx_crypto_portfolio_snapshots_user_date
 
 ### Files Created/Modified
 
-| Action   | File                                                                     |
-| -------- | ------------------------------------------------------------------------ |
+| Action   | File                                                                       |
+| -------- | -------------------------------------------------------------------------- |
 | Created  | `supabase/migrations/20260103100000_create_crypto_portfolio_snapshots.sql` |
-| Created  | `src/lib/api/crypto-portfolio-snapshots.ts`                              |
-| Created  | `src/lib/hooks/use-portfolio-history.ts`                                 |
-| Created  | `src/components/crypto/allocation-history-chart.tsx`                     |
-| Created  | `src/components/crypto/value-history-chart.tsx`                          |
+| Created  | `src/lib/api/crypto-portfolio-snapshots.ts`                                |
+| Created  | `src/lib/hooks/use-portfolio-history.ts`                                   |
+| Created  | `src/components/crypto/allocation-history-chart.tsx`                       |
+| Created  | `src/components/crypto/value-history-chart.tsx`                            |
 | Modified | `src/components/crypto/portfolio-history-chart.tsx` (replaced placeholder) |
-| Modified | `src/components/crypto/index.ts` (export new components)                 |
-| Modified | `src/lib/crypto/types.ts` (added PortfolioSnapshot types)                |
-| Modified | `src/lib/query-keys.ts` (already had portfolioHistory key)               |
-| Modified | `src/routes/_authenticated/crypto/assets.tsx` (pass props)               |
-| Modified | `src/types/database.ts` (auto-generated)                                 |
+| Modified | `src/components/crypto/index.ts` (export new components)                   |
+| Modified | `src/lib/crypto/types.ts` (added PortfolioSnapshot types)                  |
+| Modified | `src/lib/query-keys.ts` (already had portfolioHistory key)                 |
+| Modified | `src/routes/_authenticated/crypto/assets.tsx` (pass props)                 |
+| Modified | `src/types/database.ts` (auto-generated)                                   |
 
 ---
 
@@ -1162,7 +1162,7 @@ Created a Supabase Edge Function that runs daily to create portfolio snapshots f
 #### Step 7.2: Configure Cron Job
 
 - [x] Add to `supabase/config.toml`
-- [x] Set schedule: "10 0 * * *" (00:10 UTC daily)
+- [x] Set schedule: "10 0 \* \* \*" (00:10 UTC daily)
 - [x] Configure with verify_jwt = true for security
 
 **Configuration:**

@@ -137,7 +137,8 @@ function CryptoTransactionsPage() {
   const handleAddTransaction = async (input: CryptoTransactionInput) => {
     try {
       // For buy/sell, we need to link to expense/income
-      const needsLinkedTransaction = input.type === 'buy' || input.type === 'sell'
+      const needsLinkedTransaction =
+        input.type === 'buy' || input.type === 'sell'
 
       if (needsLinkedTransaction) {
         // Determine tag type: buy = expense, sell = income

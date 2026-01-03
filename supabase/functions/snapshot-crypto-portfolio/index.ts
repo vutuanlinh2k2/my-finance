@@ -22,7 +22,13 @@ interface CryptoAsset {
 interface CryptoTransaction {
   id: string
   user_id: string
-  type: 'buy' | 'sell' | 'transfer_between' | 'swap' | 'transfer_in' | 'transfer_out'
+  type:
+    | 'buy'
+    | 'sell'
+    | 'transfer_between'
+    | 'swap'
+    | 'transfer_in'
+    | 'transfer_out'
   asset_id: string | null
   amount: number | null
   storage_id: string | null
@@ -254,19 +260,17 @@ async function createUserSnapshot(
     }
 
     // Insert snapshot (upsert to handle re-runs on same day)
-    const { error } = await supabase
-      .from('crypto_portfolio_snapshots')
-      .upsert(
-        {
-          user_id: userId,
-          snapshot_date: snapshotDate,
-          total_value_usd: totalValueUsd,
-          allocations,
-        },
-        {
-          onConflict: 'user_id,snapshot_date',
-        },
-      )
+    const { error } = await supabase.from('crypto_portfolio_snapshots').upsert(
+      {
+        user_id: userId,
+        snapshot_date: snapshotDate,
+        total_value_usd: totalValueUsd,
+        allocations,
+      },
+      {
+        onConflict: 'user_id,snapshot_date',
+      },
+    )
 
     if (error) {
       throw new Error(`Failed to insert snapshot: ${error.message}`)
@@ -283,7 +287,8 @@ async function createUserSnapshot(
       success: true,
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
     console.error(`User ${userId}: Failed to create snapshot - ${errorMessage}`)
     return {
       userId,
@@ -445,7 +450,9 @@ Deno.serve(async (req) => {
     const failureCount = results.filter((r) => !r.success).length
     const totalValue = results.reduce((sum, r) => sum + r.totalValueUsd, 0)
 
-    console.log(`Snapshot complete: ${successCount} succeeded, ${failureCount} failed`)
+    console.log(
+      `Snapshot complete: ${successCount} succeeded, ${failureCount} failed`,
+    )
     console.log(`Total portfolio value: $${totalValue.toFixed(2)}`)
 
     return new Response(

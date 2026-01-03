@@ -83,6 +83,10 @@ export function useCreateTransaction() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.transactions.byMonth(year, month - 1),
       })
+      // Invalidate dashboard queries (bank balance and monthly totals)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboard.all,
+      })
     },
   })
 }
@@ -126,6 +130,10 @@ export function useUpdateTransaction() {
           queryKey: queryKeys.transactions.byMonth(oldYear, oldMonth - 1),
         })
       }
+      // Invalidate dashboard queries (bank balance and monthly totals)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboard.all,
+      })
     },
   })
 }
@@ -148,6 +156,10 @@ export function useDeleteTransaction() {
       })
       queryClient.invalidateQueries({
         queryKey: queryKeys.transactions.byMonth(year, month - 1),
+      })
+      // Invalidate dashboard queries (bank balance and monthly totals)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboard.all,
       })
     },
   })
