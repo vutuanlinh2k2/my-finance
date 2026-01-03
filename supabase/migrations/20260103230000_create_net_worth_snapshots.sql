@@ -21,7 +21,10 @@ CREATE POLICY "net_worth_snapshots_select_own"
   ON public.net_worth_snapshots FOR SELECT
   USING (user_id = (SELECT auth.uid()));
 
--- RLS Policy: Users can only insert their own snapshots
+-- RLS Policy: Insert restriction
+-- Note: Primary inserts come from the snapshot-net-worth edge function using
+-- service role key (bypasses RLS). This policy allows authenticated users to
+-- insert their own snapshots if needed (e.g., manual corrections, backfills).
 CREATE POLICY "net_worth_snapshots_insert_own"
   ON public.net_worth_snapshots FOR INSERT
   WITH CHECK (user_id = (SELECT auth.uid()));
