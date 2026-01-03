@@ -301,13 +301,13 @@ supabase functions new <function-name>
 
 ### Deploying Edge Functions
 
-**Production deployment requires `--no-verify-jwt` for cron job functions:**
+**Always use `--no-verify-jwt` when deploying edge functions:**
 
 ```bash
-supabase functions deploy process-subscription-payments --no-verify-jwt --project-ref <project-ref>
+supabase functions deploy <function-name> --no-verify-jwt --project-ref <project-ref>
 ```
 
-Why: Supabase's system-managed secrets (`SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) use a different format (`sb_publishable_`/`sb_secret_`) that doesn't match JWT tokens. Disabling JWT verification lets our custom `CRON_SECRET` validation handle authentication instead.
+Why: Supabase's system-managed secrets (`SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) use a different format (`sb_publishable_`/`sb_secret_`) that doesn't match JWT tokens. Disabling JWT verification lets our custom authentication logic handle security instead.
 
 ### Cron Jobs
 
