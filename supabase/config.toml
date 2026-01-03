@@ -397,3 +397,20 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 [functions.process-subscription-payments]
 enabled = true
 verify_jwt = true
+
+# Edge Function: Snapshot Crypto Portfolio
+# Creates daily snapshots of each user's crypto portfolio value and allocation
+#
+# LOCAL TESTING:
+#   supabase functions serve snapshot-crypto-portfolio
+#   curl -X POST http://localhost:54321/functions/v1/snapshot-crypto-portfolio \
+#     -H "Authorization: Bearer <SERVICE_ROLE_KEY>"
+#
+# PRODUCTION SCHEDULING (Supabase Dashboard):
+#   1. Go to Edge Functions → snapshot-crypto-portfolio
+#   2. Click "Add Schedule"
+#   3. Set cron expression: "10 0 * * *" (00:10 UTC daily)
+#
+[functions.snapshot-crypto-portfolio]
+enabled = true
+verify_jwt = true
