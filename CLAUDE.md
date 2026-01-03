@@ -312,6 +312,7 @@ Why: Supabase's system-managed secrets (`SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_R
 ### Cron Jobs
 
 Cron jobs use `pg_cron` + `pg_net` to call edge functions. The configuration is stored in:
+
 - `app_config` table: stores `supabase_url` and `cron_secret`
 - `invoke_subscription_payment_processor()` function: makes the HTTP call
 - Edge Function Secrets: `CRON_SECRET` must match the value in `app_config`
@@ -322,12 +323,16 @@ Cron jobs use `pg_cron` + `pg_net` to call edge functions. The configuration is 
 const authHeader = req.headers.get('Authorization')
 const cronSecret = Deno.env.get('CRON_SECRET')?.trim()
 
-if (!authHeader?.startsWith('Bearer ') || authHeader.replace('Bearer ', '').trim() !== cronSecret) {
+if (
+  !authHeader?.startsWith('Bearer ') ||
+  authHeader.replace('Bearer ', '').trim() !== cronSecret
+) {
   return new Response('Unauthorized', { status: 401 })
 }
 ```
 
 **Setup for new environments:**
+
 1. Generate a secret: `openssl rand -hex 32`
 2. Add `CRON_SECRET` to Edge Functions Secrets in dashboard
 3. Set the same value in `app_config` table:

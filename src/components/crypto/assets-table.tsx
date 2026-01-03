@@ -1,10 +1,5 @@
 import { useMemo, useState } from 'react'
-import {
-  CaretDown,
-  CaretUp,
-  CaretUpDown,
-  Trash,
-} from '@phosphor-icons/react'
+import { CaretDown, CaretUp, CaretUpDown, Trash } from '@phosphor-icons/react'
 import type { CryptoAsset } from '@/lib/crypto/types'
 import {
   formatCryptoAmount,
