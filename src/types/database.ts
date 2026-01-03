@@ -34,6 +34,236 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          created_at: string
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      crypto_assets: {
+        Row: {
+          coingecko_id: string
+          created_at: string
+          icon_url: string | null
+          id: string
+          name: string
+          symbol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coingecko_id: string
+          created_at?: string
+          icon_url?: string | null
+          id?: string
+          name: string
+          symbol: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coingecko_id?: string
+          created_at?: string
+          icon_url?: string | null
+          id?: string
+          name?: string
+          symbol?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crypto_portfolio_snapshots: {
+        Row: {
+          allocations: Json
+          created_at: string
+          id: string
+          snapshot_date: string
+          total_value_usd: number
+          user_id: string
+        }
+        Insert: {
+          allocations: Json
+          created_at?: string
+          id?: string
+          snapshot_date: string
+          total_value_usd: number
+          user_id: string
+        }
+        Update: {
+          allocations?: Json
+          created_at?: string
+          id?: string
+          snapshot_date?: string
+          total_value_usd?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crypto_storages: {
+        Row: {
+          address: string | null
+          created_at: string
+          explorer_url: string | null
+          id: string
+          name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          explorer_url?: string | null
+          id?: string
+          name: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          explorer_url?: string | null
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crypto_transactions: {
+        Row: {
+          amount: number | null
+          asset_id: string | null
+          created_at: string
+          date: string
+          fiat_amount: number | null
+          from_amount: number | null
+          from_asset_id: string | null
+          from_storage_id: string | null
+          id: string
+          linked_transaction_id: string | null
+          storage_id: string | null
+          to_amount: number | null
+          to_asset_id: string | null
+          to_storage_id: string | null
+          tx_explorer_url: string | null
+          tx_id: string | null
+          type: Database["public"]["Enums"]["crypto_transaction_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          asset_id?: string | null
+          created_at?: string
+          date: string
+          fiat_amount?: number | null
+          from_amount?: number | null
+          from_asset_id?: string | null
+          from_storage_id?: string | null
+          id?: string
+          linked_transaction_id?: string | null
+          storage_id?: string | null
+          to_amount?: number | null
+          to_asset_id?: string | null
+          to_storage_id?: string | null
+          tx_explorer_url?: string | null
+          tx_id?: string | null
+          type: Database["public"]["Enums"]["crypto_transaction_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          asset_id?: string | null
+          created_at?: string
+          date?: string
+          fiat_amount?: number | null
+          from_amount?: number | null
+          from_asset_id?: string | null
+          from_storage_id?: string | null
+          id?: string
+          linked_transaction_id?: string | null
+          storage_id?: string | null
+          to_amount?: number | null
+          to_asset_id?: string | null
+          to_storage_id?: string | null
+          tx_explorer_url?: string | null
+          tx_id?: string | null
+          type?: Database["public"]["Enums"]["crypto_transaction_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crypto_transactions_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "crypto_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crypto_transactions_from_asset_id_fkey"
+            columns: ["from_asset_id"]
+            isOneToOne: false
+            referencedRelation: "crypto_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crypto_transactions_from_storage_id_fkey"
+            columns: ["from_storage_id"]
+            isOneToOne: false
+            referencedRelation: "crypto_storages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crypto_transactions_linked_transaction_id_fkey"
+            columns: ["linked_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crypto_transactions_storage_id_fkey"
+            columns: ["storage_id"]
+            isOneToOne: false
+            referencedRelation: "crypto_storages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crypto_transactions_to_asset_id_fkey"
+            columns: ["to_asset_id"]
+            isOneToOne: false
+            referencedRelation: "crypto_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crypto_transactions_to_storage_id_fkey"
+            columns: ["to_storage_id"]
+            isOneToOne: false
+            referencedRelation: "crypto_storages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exchange_rates: {
         Row: {
           from_currency: string
@@ -109,11 +339,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'subscriptions_tag_id_fkey'
-            columns: ['tag_id']
+            foreignKeyName: "subscriptions_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: 'tags'
-            referencedColumns: ['id']
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -183,11 +413,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'transactions_tag_id_fkey'
-            columns: ['tag_id']
+            foreignKeyName: "transactions_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: 'tags'
-            referencedColumns: ['id']
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -196,10 +426,45 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_crypto_buy_sell_transaction: {
+        Args: {
+          p_amount: number
+          p_asset_id: string
+          p_crypto_type: string
+          p_date: string
+          p_fiat_amount: number
+          p_linked_title: string
+          p_linked_type: string
+          p_storage_id: string
+          p_tag_id: string
+          p_tx_explorer_url: string
+          p_tx_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      create_crypto_transfer_in_out_transaction: {
+        Args: {
+          p_amount: number
+          p_asset_id: string
+          p_crypto_type: string
+          p_date: string
+          p_fiat_amount: number
+          p_linked_title: string
+          p_linked_type: string
+          p_storage_id: string
+          p_tag_id: string
+          p_tx_explorer_url: string
+          p_tx_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       get_last_day_of_month: {
         Args: { p_month: number; p_year: number }
         Returns: number
       }
+      invoke_subscription_payment_processor: { Args: never; Returns: number }
       is_subscription_due_today: {
         Args: {
           p_created_at: string
@@ -230,7 +495,13 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      crypto_transaction_type:
+        | "buy"
+        | "sell"
+        | "transfer_between"
+        | "swap"
+        | "transfer_in"
+        | "transfer_out"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -238,33 +509,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -273,23 +544,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -298,23 +569,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -323,36 +594,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
@@ -360,6 +631,16 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      crypto_transaction_type: [
+        "buy",
+        "sell",
+        "transfer_between",
+        "swap",
+        "transfer_in",
+        "transfer_out",
+      ],
+    },
   },
 } as const
+

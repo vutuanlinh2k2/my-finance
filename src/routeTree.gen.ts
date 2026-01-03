@@ -12,9 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authenticated/subscriptions'
-import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
-import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedCryptoTransactionsRouteImport } from './routes/_authenticated/crypto/transactions'
+import { Route as AuthenticatedCryptoStorageRouteImport } from './routes/_authenticated/crypto/storage'
+import { Route as AuthenticatedCryptoAssetsRouteImport } from './routes/_authenticated/crypto/assets'
+import { Route as AuthenticatedBudgetSubscriptionsRouteImport } from './routes/_authenticated/budget/subscriptions'
+import { Route as AuthenticatedBudgetReportsRouteImport } from './routes/_authenticated/budget/reports'
+import { Route as AuthenticatedBudgetCalendarRouteImport } from './routes/_authenticated/budget/calendar'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -30,59 +33,107 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedSubscriptionsRoute =
-  AuthenticatedSubscriptionsRouteImport.update({
-    id: '/subscriptions',
-    path: '/subscriptions',
+const AuthenticatedCryptoTransactionsRoute =
+  AuthenticatedCryptoTransactionsRouteImport.update({
+    id: '/crypto/transactions',
+    path: '/crypto/transactions',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
+const AuthenticatedCryptoStorageRoute =
+  AuthenticatedCryptoStorageRouteImport.update({
+    id: '/crypto/storage',
+    path: '/crypto/storage',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCryptoAssetsRoute =
+  AuthenticatedCryptoAssetsRouteImport.update({
+    id: '/crypto/assets',
+    path: '/crypto/assets',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedBudgetSubscriptionsRoute =
+  AuthenticatedBudgetSubscriptionsRouteImport.update({
+    id: '/budget/subscriptions',
+    path: '/budget/subscriptions',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedBudgetReportsRoute =
+  AuthenticatedBudgetReportsRouteImport.update({
+    id: '/budget/reports',
+    path: '/budget/reports',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedBudgetCalendarRoute =
+  AuthenticatedBudgetCalendarRouteImport.update({
+    id: '/budget/calendar',
+    path: '/budget/calendar',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
-  '/calendar': typeof AuthenticatedCalendarRoute
-  '/reports': typeof AuthenticatedReportsRoute
-  '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/': typeof AuthenticatedIndexRoute
+  '/budget/calendar': typeof AuthenticatedBudgetCalendarRoute
+  '/budget/reports': typeof AuthenticatedBudgetReportsRoute
+  '/budget/subscriptions': typeof AuthenticatedBudgetSubscriptionsRoute
+  '/crypto/assets': typeof AuthenticatedCryptoAssetsRoute
+  '/crypto/storage': typeof AuthenticatedCryptoStorageRoute
+  '/crypto/transactions': typeof AuthenticatedCryptoTransactionsRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/calendar': typeof AuthenticatedCalendarRoute
-  '/reports': typeof AuthenticatedReportsRoute
-  '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/': typeof AuthenticatedIndexRoute
+  '/budget/calendar': typeof AuthenticatedBudgetCalendarRoute
+  '/budget/reports': typeof AuthenticatedBudgetReportsRoute
+  '/budget/subscriptions': typeof AuthenticatedBudgetSubscriptionsRoute
+  '/crypto/assets': typeof AuthenticatedCryptoAssetsRoute
+  '/crypto/storage': typeof AuthenticatedCryptoStorageRoute
+  '/crypto/transactions': typeof AuthenticatedCryptoTransactionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
-  '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
-  '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/budget/calendar': typeof AuthenticatedBudgetCalendarRoute
+  '/_authenticated/budget/reports': typeof AuthenticatedBudgetReportsRoute
+  '/_authenticated/budget/subscriptions': typeof AuthenticatedBudgetSubscriptionsRoute
+  '/_authenticated/crypto/assets': typeof AuthenticatedCryptoAssetsRoute
+  '/_authenticated/crypto/storage': typeof AuthenticatedCryptoStorageRoute
+  '/_authenticated/crypto/transactions': typeof AuthenticatedCryptoTransactionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/calendar' | '/reports' | '/subscriptions' | '/'
+  fullPaths:
+    | '/login'
+    | '/'
+    | '/budget/calendar'
+    | '/budget/reports'
+    | '/budget/subscriptions'
+    | '/crypto/assets'
+    | '/crypto/storage'
+    | '/crypto/transactions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/calendar' | '/reports' | '/subscriptions' | '/'
+  to:
+    | '/login'
+    | '/'
+    | '/budget/calendar'
+    | '/budget/reports'
+    | '/budget/subscriptions'
+    | '/crypto/assets'
+    | '/crypto/storage'
+    | '/crypto/transactions'
   id:
     | '__root__'
     | '/_authenticated'
     | '/login'
-    | '/_authenticated/calendar'
-    | '/_authenticated/reports'
-    | '/_authenticated/subscriptions'
     | '/_authenticated/'
+    | '/_authenticated/budget/calendar'
+    | '/_authenticated/budget/reports'
+    | '/_authenticated/budget/subscriptions'
+    | '/_authenticated/crypto/assets'
+    | '/_authenticated/crypto/storage'
+    | '/_authenticated/crypto/transactions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -113,42 +164,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/subscriptions': {
-      id: '/_authenticated/subscriptions'
-      path: '/subscriptions'
-      fullPath: '/subscriptions'
-      preLoaderRoute: typeof AuthenticatedSubscriptionsRouteImport
+    '/_authenticated/crypto/transactions': {
+      id: '/_authenticated/crypto/transactions'
+      path: '/crypto/transactions'
+      fullPath: '/crypto/transactions'
+      preLoaderRoute: typeof AuthenticatedCryptoTransactionsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/reports': {
-      id: '/_authenticated/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AuthenticatedReportsRouteImport
+    '/_authenticated/crypto/storage': {
+      id: '/_authenticated/crypto/storage'
+      path: '/crypto/storage'
+      fullPath: '/crypto/storage'
+      preLoaderRoute: typeof AuthenticatedCryptoStorageRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/calendar': {
-      id: '/_authenticated/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof AuthenticatedCalendarRouteImport
+    '/_authenticated/crypto/assets': {
+      id: '/_authenticated/crypto/assets'
+      path: '/crypto/assets'
+      fullPath: '/crypto/assets'
+      preLoaderRoute: typeof AuthenticatedCryptoAssetsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/budget/subscriptions': {
+      id: '/_authenticated/budget/subscriptions'
+      path: '/budget/subscriptions'
+      fullPath: '/budget/subscriptions'
+      preLoaderRoute: typeof AuthenticatedBudgetSubscriptionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/budget/reports': {
+      id: '/_authenticated/budget/reports'
+      path: '/budget/reports'
+      fullPath: '/budget/reports'
+      preLoaderRoute: typeof AuthenticatedBudgetReportsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/budget/calendar': {
+      id: '/_authenticated/budget/calendar'
+      path: '/budget/calendar'
+      fullPath: '/budget/calendar'
+      preLoaderRoute: typeof AuthenticatedBudgetCalendarRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
   }
 }
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
-  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedBudgetCalendarRoute: typeof AuthenticatedBudgetCalendarRoute
+  AuthenticatedBudgetReportsRoute: typeof AuthenticatedBudgetReportsRoute
+  AuthenticatedBudgetSubscriptionsRoute: typeof AuthenticatedBudgetSubscriptionsRoute
+  AuthenticatedCryptoAssetsRoute: typeof AuthenticatedCryptoAssetsRoute
+  AuthenticatedCryptoStorageRoute: typeof AuthenticatedCryptoStorageRoute
+  AuthenticatedCryptoTransactionsRoute: typeof AuthenticatedCryptoTransactionsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
-  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedBudgetCalendarRoute: AuthenticatedBudgetCalendarRoute,
+  AuthenticatedBudgetReportsRoute: AuthenticatedBudgetReportsRoute,
+  AuthenticatedBudgetSubscriptionsRoute: AuthenticatedBudgetSubscriptionsRoute,
+  AuthenticatedCryptoAssetsRoute: AuthenticatedCryptoAssetsRoute,
+  AuthenticatedCryptoStorageRoute: AuthenticatedCryptoStorageRoute,
+  AuthenticatedCryptoTransactionsRoute: AuthenticatedCryptoTransactionsRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

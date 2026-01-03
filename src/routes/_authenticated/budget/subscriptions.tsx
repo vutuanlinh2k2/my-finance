@@ -35,7 +35,7 @@ import {
   SubscriptionsTable,
 } from '@/components/subscriptions'
 
-export const Route = createFileRoute('/_authenticated/subscriptions')({
+export const Route = createFileRoute('/_authenticated/budget/subscriptions')({
   component: SubscriptionsPage,
 })
 
@@ -170,7 +170,6 @@ function SubscriptionsPage() {
         totalMonthly={summaryTotals.totalMonthly}
         totalYearly={summaryTotals.totalYearly}
         isLoading={isLoading}
-        exchangeRate={exchangeRate}
       />
 
       {/* Table or Empty State */}

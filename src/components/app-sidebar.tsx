@@ -1,10 +1,14 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import {
+  ArrowsLeftRight,
   CalendarDots,
   CaretDown,
   ChartBar,
+  Coin,
+  Coins,
   House,
   Repeat,
+  Vault,
   Wallet,
 } from '@phosphor-icons/react'
 
@@ -57,7 +61,7 @@ export function AppSidebar() {
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
                       <Wallet weight="duotone" />
-                      <span>Expenses/Incomes</span>
+                      <span>Budget</span>
                       <CaretDown className="ml-auto size-3.5! text-muted-foreground transition-transform group-data-[state=open]/collapsible:rotate-180" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
@@ -66,9 +70,9 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={currentPath === '/calendar'}
+                          isActive={currentPath === '/budget/calendar'}
                         >
-                          <Link to="/calendar">
+                          <Link to="/budget/calendar">
                             <CalendarDots weight="duotone" />
                             <span>Calendar</span>
                           </Link>
@@ -77,9 +81,9 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={currentPath === '/subscriptions'}
+                          isActive={currentPath === '/budget/subscriptions'}
                         >
-                          <Link to="/subscriptions">
+                          <Link to="/budget/subscriptions">
                             <Repeat weight="duotone" />
                             <span>Subscriptions</span>
                           </Link>
@@ -88,11 +92,60 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={currentPath === '/reports'}
+                          isActive={currentPath === '/budget/reports'}
                         >
-                          <Link to="/reports">
+                          <Link to="/budget/reports">
                             <ChartBar weight="duotone" />
                             <span>Reports</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+
+              <Collapsible defaultOpen className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton>
+                      <Coin weight="duotone" />
+                      <span>Crypto</span>
+                      <CaretDown className="ml-auto size-3.5! text-muted-foreground transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={currentPath === '/crypto/assets'}
+                        >
+                          <Link to="/crypto/assets">
+                            <Coins weight="duotone" />
+                            <span>Assets</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={currentPath === '/crypto/storage'}
+                        >
+                          <Link to="/crypto/storage">
+                            <Vault weight="duotone" />
+                            <span>Storage</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={currentPath === '/crypto/transactions'}
+                        >
+                          <Link to="/crypto/transactions">
+                            <ArrowsLeftRight weight="duotone" />
+                            <span>Transactions</span>
                           </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>

@@ -23,7 +23,7 @@ import {
   useTransactionsByDate,
 } from '@/lib/hooks/use-transactions'
 
-export const Route = createFileRoute('/_authenticated/calendar')({
+export const Route = createFileRoute('/_authenticated/budget/calendar')({
   component: CalendarPage,
 })
 

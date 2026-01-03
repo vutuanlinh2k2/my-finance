@@ -77,12 +77,12 @@ function RootComponent() {
             ) : (
               <SidebarProvider>
                 <AppSidebar />
-                <SidebarInset>
+                <SidebarInset className="min-w-0">
                   <header className="flex h-12 shrink-0 items-center justify-between border-b px-4">
                     <SidebarTrigger className="-ml-1" />
                     <HeaderActions />
                   </header>
-                  <main className="flex-1 p-4">
+                  <main className="min-w-0 flex-1 overflow-x-hidden p-4">
                     <Outlet />
                   </main>
                 </SidebarInset>

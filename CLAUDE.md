@@ -241,6 +241,7 @@ Use Playwright MCP for browser automation and testing:
 - Interacting with the running app (click, type, navigate)
 
 **CRITICAL - Prevent Empty Tabs:**
+
 - NEVER use `browser_close` followed by `browser_navigate` - this creates empty `about:blank` tabs
 - When browser errors occur, use `browser_tabs` with `action: "list"` to check tab state first
 - To refresh a page, use `browser_navigate` to the same URL (it reuses the current tab)
