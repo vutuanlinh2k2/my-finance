@@ -28,33 +28,26 @@ interface SnapshotResult {
 
 /**
  * Fetch bank balance for all users (income - expenses)
+ * Uses database RPC function for efficient aggregation
  */
 async function fetchAllUserBankBalances(
   supabase: SupabaseClient,
 ): Promise<Map<string, number>> {
   const balances = new Map<string, number>()
 
-  // Get all transactions grouped by user
-  const { data: transactions, error } = await supabase
-    .from('transactions')
-    .select('user_id, type, amount')
+  // Use RPC function for efficient database-level aggregation
+  const { data, error } = await supabase.rpc('get_all_users_bank_balances')
 
   if (error) {
-    throw new Error(`Failed to fetch transactions: ${error.message}`)
+    throw new Error(`Failed to fetch bank balances: ${error.message}`)
   }
 
-  if (!transactions || transactions.length === 0) {
+  if (!data || data.length === 0) {
     return balances
   }
 
-  // Calculate bank balance per user
-  for (const tx of transactions) {
-    const current = balances.get(tx.user_id) || 0
-    if (tx.type === 'income') {
-      balances.set(tx.user_id, current + tx.amount)
-    } else {
-      balances.set(tx.user_id, current - tx.amount)
-    }
+  for (const row of data) {
+    balances.set(row.user_id, row.bank_balance)
   }
 
   return balances
@@ -90,12 +83,11 @@ async function fetchLatestCryptoSnapshots(
     return cryptoValues
   }
 
-  // If no today snapshots, get the most recent snapshot per user
-  // This query gets the latest snapshot for each user using a window function approach
-  const { data: latestSnapshots, error: latestError } = await supabase
-    .from('crypto_portfolio_snapshots')
-    .select('user_id, total_value_usd, snapshot_date')
-    .order('snapshot_date', { ascending: false })
+  // If no today snapshots, get the most recent snapshot per user using RPC
+  // Uses DISTINCT ON for efficient database-level deduplication
+  const { data: latestSnapshots, error: latestError } = await supabase.rpc(
+    'get_latest_crypto_snapshots',
+  )
 
   if (latestError) {
     throw new Error(
@@ -108,13 +100,9 @@ async function fetchLatestCryptoSnapshots(
     return cryptoValues
   }
 
-  // Get the most recent snapshot per user
-  const seenUsers = new Set<string>()
+  // RPC already returns one row per user (most recent snapshot)
   for (const snapshot of latestSnapshots) {
-    if (!seenUsers.has(snapshot.user_id)) {
-      cryptoValues.set(snapshot.user_id, snapshot.total_value_usd)
-      seenUsers.add(snapshot.user_id)
-    }
+    cryptoValues.set(snapshot.user_id, snapshot.total_value_usd)
   }
 
   console.log(`Found ${cryptoValues.size} users with crypto snapshots`)

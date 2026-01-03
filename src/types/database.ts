@@ -501,9 +501,24 @@ export type Database = {
           total_income: number
         }[]
       }
+      get_all_users_bank_balances: {
+        Args: never
+        Returns: {
+          bank_balance: number
+          user_id: string
+        }[]
+      }
       get_last_day_of_month: {
         Args: { p_month: number; p_year: number }
         Returns: number
+      }
+      get_latest_crypto_snapshots: {
+        Args: never
+        Returns: {
+          snapshot_date: string
+          total_value_usd: number
+          user_id: string
+        }[]
       }
       get_monthly_totals: {
         Args: { p_month: number; p_year: number }
