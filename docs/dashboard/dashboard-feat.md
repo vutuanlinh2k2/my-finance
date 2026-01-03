@@ -94,18 +94,19 @@ The Dashboard is the main landing page of TLinh's Finance app, providing a compr
 
 ### Net Worth Snapshot (New Table)
 
-| Field            | Type         | Description                              |
-| ---------------- | ------------ | ---------------------------------------- |
-| id               | uuid         | Primary key                              |
-| user_id          | uuid         | Foreign key to auth.users                |
-| snapshot_date    | date         | Date of the snapshot                     |
-| bank_balance     | numeric      | All-time income - expenses in VND        |
-| crypto_value_vnd | numeric      | Total crypto value in VND                |
-| total_net_worth  | numeric      | bank_balance + crypto_value_vnd          |
-| exchange_rate    | numeric      | USD/VND rate used for crypto conversion  |
-| created_at       | timestamptz  | When the snapshot was created            |
+| Field            | Type        | Description                             |
+| ---------------- | ----------- | --------------------------------------- |
+| id               | uuid        | Primary key                             |
+| user_id          | uuid        | Foreign key to auth.users               |
+| snapshot_date    | date        | Date of the snapshot                    |
+| bank_balance     | numeric     | All-time income - expenses in VND       |
+| crypto_value_vnd | numeric     | Total crypto value in VND               |
+| total_net_worth  | numeric     | bank_balance + crypto_value_vnd         |
+| exchange_rate    | numeric     | USD/VND rate used for crypto conversion |
+| created_at       | timestamptz | When the snapshot was created           |
 
 **Constraints**:
+
 - Unique constraint on (user_id, snapshot_date) - one snapshot per user per day
 - RLS policies for user isolation
 
@@ -113,19 +114,20 @@ The Dashboard is the main landing page of TLinh's Finance app, providing a compr
 
 These are computed on-the-fly, not stored:
 
-| Field              | Calculation                                          |
-| ------------------ | ---------------------------------------------------- |
-| allTimeIncome      | SUM(amount) WHERE type = 'income'                    |
-| allTimeExpenses    | SUM(amount) WHERE type = 'expense'                   |
-| bankBalance        | allTimeIncome - allTimeExpenses                      |
-| monthlyIncome      | SUM(amount) WHERE type = 'income' AND month = current|
-| monthlyExpenses    | SUM(amount) WHERE type = 'expense' AND month = current|
+| Field           | Calculation                                            |
+| --------------- | ------------------------------------------------------ |
+| allTimeIncome   | SUM(amount) WHERE type = 'income'                      |
+| allTimeExpenses | SUM(amount) WHERE type = 'expense'                     |
+| bankBalance     | allTimeIncome - allTimeExpenses                        |
+| monthlyIncome   | SUM(amount) WHERE type = 'income' AND month = current  |
+| monthlyExpenses | SUM(amount) WHERE type = 'expense' AND month = current |
 
 ## API Layer
 
 ### Database Functions (RPC)
 
 #### `get_all_time_totals()`
+
 Returns all-time income and expense totals for the authenticated user.
 
 ```sql
@@ -137,6 +139,7 @@ RETURNS TABLE (
 ```
 
 #### `get_monthly_totals(year int, month int)`
+
 Returns income and expense totals for a specific month.
 
 ```sql
@@ -210,6 +213,7 @@ src/components/dashboard/
 #### `DashboardSummaryCards`
 
 **Props**:
+
 ```typescript
 interface DashboardSummaryCardsProps {
   netWorth: number
@@ -220,6 +224,7 @@ interface DashboardSummaryCardsProps {
 ```
 
 **States**:
+
 - Loading: Show skeleton placeholders
 - Loaded: Show formatted values
 - Zero state: Show "0" (no special empty state)
@@ -227,6 +232,7 @@ interface DashboardSummaryCardsProps {
 #### `NetWorthPieChart`
 
 **Props**:
+
 ```typescript
 interface NetWorthPieChartProps {
   bankBalance: number
@@ -236,6 +242,7 @@ interface NetWorthPieChartProps {
 ```
 
 **States**:
+
 - Loading: Show skeleton/placeholder
 - Has data: Show pie chart with two segments
 - All zeros: Show empty chart with message
@@ -243,6 +250,7 @@ interface NetWorthPieChartProps {
 #### `NetWorthHistoryChart`
 
 **Props**:
+
 ```typescript
 interface NetWorthHistoryChartProps {
   isLoading?: boolean
@@ -250,9 +258,11 @@ interface NetWorthHistoryChartProps {
 ```
 
 **Internal State**:
+
 - `timeRange`: '1m' | '1y' | 'all' (default: '1m')
 
 **States**:
+
 - Loading: Show skeleton
 - Has data: Show line chart
 - No data: Show empty state message
@@ -277,7 +287,7 @@ dashboard: {
 
 ```typescript
 // src/lib/hooks/use-dashboard.ts
-useDashboardTotals()      // Fetches all-time + monthly totals
+useDashboardTotals() // Fetches all-time + monthly totals
 useNetWorthHistory(range) // Fetches snapshots for chart
 ```
 
@@ -300,9 +310,11 @@ useNetWorthHistory(range) // Fetches snapshots for chart
 ## Dependencies
 
 ### External Libraries
+
 - `recharts`: Already installed, used for pie and line charts
 
 ### Internal Modules
+
 - `@/lib/currency`: formatCompact, formatCurrency
 - `@/lib/hooks/use-crypto-assets`: For getting crypto portfolio value
 - `@/lib/hooks/use-exchange-rate`: For USD/VND conversion
