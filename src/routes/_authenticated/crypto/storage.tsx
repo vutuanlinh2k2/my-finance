@@ -145,6 +145,12 @@ function CryptoStoragePage() {
     }))
   }, [storagesWithValues, totalValueVnd])
 
+  // Get value of storage being deleted
+  const deletingStorageValue =
+    storagesWithPercentages.find((s) => s.id === deletingStorage?.id)
+      ?.totalValueVnd ?? 0
+  const canDeleteStorage = deletingStorageValue === 0
+
   // Get selected storage
   const selectedId = search.selected ?? null
   const selectedStorage = useMemo(
@@ -353,21 +359,33 @@ function CryptoStoragePage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Storage</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deletingStorage?.name}"? This
-              action cannot be undone.
+              {canDeleteStorage ? (
+                <>
+                  Are you sure you want to delete "{deletingStorage?.name}"?
+                  This action cannot be undone.
+                </>
+              ) : (
+                <>
+                  Cannot delete "{deletingStorage?.name}" because it has assets
+                  worth {formatCompact(deletingStorageValue)}. Please transfer
+                  out all assets before deleting this storage.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleteMutation.isPending}>
-              Cancel
+              {canDeleteStorage ? 'Cancel' : 'Close'}
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteStorage}
-              disabled={deleteMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
+            {canDeleteStorage && (
+              <AlertDialogAction
+                onClick={handleDeleteStorage}
+                disabled={deleteMutation.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

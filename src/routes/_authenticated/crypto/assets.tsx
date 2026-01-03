@@ -116,6 +116,11 @@ function CryptoAssetsPage() {
     }))
   }, [assetsWithPrices, totalValueVnd])
 
+  // Get balance of asset being deleted
+  const deletingAssetBalance =
+    assetsWithPortfolio.find((a) => a.id === deletingAsset?.id)?.balance ?? 0
+  const canDeleteAsset = deletingAssetBalance === 0
+
   // Prepare allocation data for pie chart
   const allocations = assetsWithPrices
     .filter((a) => a.valueVnd > 0)
@@ -226,21 +231,33 @@ function CryptoAssetsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Asset</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove "{deletingAsset?.name}" from your
-              portfolio? This action cannot be undone.
+              {canDeleteAsset ? (
+                <>
+                  Are you sure you want to remove "{deletingAsset?.name}" from
+                  your portfolio? This action cannot be undone.
+                </>
+              ) : (
+                <>
+                  Cannot delete "{deletingAsset?.name}" because it has a balance
+                  of {deletingAssetBalance} {deletingAsset?.symbol}. Please
+                  transfer out or sell all holdings before deleting this asset.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleteMutation.isPending}>
-              Cancel
+              {canDeleteAsset ? 'Cancel' : 'Close'}
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAsset}
-              disabled={deleteMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
+            {canDeleteAsset && (
+              <AlertDialogAction
+                onClick={handleDeleteAsset}
+                disabled={deleteMutation.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
