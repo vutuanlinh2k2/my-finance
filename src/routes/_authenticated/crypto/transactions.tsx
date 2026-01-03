@@ -71,7 +71,7 @@ function CryptoTransactionsPage() {
 
   // Fetch data
   const { data: transactionsData, isLoading: isLoadingTransactions } =
-    useCryptoTransactions(filters, { page, pageSize: 20 })
+    useCryptoTransactions(filters, { page, pageSize: 10 })
   const { data: allTransactions = [] } = useAllCryptoTransactions()
   const { data: assets = [] } = useCryptoAssets()
   const { data: storages = [] } = useCryptoStorages()
