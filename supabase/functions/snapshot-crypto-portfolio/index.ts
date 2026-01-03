@@ -142,8 +142,16 @@ async function fetchPrices(
 }
 
 /**
- * Calculate the balance of a specific asset across all storages
- * Replicates the logic from src/lib/crypto/utils.ts
+ * Calculate the balance of a specific asset across all storages.
+ *
+ * IMPORTANT: This logic is duplicated from src/lib/crypto/utils.ts because
+ * edge functions run in Deno and cannot import from the frontend codebase.
+ * If you modify balance calculation logic, update BOTH locations:
+ * - src/lib/crypto/utils.ts (calculateAssetBalance, getAllBalances)
+ * - supabase/functions/snapshot-crypto-portfolio/index.ts (this function)
+ *
+ * The canonical implementation is in utils.ts. This function calculates
+ * total balance across all storages (no storageId filter).
  */
 function calculateAssetBalance(
   assetId: string,
