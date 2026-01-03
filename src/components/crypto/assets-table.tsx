@@ -1,11 +1,8 @@
 import { useMemo, useState } from 'react'
 import {
-  ArrowDown,
-  ArrowUp,
   CaretDown,
   CaretUp,
   CaretUpDown,
-  Minus,
   Trash,
 } from '@phosphor-icons/react'
 import type { CryptoAsset } from '@/lib/crypto/types'
@@ -55,8 +52,7 @@ interface AssetsTableProps {
 function PriceChangeCell({ change }: { change: number | null }) {
   if (change === null) {
     return (
-      <div className="flex items-center justify-end gap-1 text-muted-foreground">
-        <Minus weight="bold" className="size-3" />
+      <div className="flex items-center justify-end text-muted-foreground">
         <span>—</span>
       </div>
     )
@@ -64,12 +60,7 @@ function PriceChangeCell({ change }: { change: number | null }) {
 
   const isPositive = change >= 0
   return (
-    <div className="flex items-center justify-end gap-1">
-      {isPositive ? (
-        <ArrowUp weight="bold" className="size-3 text-emerald-600" />
-      ) : (
-        <ArrowDown weight="bold" className="size-3 text-rose-600" />
-      )}
+    <div className="flex items-center justify-end">
       <span
         className={`font-medium ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}
       >
