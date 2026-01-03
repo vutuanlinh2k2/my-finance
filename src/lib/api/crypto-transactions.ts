@@ -201,7 +201,7 @@ export async function createCryptoTransaction(
 
 /**
  * Create a Buy or Sell transaction with linked expense/income
- * This is an atomic operation - either both succeed or both fail
+ * Uses PostgreSQL RPC function for atomic operation - either both succeed or both fail
  */
 async function createBuySellTransaction(
   input: BuyTransactionInput | SellTransactionInput,
@@ -215,57 +215,44 @@ async function createBuySellTransaction(
     )
   }
 
-  // Determine transaction type for the linked regular transaction
   const linkedType = input.type === 'buy' ? 'expense' : 'income'
   const title = `${input.type === 'buy' ? 'Buy' : 'Sell'} ${linkedOptions.assetSymbol.toUpperCase()}`
 
-  // Step 1: Create the linked regular transaction (expense for buy, income for sell)
-  const { data: linkedTransaction, error: linkedError } = await supabase
-    .from('transactions')
-    .insert({
-      user_id: userId,
-      title,
-      amount: input.fiatAmount,
-      date: input.date,
-      type: linkedType,
-      tag_id: linkedOptions.tagId,
-    })
-    .select()
-    .single()
+  // Single atomic RPC call - no manual rollback needed
+  const { data: cryptoId, error } = await supabase.rpc(
+    'create_crypto_buy_sell_transaction',
+    {
+      p_user_id: userId,
+      p_crypto_type: input.type,
+      p_date: input.date,
+      p_tx_id: input.txId ?? null,
+      p_tx_explorer_url: input.txExplorerUrl ?? null,
+      p_asset_id: input.assetId,
+      p_amount: input.amount,
+      p_storage_id: input.storageId,
+      p_fiat_amount: input.fiatAmount,
+      p_linked_title: title,
+      p_linked_type: linkedType,
+      p_tag_id: linkedOptions.tagId,
+    },
+  )
 
-  if (linkedError) {
-    throw new Error(
-      `Failed to create linked ${linkedType} transaction: ${linkedError.message}`,
-    )
+  if (error) {
+    throw new Error(`Failed to create ${input.type} transaction: ${error.message}`)
   }
 
-  // Step 2: Create the crypto transaction with linked_transaction_id
-  const { data: cryptoTransaction, error: cryptoError } = await supabase
+  // Fetch the created transaction
+  const { data: transaction, error: fetchError } = await supabase
     .from('crypto_transactions')
-    .insert({
-      user_id: userId,
-      type: input.type,
-      date: input.date,
-      tx_id: input.txId ?? null,
-      tx_explorer_url: input.txExplorerUrl ?? null,
-      asset_id: input.assetId,
-      amount: input.amount,
-      storage_id: input.storageId,
-      fiat_amount: input.fiatAmount,
-      linked_transaction_id: linkedTransaction.id,
-    })
-    .select()
+    .select('*')
+    .eq('id', cryptoId)
     .single()
 
-  if (cryptoError) {
-    // Rollback: Delete the linked transaction
-    await supabase.from('transactions').delete().eq('id', linkedTransaction.id)
-    throw new Error(
-      `Failed to create crypto transaction: ${cryptoError.message}`,
-    )
+  if (fetchError) {
+    throw new Error(`Failed to fetch created transaction: ${fetchError.message}`)
   }
 
-  return cryptoTransaction
+  return transaction
 }
 
 /**
@@ -273,7 +260,7 @@ async function createBuySellTransaction(
  * - Transfer In creates a linked income transaction (value received from airdrop, gift, etc.)
  * - Transfer Out creates a linked expense transaction (value given away, lost, etc.)
  *
- * This is an atomic operation - either both succeed or both fail
+ * Uses PostgreSQL RPC function for atomic operation - either both succeed or both fail
  */
 async function createTransferInOutTransaction(
   input: TransferInTransactionInput | TransferOutTransactionInput,
@@ -287,61 +274,47 @@ async function createTransferInOutTransaction(
     )
   }
 
-  // Determine transaction type for the linked regular transaction
-  // Transfer In = income (receiving value), Transfer Out = expense (giving away value)
   const linkedType = input.type === 'transfer_in' ? 'income' : 'expense'
   const title =
     input.type === 'transfer_in'
       ? `Receive ${linkedOptions.assetSymbol.toUpperCase()}`
       : `Send ${linkedOptions.assetSymbol.toUpperCase()}`
 
-  // Step 1: Create the linked regular transaction
-  const { data: linkedTransaction, error: linkedError } = await supabase
-    .from('transactions')
-    .insert({
-      user_id: userId,
-      title,
-      amount: input.fiatAmount,
-      date: input.date,
-      type: linkedType,
-      tag_id: linkedOptions.tagId,
-    })
-    .select()
-    .single()
+  // Single atomic RPC call - no manual rollback needed
+  const { data: cryptoId, error } = await supabase.rpc(
+    'create_crypto_transfer_in_out_transaction',
+    {
+      p_user_id: userId,
+      p_crypto_type: input.type,
+      p_date: input.date,
+      p_tx_id: input.txId ?? null,
+      p_tx_explorer_url: input.txExplorerUrl ?? null,
+      p_asset_id: input.assetId,
+      p_amount: input.amount,
+      p_storage_id: input.storageId,
+      p_fiat_amount: input.fiatAmount,
+      p_linked_title: title,
+      p_linked_type: linkedType,
+      p_tag_id: linkedOptions.tagId,
+    },
+  )
 
-  if (linkedError) {
-    throw new Error(
-      `Failed to create linked ${linkedType} transaction: ${linkedError.message}`,
-    )
+  if (error) {
+    throw new Error(`Failed to create ${input.type} transaction: ${error.message}`)
   }
 
-  // Step 2: Create the crypto transaction with linked_transaction_id
-  const { data: cryptoTransaction, error: cryptoError } = await supabase
+  // Fetch the created transaction
+  const { data: transaction, error: fetchError } = await supabase
     .from('crypto_transactions')
-    .insert({
-      user_id: userId,
-      type: input.type,
-      date: input.date,
-      tx_id: input.txId ?? null,
-      tx_explorer_url: input.txExplorerUrl ?? null,
-      asset_id: input.assetId,
-      amount: input.amount,
-      storage_id: input.storageId,
-      fiat_amount: input.fiatAmount,
-      linked_transaction_id: linkedTransaction.id,
-    })
-    .select()
+    .select('*')
+    .eq('id', cryptoId)
     .single()
 
-  if (cryptoError) {
-    // Rollback: Delete the linked transaction
-    await supabase.from('transactions').delete().eq('id', linkedTransaction.id)
-    throw new Error(
-      `Failed to create crypto transaction: ${cryptoError.message}`,
-    )
+  if (fetchError) {
+    throw new Error(`Failed to fetch created transaction: ${fetchError.message}`)
   }
 
-  return cryptoTransaction
+  return transaction
 }
 
 /**

@@ -426,6 +426,40 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_crypto_buy_sell_transaction: {
+        Args: {
+          p_amount: number
+          p_asset_id: string
+          p_crypto_type: string
+          p_date: string
+          p_fiat_amount: number
+          p_linked_title: string
+          p_linked_type: string
+          p_storage_id: string
+          p_tag_id: string
+          p_tx_explorer_url: string
+          p_tx_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      create_crypto_transfer_in_out_transaction: {
+        Args: {
+          p_amount: number
+          p_asset_id: string
+          p_crypto_type: string
+          p_date: string
+          p_fiat_amount: number
+          p_linked_title: string
+          p_linked_type: string
+          p_storage_id: string
+          p_tag_id: string
+          p_tx_explorer_url: string
+          p_tx_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       get_last_day_of_month: {
         Args: { p_month: number; p_year: number }
         Returns: number
