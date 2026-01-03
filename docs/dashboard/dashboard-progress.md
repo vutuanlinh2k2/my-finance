@@ -2,13 +2,13 @@
 
 ## Overview
 
-| Phase   | Description                          | Status  |
-| ------- | ------------------------------------ | ------- |
-| Phase 1 | UI + Mock Data                       | Pending |
-| Phase 2 | Database & API Layer                 | Pending |
-| Phase 3 | Net Worth Snapshot System            | Pending |
-| Phase 4 | Integration & State Management       | Pending |
-| Phase 5 | Testing & Polish                     | Pending |
+| Phase   | Description                    | Status      |
+| ------- | ------------------------------ | ----------- |
+| Phase 1 | UI + Mock Data                 | Complete    |
+| Phase 2 | Database & API Layer           | Pending     |
+| Phase 3 | Net Worth Snapshot System      | Pending     |
+| Phase 4 | Integration & State Management | Pending     |
+| Phase 5 | Testing & Polish               | Pending     |
 
 ---
 
@@ -20,95 +20,95 @@ Build all UI components with hardcoded/mock data to validate the design and user
 
 ### Summary
 
-[To be filled during implementation]
+Built all dashboard UI components with mock data. Created three summary cards (Net Worth, Monthly Income, Monthly Expenses) with proper icons and color coding. Implemented a donut pie chart showing bank balance vs crypto allocation with hover tooltips. Added a line chart with time range switching (1M, 1Y, All) for net worth history. All components are responsive and support dark mode.
 
 ### Success Criteria
 
-- [ ] All UI components render correctly
-- [ ] Mock data displays properly in all states
-- [ ] Cards show formatted values with tooltips
-- [ ] Pie chart shows correct segments
-- [ ] Line chart renders with time range switching
-- [ ] Responsive design works across viewports
-- [ ] Loading and empty states implemented
+- [x] All UI components render correctly
+- [x] Mock data displays properly in all states
+- [x] Cards show formatted values with tooltips
+- [x] Pie chart shows correct segments
+- [x] Line chart renders with time range switching
+- [x] Responsive design works across viewports
+- [x] Loading and empty states implemented
 
 ### Implementation Steps
 
 #### Step 1: Page Setup
 
-- [ ] Update `src/routes/_authenticated/index.tsx` with dashboard layout
-- [ ] Add page title "Dashboard" at top-left
-- [ ] Set up grid layout for cards and charts
+- [x] Update `src/routes/_authenticated/index.tsx` with dashboard layout
+- [x] Add page title "Dashboard" at top-left
+- [x] Set up grid layout for cards and charts
 
 #### Step 2: Type Definitions
 
-- [ ] Create `src/lib/dashboard/types.ts`
-- [ ] Define `NetWorthSnapshot` interface
-- [ ] Define `DashboardTotals` interface
-- [ ] Define `TimeRange` type (`'1m' | '1y' | 'all'`)
+- [x] Create `src/lib/dashboard/types.ts`
+- [x] Define `NetWorthSnapshot` interface
+- [x] Define `DashboardTotals` interface
+- [x] Define `TimeRange` type (`'1m' | '1y' | 'all'`)
 
 #### Step 3: Mock Data
 
-- [ ] Create `src/lib/dashboard/mock-data.ts`
-- [ ] Generate mock net worth values
-- [ ] Generate mock monthly income/expense
-- [ ] Generate mock historical snapshots for chart
+- [x] Create `src/lib/dashboard/mock-data.ts`
+- [x] Generate mock net worth values
+- [x] Generate mock monthly income/expense
+- [x] Generate mock historical snapshots for chart
 
 #### Step 4: Summary Cards Component
 
-- [ ] Create `src/components/dashboard/dashboard-summary-cards.tsx`
-- [ ] Implement Net Worth card with icon (Wallet)
-- [ ] Implement Monthly Income card with icon (ArrowUp, green)
-- [ ] Implement Monthly Expense card with icon (ArrowDown, red)
-- [ ] Use `formatCompact()` with `tooltip-fast` for values
-- [ ] Add loading skeletons
+- [x] Create `src/components/dashboard/dashboard-summary-cards.tsx`
+- [x] Implement Net Worth card with icon (Wallet)
+- [x] Implement Monthly Income card with icon (ArrowUp, green)
+- [x] Implement Monthly Expense card with icon (ArrowDown, red)
+- [x] Use `formatCompact()` with `tooltip-fast` for values
+- [x] Add loading skeletons
 
 #### Step 5: Pie Chart Component
 
-- [ ] Create `src/components/dashboard/net-worth-pie-chart.tsx`
-- [ ] Implement donut chart with recharts
-- [ ] Add Bank Balance segment (emerald color)
-- [ ] Add Crypto Investment segment (blue color)
-- [ ] Add center label showing "Net Worth"
-- [ ] Implement hover tooltips with amounts and percentages
-- [ ] Add loading skeleton
-- [ ] Handle empty state (both values 0)
+- [x] Create `src/components/dashboard/net-worth-pie-chart.tsx`
+- [x] Implement donut chart with recharts
+- [x] Add Bank Balance segment (emerald color)
+- [x] Add Crypto Investment segment (blue color)
+- [x] Add center label showing "Net Worth"
+- [x] Implement hover tooltips with amounts and percentages
+- [x] Add loading skeleton
+- [x] Handle empty state (both values 0)
 
 #### Step 6: History Chart Component
 
-- [ ] Create `src/components/dashboard/net-worth-history-chart.tsx`
-- [ ] Implement line chart with recharts
-- [ ] Add time range selector tabs (1m, 1y, All)
-- [ ] Style tabs to match `PortfolioHistoryChart`
-- [ ] Implement hover tooltips with date and value
-- [ ] Add loading skeleton
-- [ ] Handle empty state (no history)
+- [x] Create `src/components/dashboard/net-worth-history-chart.tsx`
+- [x] Implement line chart with recharts
+- [x] Add time range selector tabs (1m, 1y, All)
+- [x] Style tabs to match `PortfolioHistoryChart`
+- [x] Implement hover tooltips with date and value
+- [x] Add loading skeleton
+- [x] Handle empty state (no history)
 
 #### Step 7: Component Barrel Export
 
-- [ ] Create `src/components/dashboard/index.ts`
-- [ ] Export all dashboard components
+- [x] Create `src/components/dashboard/index.ts`
+- [x] Export all dashboard components
 
 #### Step 8: Visual Testing
 
-- [ ] Test in browser with Playwright MCP
-- [ ] Verify card layout and values
-- [ ] Test pie chart hover interactions
-- [ ] Test line chart time range switching
-- [ ] Check responsive design (mobile, tablet, desktop)
-- [ ] Verify dark mode compatibility
+- [x] Test in browser with Playwright MCP
+- [x] Verify card layout and values
+- [x] Test pie chart hover interactions
+- [x] Test line chart time range switching
+- [x] Check responsive design (mobile, tablet, desktop)
+- [x] Verify dark mode compatibility
 
 ### Files Created/Modified
 
-| Action   | File                                              |
-| -------- | ------------------------------------------------- |
-| Modified | `src/routes/_authenticated/index.tsx`             |
-| Created  | `src/lib/dashboard/types.ts`                      |
-| Created  | `src/lib/dashboard/mock-data.ts`                  |
+| Action   | File                                                   |
+| -------- | ------------------------------------------------------ |
+| Modified | `src/routes/_authenticated/index.tsx`                  |
+| Created  | `src/lib/dashboard/types.ts`                           |
+| Created  | `src/lib/dashboard/mock-data.ts`                       |
 | Created  | `src/components/dashboard/dashboard-summary-cards.tsx` |
 | Created  | `src/components/dashboard/net-worth-pie-chart.tsx`     |
 | Created  | `src/components/dashboard/net-worth-history-chart.tsx` |
-| Created  | `src/components/dashboard/index.ts`               |
+| Created  | `src/components/dashboard/index.ts`                    |
 
 ---
 
@@ -134,6 +134,7 @@ Create database functions and API layer for fetching real transaction totals and
 #### Step 1: Database RPC Functions
 
 - [ ] Create migration for `get_all_time_totals()` function
+
   ```sql
   CREATE OR REPLACE FUNCTION public.get_all_time_totals()
   RETURNS TABLE (
@@ -155,6 +156,7 @@ Create database functions and API layer for fetching real transaction totals and
   ```
 
 - [ ] Create migration for `get_monthly_totals(year, month)` function
+
   ```sql
   CREATE OR REPLACE FUNCTION public.get_monthly_totals(p_year int, p_month int)
   RETURNS TABLE (
@@ -215,12 +217,12 @@ Create database functions and API layer for fetching real transaction totals and
 
 ### Files Created/Modified
 
-| Action   | File                                                    |
-| -------- | ------------------------------------------------------- |
+| Action   | File                                                      |
+| -------- | --------------------------------------------------------- |
 | Created  | `supabase/migrations/<timestamp>_dashboard_functions.sql` |
-| Created  | `src/lib/api/dashboard.ts`                              |
-| Created  | `src/lib/hooks/use-dashboard.ts`                        |
-| Modified | `src/lib/query-keys.ts`                                 |
+| Created  | `src/lib/api/dashboard.ts`                                |
+| Created  | `src/lib/hooks/use-dashboard.ts`                          |
+| Modified | `src/lib/query-keys.ts`                                   |
 
 ---
 
@@ -247,6 +249,7 @@ Create the infrastructure for daily net worth snapshots including database table
 #### Step 1: Database Table
 
 - [ ] Create migration for `net_worth_snapshots` table
+
   ```sql
   CREATE TABLE public.net_worth_snapshots (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -293,6 +296,7 @@ Create the infrastructure for daily net worth snapshots including database table
 #### Step 3: Cron Job Setup
 
 - [ ] Create migration to add cron job
+
   ```sql
   -- Add function to invoke edge function
   CREATE OR REPLACE FUNCTION public.invoke_net_worth_snapshot()
@@ -348,13 +352,13 @@ Create the infrastructure for daily net worth snapshots including database table
 
 ### Files Created/Modified
 
-| Action   | File                                                         |
-| -------- | ------------------------------------------------------------ |
-| Created  | `supabase/migrations/<timestamp>_net_worth_snapshots.sql`    |
-| Created  | `supabase/migrations/<timestamp>_net_worth_snapshot_cron.sql`|
-| Created  | `supabase/functions/snapshot-net-worth/index.ts`             |
-| Modified | `src/lib/api/dashboard.ts`                                   |
-| Modified | `src/lib/hooks/use-dashboard.ts`                             |
+| Action   | File                                                          |
+| -------- | ------------------------------------------------------------- |
+| Created  | `supabase/migrations/<timestamp>_net_worth_snapshots.sql`     |
+| Created  | `supabase/migrations/<timestamp>_net_worth_snapshot_cron.sql` |
+| Created  | `supabase/functions/snapshot-net-worth/index.ts`              |
+| Modified | `src/lib/api/dashboard.ts`                                    |
+| Modified | `src/lib/hooks/use-dashboard.ts`                              |
 
 ---
 
@@ -412,14 +416,14 @@ Connect all UI components to real data and ensure proper cache invalidation.
 
 ### Files Created/Modified
 
-| Action   | File                                               |
-| -------- | -------------------------------------------------- |
-| Modified | `src/routes/_authenticated/index.tsx`              |
+| Action   | File                                                   |
+| -------- | ------------------------------------------------------ |
+| Modified | `src/routes/_authenticated/index.tsx`                  |
 | Modified | `src/components/dashboard/dashboard-summary-cards.tsx` |
 | Modified | `src/components/dashboard/net-worth-pie-chart.tsx`     |
 | Modified | `src/components/dashboard/net-worth-history-chart.tsx` |
-| Modified | `src/lib/hooks/use-transactions.ts`                |
-| Deleted  | `src/lib/dashboard/mock-data.ts`                   |
+| Modified | `src/lib/hooks/use-transactions.ts`                    |
+| Deleted  | `src/lib/dashboard/mock-data.ts`                       |
 
 ---
 
