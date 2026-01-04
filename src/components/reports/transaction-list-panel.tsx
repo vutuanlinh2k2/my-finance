@@ -3,7 +3,7 @@ import type { Transaction } from '@/lib/api/transactions'
 import type { Tag } from '@/lib/api/tags'
 import { cn } from '@/lib/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
-import { EditTransactionModal } from '@/components/edit-transaction-modal'
+import { EditTransactionModal } from '@/components/calendar'
 
 interface TransactionListPanelProps {
   transactions: Array<Transaction>

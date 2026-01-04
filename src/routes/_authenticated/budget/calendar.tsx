@@ -12,9 +12,11 @@ import type { Transaction } from '@/lib/hooks/use-transactions'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
-import { ManageTagsModal } from '@/components/manage-tags-modal'
-import { AddTransactionModal } from '@/components/add-transaction-modal'
-import { EditTransactionModal } from '@/components/edit-transaction-modal'
+import {
+  AddTransactionModal,
+  EditTransactionModal,
+  ManageTagsModal,
+} from '@/components/calendar'
 import { formatDateToISO } from '@/lib/api/transactions'
 import { useTags } from '@/lib/hooks/use-tags'
 import {
