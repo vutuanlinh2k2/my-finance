@@ -10,6 +10,14 @@ import {
 import { formatCompact, formatCurrency } from '@/lib/currency'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 interface SubscriptionsTableProps {
   subscriptions: Array<Subscription>
@@ -51,147 +59,137 @@ export function SubscriptionsTable({
   onDelete,
 }: SubscriptionsTableProps) {
   return (
-    <div className="rounded-lg border border-border bg-sidebar">
-      {/* Table Header */}
-      <div className="grid grid-cols-[1fr_1fr_100px_120px_140px_80px_100px] gap-4 border-b border-border px-4 py-3">
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Title
-        </span>
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Tag
-        </span>
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Type
-        </span>
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Price
-        </span>
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Due Date
-        </span>
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Manage
-        </span>
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Actions
-        </span>
-      </div>
+    <div className="rounded-lg border border-border bg-card">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead>Title</TableHead>
+            <TableHead>Tag</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead>Due Date</TableHead>
+            <TableHead className="w-[80px]">Manage</TableHead>
+            <TableHead className="w-[100px]">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {subscriptions.map((subscription) => {
+            const tag = tags.find((t) => t.id === subscription.tag_id)
+            const upcomingDate = calculateUpcomingDueDate(subscription)
+            const { formatted, urgency } = formatDueDate(upcomingDate)
+            const firstLetter = subscription.title.charAt(0).toUpperCase()
 
-      {/* Table Body */}
-      <div className="divide-y divide-border">
-        {subscriptions.map((subscription) => {
-          const tag = tags.find((t) => t.id === subscription.tag_id)
-          const upcomingDate = calculateUpcomingDueDate(subscription)
-          const { formatted, urgency } = formatDueDate(upcomingDate)
-          const firstLetter = subscription.title.charAt(0).toUpperCase()
-
-          return (
-            <div
-              key={subscription.id}
-              className="grid grid-cols-[1fr_1fr_100px_120px_140px_80px_100px] gap-4 px-4 py-3 transition-colors hover:bg-muted/30"
-            >
-              {/* Title with initial badge */}
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    'flex size-8 items-center justify-center rounded-md text-sm font-semibold',
-                    getInitialColor(firstLetter),
-                  )}
-                >
-                  {firstLetter}
-                </div>
-                <span className="font-medium">{subscription.title}</span>
-              </div>
-
-              {/* Tag */}
-              <div className="flex items-center gap-2">
-                {tag ? (
-                  <>
-                    <span className="flex size-7 items-center justify-center rounded-lg bg-muted text-base">
-                      {tag.emoji}
-                    </span>
-                    <span className="text-sm">{tag.name}</span>
-                  </>
-                ) : (
-                  <span className="text-sm text-muted-foreground">—</span>
-                )}
-              </div>
-
-              {/* Type */}
-              <div className="flex items-center">
-                <span className="text-sm capitalize">{subscription.type}</span>
-              </div>
-
-              {/* Price */}
-              <div className="flex items-center">
-                {subscription.currency === 'VND' ? (
-                  <span
-                    className="tooltip-fast text-sm font-medium"
-                    data-tooltip={formatCurrency(subscription.amount)}
-                  >
-                    {formatCompact(subscription.amount)}
-                  </span>
-                ) : (
-                  <span className="text-sm font-medium">
-                    {formatUSD(subscription.amount)}
-                  </span>
-                )}
-              </div>
-
-              {/* Due Date */}
-              <div className="flex flex-col justify-center">
-                <span className="text-sm">{formatted}</span>
-                {urgency && (
-                  <span className="text-xs font-medium text-amber-600">
-                    {urgency}
-                  </span>
-                )}
-              </div>
-
-              {/* Manage Link */}
-              <div className="flex items-center">
-                {(() => {
-                  const safeUrl = sanitizeUrl(subscription.management_url)
-                  return safeUrl ? (
-                    <a
-                      href={safeUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            return (
+              <TableRow key={subscription.id}>
+                {/* Title with initial badge */}
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        'flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-semibold',
+                        getInitialColor(firstLetter),
+                      )}
                     >
-                      <ArrowSquareOut weight="duotone" className="size-5" />
-                    </a>
-                  ) : (
-                    <span className="flex size-8 items-center justify-center text-muted-foreground/30">
-                      <ArrowSquareOut weight="duotone" className="size-5" />
-                    </span>
-                  )
-                })()}
-              </div>
+                      {firstLetter}
+                    </div>
+                    <span className="font-medium">{subscription.title}</span>
+                  </div>
+                </TableCell>
 
-              {/* Actions */}
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => onEdit(subscription)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <PencilSimple weight="duotone" className="size-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => onDelete(subscription)}
-                  className="text-muted-foreground hover:text-destructive"
-                >
-                  <Trash weight="duotone" className="size-4" />
-                </Button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+                {/* Tag */}
+                <TableCell>
+                  {tag ? (
+                    <div className="flex items-center gap-2">
+                      <span className="flex size-7 items-center justify-center rounded-lg bg-muted text-base">
+                        {tag.emoji}
+                      </span>
+                      <span className="text-sm">{tag.name}</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+
+                {/* Type */}
+                <TableCell>
+                  <span className="text-sm capitalize">{subscription.type}</span>
+                </TableCell>
+
+                {/* Price */}
+                <TableCell>
+                  {subscription.currency === 'VND' ? (
+                    <span
+                      className="tooltip-fast text-sm font-medium"
+                      data-tooltip={formatCurrency(subscription.amount)}
+                    >
+                      {formatCompact(subscription.amount)}
+                    </span>
+                  ) : (
+                    <span className="text-sm font-medium">
+                      {formatUSD(subscription.amount)}
+                    </span>
+                  )}
+                </TableCell>
+
+                {/* Due Date */}
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span className="text-sm">{formatted}</span>
+                    {urgency && (
+                      <span className="text-xs font-medium text-amber-600">
+                        {urgency}
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
+
+                {/* Manage Link */}
+                <TableCell>
+                  {(() => {
+                    const safeUrl = sanitizeUrl(subscription.management_url)
+                    return safeUrl ? (
+                      <a
+                        href={safeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        <ArrowSquareOut weight="duotone" className="size-5" />
+                      </a>
+                    ) : (
+                      <span className="flex size-8 items-center justify-center text-muted-foreground/30">
+                        <ArrowSquareOut weight="duotone" className="size-5" />
+                      </span>
+                    )
+                  })()}
+                </TableCell>
+
+                {/* Actions */}
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => onEdit(subscription)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <PencilSimple weight="duotone" className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => onDelete(subscription)}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash weight="duotone" className="size-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
 
       {/* Footer */}
       <div className="border-t border-border px-4 py-3">
