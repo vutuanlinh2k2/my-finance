@@ -1,3 +1,4 @@
+Initialising login role...
 export type Json =
   | string
   | number
@@ -7,6 +8,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -418,7 +424,7 @@ export type Database = {
           id: string
           tag_id: string | null
           title: string
-          type: string
+          type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
           user_id: string
         }
@@ -429,7 +435,7 @@ export type Database = {
           id?: string
           tag_id?: string | null
           title: string
-          type: string
+          type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id: string
         }
@@ -440,7 +446,7 @@ export type Database = {
           id?: string
           tag_id?: string | null
           title?: string
-          type?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id?: string
         }
@@ -527,6 +533,7 @@ export type Database = {
           total_income: number
         }[]
       }
+      invoke_crypto_portfolio_snapshot: { Args: never; Returns: number }
       invoke_net_worth_snapshot: { Args: never; Returns: number }
       invoke_subscription_payment_processor: { Args: never; Returns: number }
       is_subscription_due_today: {
@@ -566,6 +573,7 @@ export type Database = {
         | "swap"
         | "transfer_in"
         | "transfer_out"
+      transaction_type: "expense" | "income"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -704,7 +712,7 @@ export const Constants = {
         "transfer_in",
         "transfer_out",
       ],
+      transaction_type: ["expense", "income"],
     },
   },
 } as const
-
