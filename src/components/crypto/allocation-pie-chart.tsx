@@ -18,7 +18,7 @@ interface AllocationPieChartProps {
   isLoading?: boolean
 }
 
-// Predefined color palette for crypto assets
+// Predefined color palette for crypto assets (20 colors)
 const COLORS = [
   '#f59e0b', // amber
   '#3b82f6', // blue
@@ -30,6 +30,16 @@ const COLORS = [
   '#84cc16', // lime
   '#6366f1', // indigo
   '#14b8a6', // teal
+  '#f97316', // orange
+  '#eab308', // yellow
+  '#ef4444', // red
+  '#0ea5e9', // sky
+  '#a855f7', // purple
+  '#d946ef', // fuchsia
+  '#22c55e', // green
+  '#64748b', // slate
+  '#fb7185', // rose-400
+  '#2dd4bf', // teal-400
 ]
 
 export function getAssetColor(index: number): string {
