@@ -38,15 +38,24 @@ export function useMonthlyReportDistribution(
   month: number,
   type: TransactionType,
   tags: Array<Tag>,
+  excludeTagIds: Array<string> = [],
 ) {
   return useQuery({
     queryKey: queryKeys.transactions.byMonth(year, month),
     queryFn: () => fetchTransactionsByMonth(year, month),
-    select: (transactions): DistributionResult => ({
-      distributions: calculateTagDistribution(transactions, tags, type),
-      total: calculateTotal(transactions, type),
-      transactions,
-    }),
+    select: (transactions): DistributionResult => {
+      const filtered =
+        excludeTagIds.length > 0
+          ? transactions.filter(
+              (t) => !t.tag_id || !excludeTagIds.includes(t.tag_id),
+            )
+          : transactions
+      return {
+        distributions: calculateTagDistribution(filtered, tags, type),
+        total: calculateTotal(filtered, type),
+        transactions: filtered,
+      }
+    },
     enabled: tags.length >= 0, // Always enabled, even with empty tags
   })
 }
@@ -59,6 +68,7 @@ export function useYearlyReportDistribution(
   year: number,
   type: TransactionType,
   tags: Array<Tag>,
+  excludeTagIds: Array<string> = [],
 ) {
   const monthQueries = useQueries({
     queries: Array.from({ length: 12 }, (_, month) => ({
@@ -71,10 +81,17 @@ export function useYearlyReportDistribution(
       const isError = results.some((r) => r.isError)
       const error = results.find((r) => r.error)?.error
 
+      const filterExcluded = (txns: Array<Transaction>) =>
+        excludeTagIds.length > 0
+          ? txns.filter(
+              (t) => !t.tag_id || !excludeTagIds.includes(t.tag_id),
+            )
+          : txns
+
       // Store transactions by month for monthly totals calculation
       const transactionsByMonth = results.map((r, month) => ({
         month,
-        transactions: r.data ?? [],
+        transactions: filterExcluded(r.data ?? []),
       }))
 
       // Aggregate all transactions

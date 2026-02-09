@@ -1,5 +1,8 @@
+import { useMemo } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { EyeSlash } from '@phosphor-icons/react'
 import type { TimeMode, TransactionType } from '@/lib/reports/types'
+import { findInvestingTag } from '@/lib/crypto/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
 import { ReportsHeader } from '@/components/reports/reports-header'
 import {
@@ -27,6 +30,7 @@ type ReportsSearch = {
   year?: number
   month?: number
   tag?: string // 'untagged' for null, tag ID for specific tag, omitted for no selection
+  excludeInvesting?: boolean
 }
 
 // Validate and parse search params
@@ -53,6 +57,7 @@ function validateSearch(search: Record<string, unknown>): ReportsSearch {
         ? Number(search.month)
         : undefined,
     tag: typeof search.tag === 'string' ? search.tag : undefined,
+    excludeInvesting: search.excludeInvesting === true ? true : undefined,
   }
 }
 
@@ -101,14 +106,35 @@ function ReportsPage() {
   // Fetch tags
   const { data: tags = [], isLoading: isLoadingTags } = useTags()
 
+  // Derive investing tag and exclusion list
+  const investingExpenseTag = useMemo(
+    () => findInvestingTag(tags, 'expense'),
+    [tags],
+  )
+
+  const excludeInvesting = search.excludeInvesting === true
+  const excludeTagIds = useMemo(
+    () =>
+      excludeInvesting && investingExpenseTag
+        ? [investingExpenseTag.id]
+        : [],
+    [excludeInvesting, investingExpenseTag],
+  )
+
   // Fetch distributions based on time mode
   const monthlyReport = useMonthlyReportDistribution(
     year,
     month,
     transactionType,
     tags,
+    excludeTagIds,
   )
-  const yearlyReport = useYearlyReportDistribution(year, transactionType, tags)
+  const yearlyReport = useYearlyReportDistribution(
+    year,
+    transactionType,
+    tags,
+    excludeTagIds,
+  )
 
   // Select the appropriate report based on time mode
   const isLoading =
@@ -257,6 +283,17 @@ function ReportsPage() {
     })
   }
 
+  // Handle exclude investing toggle
+  const handleToggleExcludeInvesting = () => {
+    navigate({
+      search: {
+        ...search,
+        excludeInvesting: excludeInvesting ? undefined : true,
+        tag: undefined, // Clear tag selection
+      },
+    })
+  }
+
   // Find the selected distribution for the right panel
   const selectedDistribution = distributions.find(
     (d) => d.tagId === selectedTagId,
@@ -293,6 +330,20 @@ function ReportsPage() {
                 >
                   {formatCompact(total)}
                 </p>
+              )}
+              {transactionType === 'expense' && investingExpenseTag && (
+                <button
+                  type="button"
+                  onClick={handleToggleExcludeInvesting}
+                  className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                    excludeInvesting
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                  }`}
+                >
+                  <EyeSlash size={14} weight={excludeInvesting ? 'fill' : 'regular'} />
+                  Exclude Investing
+                </button>
               )}
             </div>
 
