@@ -166,3 +166,9 @@
   opacity: 1;
   visibility: visible;
 }
+
+/* Emoji Mart picker overrides */
+em-emoji-picker {
+  --border-radius: var(--radius);
+  --font-family: 'Nunito Sans Variable', sans-serif;
+}

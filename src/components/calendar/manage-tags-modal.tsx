@@ -29,14 +29,13 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
 import {
   useCreateTag,
   useDeleteTag,
   useTags,
   useUpdateTag,
 } from '@/lib/hooks/use-tags'
-import { EXPENSE_EMOJIS, INCOME_EMOJIS } from '@/lib/tags'
+import { EmojiPicker } from '@/components/ui/emoji-picker'
 import { countTransactionsByTag } from '@/lib/api/transactions'
 
 interface ManageTagsModalProps {
@@ -73,8 +72,6 @@ function TagItem({
   isSaving,
   isDeleting,
 }: TagItemProps) {
-  const emojis = tag.type === 'expense' ? EXPENSE_EMOJIS : INCOME_EMOJIS
-
   if (isEditing) {
     return (
       <div className="flex flex-col gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
@@ -82,7 +79,6 @@ function TagItem({
           <EmojiPicker
             value={editEmoji}
             onChange={onEditEmojiChange}
-            emojis={emojis}
           />
           <Input
             value={editName}
@@ -143,54 +139,6 @@ function TagItem({
   )
 }
 
-interface EmojiPickerProps {
-  value: string
-  onChange: (emoji: string) => void
-  emojis: Array<string>
-}
-
-function EmojiPicker({ value, onChange, emojis }: EmojiPickerProps) {
-  const [isOpen, setIsOpen] = useState(false)
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex size-10 items-center justify-center rounded-lg border border-border bg-muted text-xl hover:bg-muted/80"
-      >
-        {value}
-      </button>
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute top-full left-0 z-50 mt-1 grid max-h-32 w-48 grid-cols-5 gap-1 overflow-y-auto rounded-lg border border-border bg-popover p-2 shadow-lg">
-            {emojis.map((emoji) => (
-              <button
-                key={emoji}
-                type="button"
-                onClick={() => {
-                  onChange(emoji)
-                  setIsOpen(false)
-                }}
-                className={cn(
-                  'flex size-8 items-center justify-center rounded text-lg hover:bg-muted',
-                  value === emoji && 'bg-primary/20',
-                )}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
 interface AddTagFormProps {
   type: TagType
   onAdd: (name: string, emoji: string, type: TagType) => void
@@ -198,15 +146,15 @@ interface AddTagFormProps {
 }
 
 function AddTagForm({ type, onAdd, isAdding }: AddTagFormProps) {
-  const emojis = type === 'expense' ? EXPENSE_EMOJIS : INCOME_EMOJIS
+  const defaultEmoji = type === 'expense' ? '🏷️' : '💰'
   const [name, setName] = useState('')
-  const [emoji, setEmoji] = useState(emojis[0])
+  const [emoji, setEmoji] = useState(defaultEmoji)
 
   const handleSubmit = () => {
     if (!name.trim() || isAdding) return
     onAdd(name.trim(), emoji, type)
     setName('')
-    setEmoji(emojis[0])
+    setEmoji(defaultEmoji)
   }
 
   return (
@@ -215,7 +163,7 @@ function AddTagForm({ type, onAdd, isAdding }: AddTagFormProps) {
         Add New {type === 'expense' ? 'Expense' : 'Income'} Tag
       </p>
       <div className="flex items-center gap-2">
-        <EmojiPicker value={emoji} onChange={setEmoji} emojis={emojis} />
+        <EmojiPicker value={emoji} onChange={setEmoji} />
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
