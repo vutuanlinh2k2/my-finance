@@ -32,9 +32,9 @@ export function TxExplorerFields({
       : null
 
   return (
-    <>
+    <div className="contents">
       {/* TX ID */}
-      <div>
+      <div className="min-w-0">
         <label className="mb-1.5 block text-sm font-medium">TX ID</label>
         <Input
           value={txId}
@@ -107,7 +107,7 @@ export function TxExplorerFields({
               ))}
             </select>
             {generatedUrl && (
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="max-w-full truncate text-xs text-muted-foreground">
                 {generatedUrl}
               </p>
             )}
@@ -119,6 +119,6 @@ export function TxExplorerFields({
           </div>
         )}
       </div>
-    </>
+    </div>
   )
 }

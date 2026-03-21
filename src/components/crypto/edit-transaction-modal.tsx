@@ -315,7 +315,7 @@ export function EditTransactionModal({
             </div>
           )}
 
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           {/* Transaction Type (Read-only) */}
           <div>
             <label className="mb-1.5 block text-sm font-medium">
