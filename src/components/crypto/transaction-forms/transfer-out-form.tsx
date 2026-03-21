@@ -8,8 +8,9 @@ import type {
   TransferOutTransactionInput,
 } from '@/lib/crypto/types'
 import { formatCryptoAmount, getAvailableBalance } from '@/lib/crypto/utils'
+import { useTxExplorer } from '@/lib/crypto/use-tx-explorer'
 import { formatDateToISO } from '@/lib/api/transactions'
-import { sanitizeUrl } from '@/lib/subscriptions/utils'
+import { TxExplorerFields } from '@/components/crypto/tx-explorer-fields'
 import { Button } from '@/components/ui/button'
 import { DateInput } from '@/components/ui/date-input'
 import { Input } from '@/components/ui/input'
@@ -36,8 +37,7 @@ export function TransferOutForm({
   const [amount, setAmount] = useState('')
   const [storageId, setStorageId] = useState('')
   const [date, setDate] = useState(formatDateToISO(new Date()))
-  const [txId, setTxId] = useState('')
-  const [txExplorerUrl, setTxExplorerUrl] = useState('')
+  const txExplorer = useTxExplorer()
 
   // Calculate available balance for selected asset/storage
   const availableBalance = useMemo(() => {
@@ -87,10 +87,8 @@ export function TransferOutForm({
       amount: parsedAmount,
       storageId,
       date,
-      txId: txId.trim() || undefined,
-      txExplorerUrl: txExplorerUrl.trim()
-        ? sanitizeUrl(txExplorerUrl.trim())
-        : undefined,
+      txId: txExplorer.txId.trim() || undefined,
+      txExplorerUrl: txExplorer.resolveExplorerUrl() ?? undefined,
     }
 
     await onSubmit(input)
@@ -190,31 +188,17 @@ export function TransferOutForm({
         />
       </div>
 
-      {/* TX ID (Optional) */}
-      <div>
-        <label className="mb-1.5 block text-sm font-medium">TX ID</label>
-        <Input
-          value={txId}
-          onChange={(e) => setTxId(e.target.value)}
-          placeholder="Transaction hash (optional)"
-          className="h-10"
-          disabled={isSubmitting}
-        />
-      </div>
-
-      {/* TX Explorer URL (Optional) */}
-      <div>
-        <label className="mb-1.5 block text-sm font-medium">
-          TX Explorer URL
-        </label>
-        <Input
-          value={txExplorerUrl}
-          onChange={(e) => setTxExplorerUrl(e.target.value)}
-          placeholder="https://... (optional)"
-          className="h-10"
-          disabled={isSubmitting}
-        />
-      </div>
+      <TxExplorerFields
+        txId={txExplorer.txId}
+        onTxIdChange={txExplorer.setTxId}
+        mode={txExplorer.mode}
+        onModeChange={txExplorer.setMode}
+        selectedChain={txExplorer.selectedChain}
+        onSelectedChainChange={txExplorer.setSelectedChain}
+        rawUrl={txExplorer.rawUrl}
+        onRawUrlChange={txExplorer.setRawUrl}
+        disabled={isSubmitting}
+      />
 
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">

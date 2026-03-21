@@ -19,8 +19,9 @@ import type {
   CryptoTransactionType,
   CryptoTransactionWithDetails,
 } from '@/lib/crypto/types'
-import { sanitizeUrl } from '@/lib/subscriptions/utils'
+import { useTxExplorer } from '@/lib/crypto/use-tx-explorer'
 import { formatCryptoAmount, getAvailableBalance } from '@/lib/crypto/utils'
+import { TxExplorerFields } from '@/components/crypto/tx-explorer-fields'
 import {
   Dialog,
   DialogContent,
@@ -104,10 +105,10 @@ export function EditTransactionModal({
 
   // Common fields
   const [date, setDate] = useState(transaction.date)
-  const [txId, setTxId] = useState(transaction.txId ?? '')
-  const [txExplorerUrl, setTxExplorerUrl] = useState(
-    transaction.txExplorerUrl ?? '',
-  )
+  const txExplorer = useTxExplorer({
+    initialTxId: transaction.txId ?? undefined,
+    initialTxExplorerUrl: transaction.txExplorerUrl ?? undefined,
+  })
 
   // Type-specific fields
   const [assetId, setAssetId] = useState(transaction.assetId ?? '')
@@ -206,10 +207,8 @@ export function EditTransactionModal({
     // Build updates object based on transaction type
     const updates: Partial<CryptoTransactionInput> = {
       date,
-      txId: txId.trim() || undefined,
-      txExplorerUrl: txExplorerUrl.trim()
-        ? sanitizeUrl(txExplorerUrl.trim())
-        : undefined,
+      txId: txExplorer.txId.trim() || undefined,
+      txExplorerUrl: txExplorer.resolveExplorerUrl() ?? undefined,
     }
 
     switch (transaction.type) {
@@ -726,31 +725,17 @@ export function EditTransactionModal({
             />
           </div>
 
-          {/* TX ID (Optional) */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium">TX ID</label>
-            <Input
-              value={txId}
-              onChange={(e) => setTxId(e.target.value)}
-              placeholder="Transaction hash (optional)"
-              className="h-10"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* TX Explorer URL (Optional) */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium">
-              TX Explorer URL
-            </label>
-            <Input
-              value={txExplorerUrl}
-              onChange={(e) => setTxExplorerUrl(e.target.value)}
-              placeholder="https://... (optional)"
-              className="h-10"
-              disabled={isSubmitting}
-            />
-          </div>
+          <TxExplorerFields
+            txId={txExplorer.txId}
+            onTxIdChange={txExplorer.setTxId}
+            mode={txExplorer.mode}
+            onModeChange={txExplorer.setMode}
+            selectedChain={txExplorer.selectedChain}
+            onSelectedChainChange={txExplorer.setSelectedChain}
+            rawUrl={txExplorer.rawUrl}
+            onRawUrlChange={txExplorer.setRawUrl}
+            disabled={isSubmitting}
+          />
 
           {/* Actions */}
           <div className="flex justify-between gap-2 pt-2">
