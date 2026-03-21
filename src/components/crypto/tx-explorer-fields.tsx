@@ -46,7 +46,7 @@ export function TxExplorerFields({
       </div>
 
       {/* TX Explorer URL */}
-      <div>
+      <div className="min-w-0">
         <div className="mb-1.5 flex items-center justify-between">
           <label className="text-sm font-medium">TX Explorer URL</label>
           <div className="inline-flex rounded-lg bg-muted p-0.5">
@@ -88,7 +88,7 @@ export function TxExplorerFields({
             disabled={disabled}
           />
         ) : (
-          <div className="flex flex-col gap-1.5">
+          <div className="flex min-w-0 flex-col gap-1.5">
             <select
               value={selectedChain}
               onChange={(e) => onSelectedChainChange(e.target.value)}
