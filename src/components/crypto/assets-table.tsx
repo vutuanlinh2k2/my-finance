@@ -8,6 +8,7 @@ import {
 } from '@/lib/crypto/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
 import { Button } from '@/components/ui/button'
+import { CryptoAssetAvatar } from '@/components/crypto/crypto-asset-avatar'
 import { cn } from '@/lib/utils'
 
 type SortKey =
@@ -329,17 +330,11 @@ export function AssetsTable({
             >
               {/* Asset (icon + symbol) */}
               <div className="flex items-center gap-3">
-                {asset.iconUrl ? (
-                  <img
-                    src={asset.iconUrl}
-                    alt={asset.name}
-                    className="size-8 rounded-full"
-                  />
-                ) : (
-                  <div className="flex size-8 items-center justify-center rounded-full bg-muted text-sm font-semibold">
-                    {asset.symbol.charAt(0)}
-                  </div>
-                )}
+                <CryptoAssetAvatar
+                  iconUrl={asset.iconUrl}
+                  symbol={asset.symbol}
+                  name={asset.name}
+                />
                 <div className="min-w-0">
                   <div className="truncate font-medium">{asset.name}</div>
                   <div className="text-xs text-muted-foreground">

@@ -1,6 +1,7 @@
 import { Buildings, Cube, Wallet as WalletIcon } from '@phosphor-icons/react'
 import type { CryptoStorageWithValue } from '@/lib/crypto/types'
 import { formatCompact, formatCurrency } from '@/lib/currency'
+import { CryptoAssetAvatar } from '@/components/crypto/crypto-asset-avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface StorageAsset {
@@ -127,20 +128,14 @@ export function StorageAssetsPanel({
                   className="flex items-center gap-3 rounded-lg border border-border p-3"
                 >
                   {/* Asset Icon */}
-                  {asset.iconUrl ? (
-                    <img
-                      src={asset.iconUrl}
-                      alt={asset.name}
-                      className="size-8 shrink-0 rounded-full"
-                    />
-                  ) : (
-                    <div
-                      className="flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-                      style={{ backgroundColor: asset.color }}
-                    >
-                      {asset.symbol.slice(0, 2)}
-                    </div>
-                  )}
+                  <CryptoAssetAvatar
+                    iconUrl={asset.iconUrl}
+                    symbol={asset.symbol}
+                    name={asset.name}
+                    className="shrink-0"
+                    fallbackClassName="text-white"
+                    fallbackStyle={{ backgroundColor: asset.color }}
+                  />
 
                   {/* Asset Info */}
                   <div className="min-w-0 flex-1">

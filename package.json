@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm db:ensure && vite dev --port 3000",
-    "dev:only": "vite dev --port 3000",
+    "dev": "pnpm db:ensure && vite dev --port 3847",
+    "dev:only": "vite dev --port 3847",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
@@ -25,7 +25,10 @@
     "test:e2e:setup": "pnpm db:clean-test && pnpm db:seed-test"
   },
   "dependencies": {
+    "@aave/contract-helpers": "^1.37.1",
+    "@aave/math-utils": "^1.37.1",
     "@base-ui/react": "^1.0.0",
+    "@bgd-labs/aave-address-book": "^4.44.22",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@fontsource-variable/nunito-sans": "^5.2.7",
@@ -42,6 +45,7 @@
     "@tanstack/router-plugin": "^1.132.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "ethers": "^5.8.0",
     "nitro": "latest",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",

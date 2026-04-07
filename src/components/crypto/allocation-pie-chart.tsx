@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
+import { CryptoAssetAvatar } from '@/components/crypto/crypto-asset-avatar'
 import { formatCompact, formatCurrency } from '@/lib/currency'
 
 interface AllocationData {
@@ -151,18 +152,14 @@ export function AllocationPieChart({
           }}
         >
           <div className="flex items-center gap-2">
-            {hoveredAllocation.iconUrl ? (
-              <img
-                src={hoveredAllocation.iconUrl}
-                alt={hoveredAllocation.name}
-                className="size-5 rounded-full"
-              />
-            ) : (
-              <div
-                className="size-3 rounded"
-                style={{ backgroundColor: hoveredAllocation.color }}
-              />
-            )}
+            <CryptoAssetAvatar
+              iconUrl={hoveredAllocation.iconUrl}
+              symbol={hoveredAllocation.symbol}
+              name={hoveredAllocation.name}
+              className="size-5 text-[10px]"
+              fallbackClassName="text-white"
+              fallbackStyle={{ backgroundColor: hoveredAllocation.color }}
+            />
             <span className="font-medium">
               {hoveredAllocation.name}{' '}
               <span className="text-muted-foreground">
