@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
+  ManualCryptoTransaction,
   CryptoTransaction,
   CryptoTransactionFilters,
   CryptoTransactionInput,
@@ -18,6 +19,7 @@ import {
   createCryptoTransaction,
   deleteCryptoTransaction,
   fetchAllCryptoTransactions,
+  fetchAllCryptoTransactionsWithDetails,
   fetchCryptoTransactions,
   updateCryptoTransaction,
 } from '@/lib/api/crypto-transactions'
@@ -110,6 +112,16 @@ function transformToTransactionWithDetails(
   }
 }
 
+function toManualSortTimestamp(row: {
+  date: string
+  created_at: string
+}): number {
+  const dateMs = new Date(`${row.date}T00:00:00.000Z`).getTime()
+  const createdMs = new Date(row.created_at).getTime()
+
+  return dateMs + (createdMs % 86_400_000)
+}
+
 /**
  * Hook to fetch paginated crypto transactions with filters
  */
@@ -155,6 +167,21 @@ export function useAllCryptoTransactions() {
       return data.map(transformToCryptoTransaction)
     },
     staleTime: 30 * 1000, // 30 seconds
+  })
+}
+
+export function useAllCryptoTransactionsWithDetails() {
+  return useQuery({
+    queryKey: queryKeys.crypto.transactions.allWithDetails,
+    queryFn: async (): Promise<Array<ManualCryptoTransaction>> => {
+      const data = await fetchAllCryptoTransactionsWithDetails()
+      return data.map((row) => ({
+        ...transformToTransactionWithDetails(row),
+        source: 'manual',
+        sortTimestamp: toManualSortTimestamp(row),
+      }))
+    },
+    staleTime: 30 * 1000,
   })
 }
 

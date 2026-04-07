@@ -6,6 +6,14 @@ import type {
 
 const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3'
 
+function getCoinGeckoUrl(path: string): string {
+  if (typeof window === 'undefined') {
+    return `${COINGECKO_API_URL}${path}`
+  }
+
+  return `/api/coingecko?target=${encodeURIComponent(path)}`
+}
+
 /**
  * Custom error class for CoinGecko API errors
  */
@@ -50,7 +58,9 @@ async function handleResponse<T>(response: Response): Promise<T> {
 export async function fetchCoinGeckoAssetMetadata(
   id: string,
 ): Promise<CoinGeckoAssetMetadata> {
-  const url = `${COINGECKO_API_URL}/coins/${encodeURIComponent(id)}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false`
+  const url = getCoinGeckoUrl(
+    `/coins/${encodeURIComponent(id)}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false`,
+  )
 
   const response = await fetch(url)
   const data = await handleResponse<{
@@ -84,7 +94,9 @@ export async function fetchCoinGeckoPrices(
     return {}
   }
 
-  const url = `${COINGECKO_API_URL}/simple/price?ids=${ids.join(',')}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true&include_last_updated_at=true`
+  const url = getCoinGeckoUrl(
+    `/simple/price?ids=${ids.join(',')}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true&include_last_updated_at=true`,
+  )
 
   const response = await fetch(url)
   const data = await handleResponse<CoinGeckoPriceMap>(response)
@@ -102,7 +114,9 @@ export async function fetchCoinGeckoMarketData(
   id: string,
   days: number | 'max' = 30,
 ): Promise<CoinGeckoMarketData> {
-  const url = `${COINGECKO_API_URL}/coins/${encodeURIComponent(id)}/market_chart?vs_currency=usd&days=${days}`
+  const url = getCoinGeckoUrl(
+    `/coins/${encodeURIComponent(id)}/market_chart?vs_currency=usd&days=${days}`,
+  )
 
   const response = await fetch(url)
   const data = await handleResponse<CoinGeckoMarketData>(response)
@@ -140,7 +154,9 @@ export async function fetchCoinGeckoMarkets(
     return []
   }
 
-  const url = `${COINGECKO_API_URL}/coins/markets?vs_currency=usd&ids=${ids.join(',')}&order=market_cap_desc&sparkline=false&price_change_percentage=24h,7d,30d,60d,1y`
+  const url = getCoinGeckoUrl(
+    `/coins/markets?vs_currency=usd&ids=${ids.join(',')}&order=market_cap_desc&sparkline=false&price_change_percentage=24h,7d,30d,60d,1y`,
+  )
 
   const response = await fetch(url)
   const data = await handleResponse<Array<CoinGeckoMarketCoin>>(response)
@@ -160,7 +176,7 @@ export async function searchCoinGeckoCoins(
     return []
   }
 
-  const url = `${COINGECKO_API_URL}/search?query=${encodeURIComponent(query)}`
+  const url = getCoinGeckoUrl(`/search?query=${encodeURIComponent(query)}`)
 
   const response = await fetch(url)
   const data = await handleResponse<{

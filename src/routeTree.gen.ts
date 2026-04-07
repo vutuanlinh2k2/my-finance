@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as ApiCoingeckoRouteImport } from './routes/api/coingecko'
 import { Route as AuthenticatedCryptoTransactionsRouteImport } from './routes/_authenticated/crypto/transactions'
 import { Route as AuthenticatedCryptoStorageRouteImport } from './routes/_authenticated/crypto/storage'
 import { Route as AuthenticatedCryptoLnbRouteImport } from './routes/_authenticated/crypto/lnb'
@@ -33,6 +34,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const ApiCoingeckoRoute = ApiCoingeckoRouteImport.update({
+  id: '/api/coingecko',
+  path: '/api/coingecko',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedCryptoTransactionsRoute =
   AuthenticatedCryptoTransactionsRouteImport.update({
@@ -78,6 +84,7 @@ const AuthenticatedBudgetCalendarRoute =
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
+  '/api/coingecko': typeof ApiCoingeckoRoute
   '/': typeof AuthenticatedIndexRoute
   '/budget/calendar': typeof AuthenticatedBudgetCalendarRoute
   '/budget/reports': typeof AuthenticatedBudgetReportsRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/api/coingecko': typeof ApiCoingeckoRoute
   '/': typeof AuthenticatedIndexRoute
   '/budget/calendar': typeof AuthenticatedBudgetCalendarRoute
   '/budget/reports': typeof AuthenticatedBudgetReportsRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/api/coingecko': typeof ApiCoingeckoRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/budget/calendar': typeof AuthenticatedBudgetCalendarRoute
   '/_authenticated/budget/reports': typeof AuthenticatedBudgetReportsRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/login'
+    | '/api/coingecko'
     | '/'
     | '/budget/calendar'
     | '/budget/reports'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/api/coingecko'
     | '/'
     | '/budget/calendar'
     | '/budget/reports'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/api/coingecko'
     | '/_authenticated/'
     | '/_authenticated/budget/calendar'
     | '/_authenticated/budget/reports'
@@ -151,6 +163,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiCoingeckoRoute: typeof ApiCoingeckoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -175,6 +188,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/coingecko': {
+      id: '/api/coingecko'
+      path: '/api/coingecko'
+      fullPath: '/api/coingecko'
+      preLoaderRoute: typeof ApiCoingeckoRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/crypto/transactions': {
       id: '/_authenticated/crypto/transactions'
@@ -257,6 +277,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiCoingeckoRoute: ApiCoingeckoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

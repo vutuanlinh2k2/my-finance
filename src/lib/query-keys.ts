@@ -46,8 +46,12 @@ export const queryKeys = {
     },
     transactions: {
       all: ['crypto', 'transactions'] as const,
+      allWithDetails: ['crypto', 'transactions', 'all-with-details'] as const,
       filtered: (filters: Record<string, unknown>) =>
         ['crypto', 'transactions', filters] as const,
+    },
+    aave: {
+      history: (address: string | null) => ['crypto', 'aave', 'history', address] as const,
     },
     portfolioHistory: {
       byRange: (range: string) =>

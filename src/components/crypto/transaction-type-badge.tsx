@@ -1,14 +1,16 @@
 import { cva } from 'class-variance-authority'
 import {
+  ArrowBendUpLeft,
   ArrowDownLeft,
   ArrowUpRight,
   ArrowsClockwise,
   ArrowsLeftRight,
   CurrencyDollar,
+  HandCoins,
   ShoppingCart,
 } from '@phosphor-icons/react'
 import type { VariantProps } from 'class-variance-authority'
-import type { CryptoTransactionType } from '@/lib/crypto/types'
+import type { DisplayCryptoTransactionType } from '@/lib/crypto/types'
 import { cn } from '@/lib/utils'
 
 const transactionTypeBadgeVariants = cva(
@@ -25,6 +27,14 @@ const transactionTypeBadgeVariants = cva(
           'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-400',
         transfer_out:
           'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400',
+        deposit:
+          'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-400',
+        withdraw:
+          'bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-400',
+        borrow:
+          'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400',
+        repay:
+          'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400',
       },
     },
     defaultVariants: {
@@ -34,7 +44,7 @@ const transactionTypeBadgeVariants = cva(
 )
 
 const typeConfig: Record<
-  CryptoTransactionType,
+  DisplayCryptoTransactionType,
   { label: string; icon: typeof ShoppingCart }
 > = {
   buy: { label: 'Buy', icon: ShoppingCart },
@@ -43,12 +53,16 @@ const typeConfig: Record<
   swap: { label: 'Swap', icon: ArrowsClockwise },
   transfer_in: { label: 'In', icon: ArrowDownLeft },
   transfer_out: { label: 'Out', icon: ArrowUpRight },
+  deposit: { label: 'Deposit', icon: ArrowUpRight },
+  withdraw: { label: 'Withdraw', icon: ArrowDownLeft },
+  borrow: { label: 'Borrow', icon: HandCoins },
+  repay: { label: 'Repay', icon: ArrowBendUpLeft },
 }
 
 interface TransactionTypeBadgeProps extends VariantProps<
   typeof transactionTypeBadgeVariants
 > {
-  type: CryptoTransactionType
+  type: DisplayCryptoTransactionType
   className?: string
   showLabel?: boolean
 }
@@ -72,14 +86,14 @@ export function TransactionTypeBadge({
 /**
  * Get human-readable label for a transaction type
  */
-export function getTransactionTypeLabel(type: CryptoTransactionType): string {
+export function getTransactionTypeLabel(type: DisplayCryptoTransactionType): string {
   return typeConfig[type].label
 }
 
 /**
  * Get all transaction types for filtering
  */
-export function getAllTransactionTypes(): Array<CryptoTransactionType> {
+export function getAllTransactionTypes(): Array<DisplayCryptoTransactionType> {
   return [
     'buy',
     'sell',
@@ -87,5 +101,9 @@ export function getAllTransactionTypes(): Array<CryptoTransactionType> {
     'swap',
     'transfer_in',
     'transfer_out',
+    'deposit',
+    'withdraw',
+    'borrow',
+    'repay',
   ]
 }

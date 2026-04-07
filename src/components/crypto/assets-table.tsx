@@ -24,7 +24,13 @@ type SortKey =
 
 type SortDirection = 'asc' | 'desc'
 
-interface AssetWithPriceData extends CryptoAsset {
+export interface PortfolioAssetRow {
+  id: string
+  source: 'manual' | 'aave'
+  sourceLabel: string | null
+  name: string
+  symbol: string
+  iconUrl: string | null
   currentPriceVnd: number
   currentPriceUsd: number
   marketCapUsd: number
@@ -36,10 +42,11 @@ interface AssetWithPriceData extends CryptoAsset {
   balance: number
   valueVnd: number
   portfolioPercentage: number
+  backingAsset: CryptoAsset | null
 }
 
 interface AssetsTableProps {
-  assets: Array<AssetWithPriceData>
+  assets: Array<PortfolioAssetRow>
   onDelete: (asset: CryptoAsset) => void
   isLoading?: boolean
 }
@@ -107,7 +114,7 @@ function SortableHeader({
   )
 }
 
-function getSortValue(asset: AssetWithPriceData, key: SortKey): number {
+function getSortValue(asset: PortfolioAssetRow, key: SortKey): number {
   switch (key) {
     case 'price':
       return asset.currentPriceUsd
@@ -336,9 +343,16 @@ export function AssetsTable({
                   name={asset.name}
                 />
                 <div className="min-w-0">
-                  <div className="truncate font-medium">{asset.name}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="truncate font-medium">{asset.name}</div>
+                    {asset.sourceLabel ? (
+                      <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-medium tracking-wide text-sky-700 uppercase">
+                        {asset.sourceLabel}
+                      </span>
+                    ) : null}
+                  </div>
                   <div className="text-xs text-muted-foreground">
-                    {asset.symbol}
+                    {asset.symbol.toUpperCase()}
                   </div>
                 </div>
               </div>
@@ -402,14 +416,18 @@ export function AssetsTable({
 
               {/* Actions */}
               <div className="flex items-center justify-center">
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => onDelete(asset)}
-                  className="text-muted-foreground hover:text-destructive"
-                >
-                  <Trash weight="duotone" className="size-4" />
-                </Button>
+                {asset.backingAsset ? (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => onDelete(asset.backingAsset!)}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash weight="duotone" className="size-4" />
+                  </Button>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
               </div>
             </div>
           ))}

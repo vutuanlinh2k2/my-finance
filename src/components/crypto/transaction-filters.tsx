@@ -5,8 +5,8 @@ import {
   getAllTransactionTypes,
 } from './transaction-type-badge'
 import type {
-  CryptoTransactionFilters,
-  CryptoTransactionType,
+  DisplayCryptoTransactionType,
+  UnifiedCryptoTransactionFilters,
 } from '@/lib/crypto/types'
 import { Button } from '@/components/ui/button'
 import { DateInput } from '@/components/ui/date-input'
@@ -21,8 +21,8 @@ import {
 import { cn } from '@/lib/utils'
 
 interface TransactionFiltersProps {
-  filters: CryptoTransactionFilters
-  onFiltersChange: (filters: CryptoTransactionFilters) => void
+  filters: UnifiedCryptoTransactionFilters
+  onFiltersChange: (filters: UnifiedCryptoTransactionFilters) => void
 }
 
 export function TransactionFilters({
@@ -41,7 +41,7 @@ export function TransactionFilters({
   }, [filters])
 
   // Handle type filter change
-  const handleTypeToggle = (type: CryptoTransactionType) => {
+  const handleTypeToggle = (type: DisplayCryptoTransactionType) => {
     const currentTypes = filters.types ?? []
     const newTypes = currentTypes.includes(type)
       ? currentTypes.filter((t) => t !== type)

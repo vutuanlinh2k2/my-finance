@@ -3,14 +3,18 @@ import { useCallback, useMemo, useState } from 'react'
 import { Plus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import type {
-  CryptoTransactionFilters,
   CryptoTransactionInput,
-  CryptoTransactionWithDetails,
+  ManualCryptoTransaction,
+  PaginatedResponse,
+  UnifiedCryptoTransaction,
+  UnifiedCryptoTransactionFilters,
 } from '@/lib/crypto/types'
+import { useAaveTransactionHistory } from '@/lib/hooks/use-aave-history'
+import { usePersistedLnbAddress } from '@/lib/hooks/use-aave-lnb'
 import {
   useAllCryptoTransactions,
+  useAllCryptoTransactionsWithDetails,
   useCreateCryptoTransaction,
-  useCryptoTransactions,
   useDeleteCryptoTransaction,
   useUpdateCryptoTransaction,
 } from '@/lib/hooks/use-crypto-transactions'
@@ -54,14 +58,18 @@ export const Route = createFileRoute('/_authenticated/crypto/transactions')({
   }),
 })
 
+const PAGE_SIZE = 10
+
 function CryptoTransactionsPage() {
   const navigate = useNavigate()
   const search = useSearch({ from: '/_authenticated/crypto/transactions' })
+  const { address, hasHydrated } = usePersistedLnbAddress()
+  const aaveHistoryQuery = useAaveTransactionHistory(address)
 
   // Parse filters from URL
-  const filters: CryptoTransactionFilters = {
+  const filters: UnifiedCryptoTransactionFilters = {
     types: search.types
-      ? (search.types.split(',') as CryptoTransactionFilters['types'])
+      ? (search.types.split(',') as UnifiedCryptoTransactionFilters['types'])
       : undefined,
     startDate: search.startDate,
     endDate: search.endDate,
@@ -70,9 +78,11 @@ function CryptoTransactionsPage() {
   const page = search.page ?? 1
 
   // Fetch data
-  const { data: transactionsData, isLoading: isLoadingTransactions } =
-    useCryptoTransactions(filters, { page, pageSize: 10 })
   const { data: allTransactions = [] } = useAllCryptoTransactions()
+  const {
+    data: manualTransactions = [],
+    isLoading: isLoadingManualTransactions,
+  } = useAllCryptoTransactionsWithDetails()
   const { data: assets = [] } = useCryptoAssets()
   const { data: storages = [] } = useCryptoStorages()
   const { data: tags = [] } = useTags()
@@ -95,9 +105,9 @@ function CryptoTransactionsPage() {
   // Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] =
-    useState<CryptoTransactionWithDetails | null>(null)
+    useState<ManualCryptoTransaction | null>(null)
   const [deletingTransaction, setDeletingTransaction] =
-    useState<CryptoTransactionWithDetails | null>(null)
+    useState<ManualCryptoTransaction | null>(null)
 
   // Check if any mutation is pending
   const isMutating =
@@ -107,7 +117,7 @@ function CryptoTransactionsPage() {
 
   // Update URL with new filters
   const updateFilters = useCallback(
-    (newFilters: CryptoTransactionFilters) => {
+    (newFilters: UnifiedCryptoTransactionFilters) => {
       navigate({
         search: {
           page: 1, // Reset to page 1 when filters change
@@ -119,6 +129,51 @@ function CryptoTransactionsPage() {
     },
     [navigate],
   )
+
+  const filteredTransactions = useMemo(() => {
+    let items: Array<UnifiedCryptoTransaction> = [...manualTransactions]
+
+    if (hasHydrated && aaveHistoryQuery.data) {
+      items = [...items, ...aaveHistoryQuery.data]
+    }
+
+    if (filters.types && filters.types.length > 0) {
+      const selectedTypes = new Set(filters.types)
+      items = items.filter((transaction) => selectedTypes.has(transaction.type))
+    }
+
+    if (filters.startDate) {
+      items = items.filter((transaction) => transaction.date >= filters.startDate!)
+    }
+
+    if (filters.endDate) {
+      items = items.filter((transaction) => transaction.date <= filters.endDate!)
+    }
+
+    return items.sort((a, b) => b.sortTimestamp - a.sortTimestamp)
+  }, [
+    aaveHistoryQuery.data,
+    filters.endDate,
+    filters.startDate,
+    filters.types,
+    hasHydrated,
+    manualTransactions,
+  ])
+
+  const transactionsData = useMemo<PaginatedResponse<UnifiedCryptoTransaction>>(() => {
+    const total = filteredTransactions.length
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+    const safePage = Math.min(page, totalPages)
+    const startIndex = (safePage - 1) * PAGE_SIZE
+
+    return {
+      data: filteredTransactions.slice(startIndex, startIndex + PAGE_SIZE),
+      total,
+      page: safePage,
+      pageSize: PAGE_SIZE,
+      totalPages,
+    }
+  }, [filteredTransactions, page])
 
   // Update page
   const updatePage = useCallback(
@@ -190,7 +245,7 @@ function CryptoTransactionsPage() {
   }
 
   const handleEditTransaction = async (
-    transaction: CryptoTransactionWithDetails,
+    transaction: ManualCryptoTransaction,
     updates: Partial<CryptoTransactionInput>,
   ) => {
     try {
@@ -278,9 +333,13 @@ function CryptoTransactionsPage() {
     }
   }
 
-  const handleEdit = (transaction: CryptoTransactionWithDetails) => {
+  const handleEdit = (transaction: ManualCryptoTransaction) => {
     setEditingTransaction(transaction)
   }
+
+  const isLoadingTransactions =
+    isLoadingManualTransactions ||
+    (hasHydrated && !!address && aaveHistoryQuery.isPending)
 
   return (
     <div className="flex flex-col gap-6">
@@ -289,7 +348,7 @@ function CryptoTransactionsPage() {
         <div>
           <h1 className="text-2xl font-bold">Crypto Transactions</h1>
           <p className="text-muted-foreground">
-            Track your cryptocurrency transactions
+            Track your manual transactions and Aave protocol activity
           </p>
         </div>
         <Button
@@ -315,6 +374,13 @@ function CryptoTransactionsPage() {
           </p>
         </div>
       )}
+
+      {hasHydrated && !!address && aaveHistoryQuery.error ? (
+        <div className="rounded-lg border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Aave transaction history could not be loaded, so only your saved
+          database transactions are shown right now.
+        </div>
+      ) : null}
 
       {/* Filters */}
       <TransactionFilters filters={filters} onFiltersChange={updateFilters} />

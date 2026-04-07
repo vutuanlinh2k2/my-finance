@@ -12,8 +12,9 @@ import {
 import { toast } from 'sonner'
 import { TransactionTypeBadge } from './transaction-type-badge'
 import type {
-  CryptoTransactionWithDetails,
   PaginatedResponse,
+  UnifiedCryptoTransaction,
+  ManualCryptoTransaction,
 } from '@/lib/crypto/types'
 import { formatCryptoAmount, truncateAddress } from '@/lib/crypto/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
@@ -23,10 +24,10 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface TransactionListProps {
-  data?: PaginatedResponse<CryptoTransactionWithDetails>
+  data?: PaginatedResponse<UnifiedCryptoTransaction>
   isLoading?: boolean
-  onEdit?: (transaction: CryptoTransactionWithDetails) => void
-  onDelete?: (transaction: CryptoTransactionWithDetails) => void
+  onEdit?: (transaction: ManualCryptoTransaction) => void
+  onDelete?: (transaction: ManualCryptoTransaction) => void
   onPageChange?: (page: number) => void
 }
 
@@ -82,7 +83,57 @@ export function TransactionList({
   }
 
   // Render transaction details based on type
-  const renderDetails = (tx: CryptoTransactionWithDetails) => {
+  const renderDetails = (tx: UnifiedCryptoTransaction) => {
+    if (tx.source === 'aave') {
+      const amountLabel = formatCryptoAmount(tx.amount, tx.asset?.symbol ?? undefined)
+
+      switch (tx.type) {
+        case 'deposit':
+          return (
+            <div className="flex items-center gap-2">
+              <span>
+                Deposited <span className="font-medium">{amountLabel}</span> to{' '}
+                <span className="font-medium">{tx.protocol}</span>
+              </span>
+              <span className="text-muted-foreground">[{tx.network}]</span>
+            </div>
+          )
+
+        case 'withdraw':
+          return (
+            <div className="flex items-center gap-2">
+              <span>
+                Withdrew <span className="font-medium">{amountLabel}</span> from{' '}
+                <span className="font-medium">{tx.protocol}</span>
+              </span>
+              <span className="text-muted-foreground">[{tx.network}]</span>
+            </div>
+          )
+
+        case 'borrow':
+          return (
+            <div className="flex items-center gap-2">
+              <span>
+                Borrowed <span className="font-medium">{amountLabel}</span> from{' '}
+                <span className="font-medium">{tx.protocol}</span>
+              </span>
+              <span className="text-muted-foreground">[{tx.network}]</span>
+            </div>
+          )
+
+        case 'repay':
+          return (
+            <div className="flex items-center gap-2">
+              <span>
+                Repaid <span className="font-medium">{amountLabel}</span> to{' '}
+                <span className="font-medium">{tx.protocol}</span>
+              </span>
+              <span className="text-muted-foreground">[{tx.network}]</span>
+            </div>
+          )
+      }
+    }
+
     switch (tx.type) {
       case 'buy':
         return (
@@ -201,7 +252,7 @@ export function TransactionList({
   }
 
   // Render TX ID/Link column
-  const renderTxLink = (tx: CryptoTransactionWithDetails) => {
+  const renderTxLink = (tx: UnifiedCryptoTransaction) => {
     // Sanitize URL at render time as defense-in-depth
     const safeExplorerUrl = tx.txExplorerUrl
       ? sanitizeUrl(tx.txExplorerUrl)
@@ -344,7 +395,7 @@ export function TransactionList({
                 <td className="px-4 py-3">{renderTxLink(tx)}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1">
-                    {onEdit && (
+                    {tx.source === 'manual' && onEdit && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -355,7 +406,7 @@ export function TransactionList({
                         <span className="sr-only">Edit</span>
                       </Button>
                     )}
-                    {onDelete && (
+                    {tx.source === 'manual' && onDelete && (
                       <Button
                         variant="ghost"
                         size="icon"

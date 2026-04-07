@@ -5,6 +5,11 @@ import { toast } from 'sonner'
 import type { CryptoAsset } from '@/lib/crypto/types'
 import type { CreateCryptoAssetInput } from '@/lib/api/crypto-assets'
 import { calculateAssetBalance } from '@/lib/crypto/utils'
+import { getKnownAaveEthereumATokenCoinGeckoId } from '@/lib/aave/asset-icons'
+import {
+  useAaveLnb,
+  usePersistedLnbAddress,
+} from '@/lib/hooks/use-aave-lnb'
 import {
   useCreateCryptoAsset,
   useCryptoAssets,
@@ -29,12 +34,21 @@ import {
   AllocationPieChart,
   AssetsTable,
   PortfolioHistoryChart,
+  type PortfolioAssetRow,
   getAssetColor,
 } from '@/components/crypto'
 
 export const Route = createFileRoute('/_authenticated/crypto/assets')({
   component: CryptoAssetsPage,
 })
+
+function getAaveTokenName(name: string): string {
+  return `Aave v3 ${name}`
+}
+
+function getAaveTokenSymbol(symbol: string): string {
+  return `A${symbol.toUpperCase()}`
+}
 
 function CryptoAssetsPage() {
   // Crypto assets from database
@@ -47,19 +61,69 @@ function CryptoAssetsPage() {
   // Exchange rate for USD to VND conversion
   const exchangeRate = useExchangeRateValue()
 
-  // Fetch market data for all assets (includes extended price changes)
-  const coingeckoIds = useMemo(() => assets.map((a) => a.coingeckoId), [assets])
-  const { data: marketData = [], isLoading: isLoadingPrices } =
-    useCryptoMarkets(coingeckoIds, coingeckoIds.length > 0)
+  // Persisted Aave address and live positions
+  const { address, hasHydrated } = usePersistedLnbAddress()
+  const {
+    hasValidAddress,
+    suppliedAssets,
+    isLoading: isLoadingAave,
+    error: aaveError,
+  } = useAaveLnb(address)
 
-  // Create a map for quick lookup of market data by coingecko ID
-  const marketDataMap = useMemo(() => {
-    const map = new Map<string, (typeof marketData)[number]>()
-    for (const coin of marketData) {
+  const generatedAaveCoinGeckoIds = useMemo(
+    () =>
+      new Set(
+        suppliedAssets
+          .map((asset) =>
+            getKnownAaveEthereumATokenCoinGeckoId(asset.underlyingAsset),
+          )
+          .filter((value): value is string => !!value),
+      ),
+    [suppliedAssets],
+  )
+
+  const manualAssets = useMemo(
+    () =>
+      assets.filter(
+        (asset) => !generatedAaveCoinGeckoIds.has(asset.coingeckoId),
+      ),
+    [assets, generatedAaveCoinGeckoIds],
+  )
+
+  const manualCoinGeckoIds = useMemo(
+    () => manualAssets.map((asset) => asset.coingeckoId),
+    [manualAssets],
+  )
+  const aaveCoinGeckoIds = useMemo(
+    () =>
+      suppliedAssets
+        .map((asset) =>
+          getKnownAaveEthereumATokenCoinGeckoId(asset.underlyingAsset),
+        )
+        .filter((value): value is string => !!value),
+    [suppliedAssets],
+  )
+
+  const { data: manualMarketData = [], isLoading: isLoadingManualPrices } =
+    useCryptoMarkets(manualCoinGeckoIds, manualCoinGeckoIds.length > 0)
+  const { data: aaveMarketData = [], isLoading: isLoadingAavePrices } =
+    useCryptoMarkets(aaveCoinGeckoIds, aaveCoinGeckoIds.length > 0)
+
+  const manualMarketDataMap = useMemo(() => {
+    const map = new Map<string, (typeof manualMarketData)[number]>()
+    for (const coin of manualMarketData) {
       map.set(coin.id, coin)
     }
     return map
-  }, [marketData])
+  }, [manualMarketData])
+
+  const aaveMarketDataMap = useMemo(() => {
+    const map = new Map<string, (typeof manualMarketData)[number]>()
+    for (const coin of aaveMarketData) {
+      map.set(coin.id, coin)
+    }
+    return map
+  }, [aaveMarketData])
 
   // Mutations
   const createMutation = useCreateCryptoAsset()
@@ -72,10 +136,9 @@ function CryptoAssetsPage() {
   // Check if any mutation is pending
   const isMutating = createMutation.isPending || deleteMutation.isPending
 
-  // Transform assets with price data
-  const assetsWithPrices = useMemo(() => {
-    return assets.map((asset, index) => {
-      const coinData = marketDataMap.get(asset.coingeckoId)
+  const manualAssetsWithPrices = useMemo<Array<PortfolioAssetRow>>(() => {
+    return manualAssets.map((asset) => {
+      const coinData = manualMarketDataMap.get(asset.coingeckoId)
       const currentPriceUsd = coinData?.current_price ?? 0
       const currentPriceVnd = currentPriceUsd * exchangeRate.rate
       const marketCapUsd = coinData?.market_cap ?? 0
@@ -85,36 +148,82 @@ function CryptoAssetsPage() {
       const valueVnd = balance * currentPriceVnd
 
       return {
-        ...asset,
+        id: asset.id,
+        source: 'manual',
+        sourceLabel: null,
+        name: asset.name,
+        symbol: asset.symbol,
+        iconUrl: asset.iconUrl,
         currentPriceVnd,
         currentPriceUsd,
         marketCapUsd,
-        priceChange24h: coinData?.price_change_percentage_24h ?? 0,
-        priceChange7d: coinData?.price_change_percentage_7d_in_currency ?? 0,
-        priceChange30d: coinData?.price_change_percentage_30d_in_currency ?? 0,
-        priceChange60d: coinData?.price_change_percentage_60d_in_currency ?? 0,
-        priceChange1y: coinData?.price_change_percentage_1y_in_currency ?? 0,
+        priceChange24h: coinData?.price_change_percentage_24h ?? null,
+        priceChange7d: coinData?.price_change_percentage_7d_in_currency ?? null,
+        priceChange30d: coinData?.price_change_percentage_30d_in_currency ?? null,
+        priceChange60d: coinData?.price_change_percentage_60d_in_currency ?? null,
+        priceChange1y: coinData?.price_change_percentage_1y_in_currency ?? null,
         balance,
         valueVnd,
-        color: getAssetColor(index),
+        portfolioPercentage: 0,
+        backingAsset: asset,
       }
     })
-  }, [assets, marketDataMap, exchangeRate.rate, transactions])
+  }, [exchangeRate.rate, manualAssets, manualMarketDataMap, transactions])
+
+  const aaveAssetRows = useMemo<Array<PortfolioAssetRow>>(() => {
+    return suppliedAssets.map((asset) => {
+      const aTokenId = getKnownAaveEthereumATokenCoinGeckoId(asset.underlyingAsset)
+      const coinData = aTokenId ? aaveMarketDataMap.get(aTokenId) : undefined
+      const currentPriceUsd =
+        coinData?.current_price ??
+        (asset.suppliedAmount > 0 ? asset.valueUsd / asset.suppliedAmount : 0)
+      const currentPriceVnd = currentPriceUsd * exchangeRate.rate
+      const marketCapUsd = coinData?.market_cap ?? 0
+      const name = coinData?.name ?? getAaveTokenName(asset.name)
+      const symbol = (coinData?.symbol ?? getAaveTokenSymbol(asset.symbol)).toUpperCase()
+
+      return {
+        id: `aave-supply:${asset.underlyingAsset}`,
+        source: 'aave',
+        sourceLabel: 'Aave',
+        name,
+        symbol,
+        iconUrl: coinData?.image ?? asset.iconUrl,
+        currentPriceVnd,
+        currentPriceUsd,
+        marketCapUsd,
+        priceChange24h: coinData?.price_change_percentage_24h ?? null,
+        priceChange7d: coinData?.price_change_percentage_7d_in_currency ?? null,
+        priceChange30d: coinData?.price_change_percentage_30d_in_currency ?? null,
+        priceChange60d: coinData?.price_change_percentage_60d_in_currency ?? null,
+        priceChange1y: coinData?.price_change_percentage_1y_in_currency ?? null,
+        balance: asset.suppliedAmount,
+        valueVnd: asset.valueUsd * exchangeRate.rate,
+        portfolioPercentage: 0,
+        backingAsset: null,
+      }
+    })
+  }, [aaveMarketDataMap, exchangeRate.rate, suppliedAssets])
+
+  const portfolioRows = useMemo(
+    () => [...manualAssetsWithPrices, ...aaveAssetRows],
+    [manualAssetsWithPrices, aaveAssetRows],
+  )
 
   // Calculate portfolio totals
   const totalValueVnd = useMemo(
-    () => assetsWithPrices.reduce((sum, asset) => sum + asset.valueVnd, 0),
-    [assetsWithPrices],
+    () => portfolioRows.reduce((sum, asset) => sum + asset.valueVnd, 0),
+    [portfolioRows],
   )
 
   // Add portfolio percentage to each asset
   const assetsWithPortfolio = useMemo(() => {
-    return assetsWithPrices.map((asset) => ({
+    return portfolioRows.map((asset) => ({
       ...asset,
       portfolioPercentage:
         totalValueVnd > 0 ? (asset.valueVnd / totalValueVnd) * 100 : 0,
     }))
-  }, [assetsWithPrices, totalValueVnd])
+  }, [portfolioRows, totalValueVnd])
 
   // Get balance of asset being deleted
   const deletingAssetBalance =
@@ -122,16 +231,15 @@ function CryptoAssetsPage() {
   const canDeleteAsset = deletingAssetBalance === 0
 
   // Prepare allocation data for pie chart
-  const allocations = assetsWithPrices
+  const allocations = assetsWithPortfolio
     .filter((a) => a.valueVnd > 0)
-    .map((asset) => ({
+    .map((asset, index) => ({
       id: asset.id,
       name: asset.name,
       symbol: asset.symbol,
       valueVnd: asset.valueVnd,
-      percentage:
-        totalValueVnd > 0 ? (asset.valueVnd / totalValueVnd) * 100 : 0,
-      color: asset.color,
+      percentage: asset.portfolioPercentage,
+      color: getAssetColor(index),
       iconUrl: asset.iconUrl,
     }))
 
@@ -165,7 +273,12 @@ function CryptoAssetsPage() {
     }
   }
 
-  const isLoading = isLoadingAssets || isLoadingTransactions || isLoadingPrices
+  const isLoading =
+    isLoadingAssets ||
+    isLoadingTransactions ||
+    isLoadingManualPrices ||
+    isLoadingAavePrices ||
+    (hasHydrated && hasValidAddress && isLoadingAave)
 
   return (
     <div className="flex flex-col gap-6">
@@ -174,7 +287,7 @@ function CryptoAssetsPage() {
         <div>
           <h1 className="text-2xl font-bold">Crypto Assets</h1>
           <p className="text-muted-foreground">
-            Track your cryptocurrency portfolio
+            Track your spot holdings and Aave supplied assets
           </p>
         </div>
         <Button
@@ -186,6 +299,13 @@ function CryptoAssetsPage() {
           Add Asset
         </Button>
       </div>
+
+      {hasHydrated && hasValidAddress && aaveError ? (
+        <div className="rounded-lg border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Aave positions could not be loaded, so only your manual assets are
+          shown right now.
+        </div>
+      ) : null}
 
       {/* Charts Row */}
       <div className="flex gap-6">
@@ -203,7 +323,7 @@ function CryptoAssetsPage() {
 
         {/* History Charts */}
         <PortfolioHistoryChart
-          assets={assets}
+          assets={manualAssets}
           exchangeRate={exchangeRate.rate}
         />
       </div>

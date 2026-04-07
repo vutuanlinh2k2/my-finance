@@ -127,6 +127,32 @@ export async function fetchAllCryptoTransactions(): Promise<
   return data
 }
 
+export async function fetchAllCryptoTransactionsWithDetails(): Promise<
+  Array<TransactionWithJoins>
+> {
+  const { data, error } = await supabase
+    .from('crypto_transactions')
+    .select(
+      `
+      *,
+      asset:crypto_assets!crypto_transactions_asset_id_fkey(id, name, symbol, icon_url),
+      from_asset:crypto_assets!crypto_transactions_from_asset_id_fkey(id, name, symbol, icon_url),
+      to_asset:crypto_assets!crypto_transactions_to_asset_id_fkey(id, name, symbol, icon_url),
+      storage:crypto_storages!crypto_transactions_storage_id_fkey(id, name, type),
+      from_storage:crypto_storages!crypto_transactions_from_storage_id_fkey(id, name, type),
+      to_storage:crypto_storages!crypto_transactions_to_storage_id_fkey(id, name, type)
+    `,
+    )
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    throw new Error(`Failed to fetch crypto transactions: ${error.message}`)
+  }
+
+  return data as Array<TransactionWithJoins>
+}
+
 /**
  * Create a new crypto transaction
  * For Buy/Sell transactions, optionally creates a linked expense/income transaction

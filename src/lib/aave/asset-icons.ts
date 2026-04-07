@@ -25,6 +25,16 @@ const AAVE_ETHEREUM_TOKEN_TO_COINGECKO_ID: Record<string, string> = {
   '0x5f98805a4e8be255a32880fdec7f6728c6568ba0': 'liquity-usd',
 }
 
+const AAVE_ETHEREUM_ATOKEN_TO_COINGECKO_ID: Record<string, string> = {
+  '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': 'aave-v3-weth',
+  '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599': 'aave-v3-wbtc',
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': 'aave-v3-usdc',
+  '0xdac17f958d2ee523a2206206994597c13d831ec7': 'aave-v3-usdt',
+  '0x6b175474e89094c44da98b954eedeac495271d0f': 'aave-v3-dai',
+  '0x514910771af9ca656af840dff83e8264ecf986ca': 'aave-v3-link',
+  '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9': 'aave-v3-aave',
+}
+
 type LnbAssetRow = AaveLnbSupplyRow | AaveLnbBorrowRow
 
 function normalize(value: string): string {
@@ -61,8 +71,18 @@ function buildMarketIconIndex(
   )
 }
 
-function getKnownCoingeckoId(underlyingAsset: string): string | null {
+export function getKnownAaveEthereumCoinGeckoId(
+  underlyingAsset: string,
+): string | null {
   return AAVE_ETHEREUM_TOKEN_TO_COINGECKO_ID[normalize(underlyingAsset)] ?? null
+}
+
+export function getKnownAaveEthereumATokenCoinGeckoId(
+  underlyingAsset: string,
+): string | null {
+  return (
+    AAVE_ETHEREUM_ATOKEN_TO_COINGECKO_ID[normalize(underlyingAsset)] ?? null
+  )
 }
 
 function resolveAssetIconUrl(
@@ -70,7 +90,7 @@ function resolveAssetIconUrl(
   storedAssetIcons: Map<string, string>,
   marketIcons: Map<string, string>,
 ): string | null {
-  const coingeckoId = getKnownCoingeckoId(row.underlyingAsset)
+  const coingeckoId = getKnownAaveEthereumCoinGeckoId(row.underlyingAsset)
 
   if (coingeckoId) {
     const storedByCoingecko = storedAssetIcons.get(
@@ -101,7 +121,7 @@ export function getKnownAaveEthereumCoinGeckoIds(
   return Array.from(
     new Set(
       rows
-        .map((row) => getKnownCoingeckoId(row.underlyingAsset))
+        .map((row) => getKnownAaveEthereumCoinGeckoId(row.underlyingAsset))
         .filter((value): value is string => !!value),
     ),
   )

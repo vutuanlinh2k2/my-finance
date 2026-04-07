@@ -1,8 +1,11 @@
-import { UiPoolDataProvider, ChainId } from '@aave/contract-helpers'
 import { formatReserves, formatUserSummary } from '@aave/math-utils'
 import { AaveV3Ethereum } from '@bgd-labs/aave-address-book'
 import { ethers } from 'ethers'
 import { toNumber } from '@/lib/aave/lnb'
+import {
+  aaveEthereumPoolDataProvider as poolDataProvider,
+  getCurrentTimestamp,
+} from '@/lib/aave/client'
 
 export interface AaveLnbSupplyRow {
   id: string
@@ -41,38 +44,6 @@ export interface AaveLnbSnapshot {
   borrowedAssets: Array<AaveLnbBorrowRow>
 }
 
-const ETHEREUM_RPC_URLS = [
-  'https://ethereum-rpc.publicnode.com',
-  'https://1rpc.io/eth',
-  'https://rpc.ankr.com/eth',
-  'https://eth.llamarpc.com',
-] as const
-
-function createEthereumProvider(): ethers.providers.FallbackProvider {
-  const network = {
-    chainId: 1,
-    name: 'Ethereum Mainnet',
-  }
-
-  return new ethers.providers.FallbackProvider(
-    ETHEREUM_RPC_URLS.map((url, index) => ({
-      provider: new ethers.providers.StaticJsonRpcProvider(url, network),
-      priority: index + 1,
-      stallTimeout: 1_000,
-      weight: 1,
-    })),
-    1,
-  )
-}
-
-const provider = createEthereumProvider()
-
-const poolDataProvider = new UiPoolDataProvider({
-  uiPoolDataProviderAddress: AaveV3Ethereum.UI_POOL_DATA_PROVIDER,
-  provider,
-  chainId: ChainId.mainnet,
-})
-
 const EMPTY_SNAPSHOT: AaveLnbSnapshot = {
   position: {
     healthFactor: null,
@@ -84,10 +55,6 @@ const EMPTY_SNAPSHOT: AaveLnbSnapshot = {
   },
   suppliedAssets: [],
   borrowedAssets: [],
-}
-
-function getCurrentTimestamp(): number {
-  return Math.floor(Date.now() / 1000)
 }
 
 function buildPosition(summary: {

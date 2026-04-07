@@ -10,6 +10,16 @@ export type CryptoTransactionType =
   | 'transfer_in'
   | 'transfer_out'
 
+export type AaveTransactionType =
+  | 'deposit'
+  | 'withdraw'
+  | 'borrow'
+  | 'repay'
+
+export type DisplayCryptoTransactionType =
+  | CryptoTransactionType
+  | AaveTransactionType
+
 /**
  * Storage type for crypto wallets and exchanges
  */
@@ -224,6 +234,34 @@ export interface CryptoTransactionWithDetails extends CryptoTransaction {
   } | null
 }
 
+export interface AaveTransaction {
+  id: string
+  source: 'aave'
+  type: AaveTransactionType
+  date: string
+  sortTimestamp: number
+  txId: string | null
+  txExplorerUrl: string | null
+  amount: number
+  protocol: 'Aave V3'
+  network: 'Ethereum'
+  asset: {
+    id: string
+    name: string
+    symbol: string
+    iconUrl: string | null
+  } | null
+}
+
+export interface ManualCryptoTransaction extends CryptoTransactionWithDetails {
+  source: 'manual'
+  sortTimestamp: number
+}
+
+export type UnifiedCryptoTransaction =
+  | ManualCryptoTransaction
+  | AaveTransaction
+
 /**
  * Transaction filter options
  */
@@ -233,6 +271,12 @@ export interface CryptoTransactionFilters {
   endDate?: string
   assetId?: string
   storageId?: string
+}
+
+export interface UnifiedCryptoTransactionFilters {
+  types?: Array<DisplayCryptoTransactionType>
+  startDate?: string
+  endDate?: string
 }
 
 /**
