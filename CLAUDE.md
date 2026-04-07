@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Development Commands
 
 ```bash
-pnpm dev              # Dev server on port 3000
+pnpm dev              # Dev server on port 3847
 pnpm build            # Production build
 pnpm preview          # Preview production build
 pnpm test             # Run tests once (vitest run)
