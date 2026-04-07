@@ -47,8 +47,7 @@ export function NetWorthPieChart({
     )
   }
 
-  // Empty state: both bank and crypto are 0
-  if (totalNetWorth === 0) {
+  if (segments.length === 0 && totalNetWorth === 0) {
     return (
       <div className="flex h-80 flex-col items-center justify-center text-center">
         <div className="flex size-40 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30">
@@ -62,6 +61,22 @@ export function NetWorthPieChart({
         </p>
         <p className="mt-1 text-xs text-muted-foreground/70">
           Add transactions or crypto assets to see your net worth
+        </p>
+      </div>
+    )
+  }
+
+  if (segments.length === 0) {
+    return (
+      <div className="flex h-80 flex-col items-center justify-center text-center">
+        <div className="flex size-40 items-center justify-center rounded-full border-2 border-dashed border-rose-300/70 bg-rose-50">
+          <Wallet weight="duotone" className="size-12 text-rose-400" />
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Liabilities currently exceed tracked assets
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground/70">
+          Net worth still includes your bank balance and Aave debt
         </p>
       </div>
     )

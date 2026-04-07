@@ -3,8 +3,8 @@ import { AaveV3Ethereum } from '@bgd-labs/aave-address-book'
 import { ethers } from 'ethers'
 import { toNumber } from '@/lib/aave/lnb'
 import {
-  aaveEthereumPoolDataProvider as poolDataProvider,
   getCurrentTimestamp,
+  aaveEthereumPoolDataProvider as poolDataProvider,
 } from '@/lib/aave/client'
 
 export interface AaveLnbSupplyRow {

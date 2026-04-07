@@ -95,6 +95,22 @@ interface MonthConfig {
   specialCase?: MonthSpecialCase
 }
 
+interface CryptoStorageSeed {
+  user_id: string
+  type: 'wallet'
+  name: string
+  address: string
+  explorer_url: string
+}
+
+interface CryptoAssetSeed {
+  user_id: string
+  coingecko_id: string
+  name: string
+  symbol: string
+  icon_url: string | null
+}
+
 // Helper functions
 function getDateFromOffset(
   baseYear: number,
@@ -126,6 +142,12 @@ function randomInRange(min: number, max: number): number {
 
 function randomDay(max: number = 28): number {
   return randomInRange(1, max)
+}
+
+function addDays(date: Date, days: number): Date {
+  const copy = new Date(date)
+  copy.setDate(copy.getDate() + days)
+  return copy
 }
 
 // Generate transactions for a single month
@@ -536,6 +558,24 @@ async function seedTestData() {
   const testUser = existingData.users.find((u) => u.email === TEST_USER.email)
 
   if (testUser) {
+    await supabase
+      .from('tracked_protocol_accounts')
+      .delete()
+      .eq('user_id', testUser.id)
+    await supabase
+      .from('net_worth_snapshots')
+      .delete()
+      .eq('user_id', testUser.id)
+    await supabase
+      .from('crypto_portfolio_snapshots')
+      .delete()
+      .eq('user_id', testUser.id)
+    await supabase
+      .from('crypto_transactions')
+      .delete()
+      .eq('user_id', testUser.id)
+    await supabase.from('crypto_assets').delete().eq('user_id', testUser.id)
+    await supabase.from('crypto_storages').delete().eq('user_id', testUser.id)
     await supabase.from('transactions').delete().eq('user_id', testUser.id)
     await supabase.from('tags').delete().eq('user_id', testUser.id)
     await supabase.auth.admin.deleteUser(testUser.id)
@@ -650,7 +690,171 @@ async function seedTestData() {
     }
   }
 
-  // 7. Summary
+  // 7. Seed crypto data
+  console.log('\nSeeding crypto portfolio data...')
+
+  const storage: CryptoStorageSeed = {
+    user_id: userId,
+    type: 'wallet',
+    name: 'Test Wallet',
+    address: '0x1111111111111111111111111111111111111111',
+    explorer_url:
+      'https://etherscan.io/address/0x1111111111111111111111111111111111111111',
+  }
+
+  const { data: insertedStorage, error: storageError } = await supabase
+    .from('crypto_storages')
+    .insert(storage)
+    .select()
+    .single()
+
+  if (storageError) {
+    console.error('Error inserting crypto storage:', storageError)
+    process.exit(1)
+  }
+
+  const cryptoAssets: Array<CryptoAssetSeed> = [
+    {
+      user_id: userId,
+      coingecko_id: 'bitcoin',
+      name: 'Bitcoin',
+      symbol: 'BTC',
+      icon_url: null,
+    },
+    {
+      user_id: userId,
+      coingecko_id: 'ethereum',
+      name: 'Ethereum',
+      symbol: 'ETH',
+      icon_url: null,
+    },
+  ]
+
+  const { data: insertedAssets, error: assetError } = await supabase
+    .from('crypto_assets')
+    .insert(cryptoAssets)
+    .select()
+
+  if (assetError) {
+    console.error('Error inserting crypto assets:', assetError)
+    process.exit(1)
+  }
+
+  const assetIdBySymbol = new Map(
+    insertedAssets.map((asset) => [asset.symbol, asset.id]),
+  )
+  const todayDate = formatDate(
+    currentYear,
+    currentMonth,
+    Math.min(today.getDate(), 28),
+  )
+
+  const { error: cryptoTxError } = await supabase
+    .from('crypto_transactions')
+    .insert([
+      {
+        user_id: userId,
+        type: 'transfer_in',
+        date: todayDate,
+        asset_id: assetIdBySymbol.get('BTC'),
+        amount: 0.15,
+        storage_id: insertedStorage.id,
+      },
+      {
+        user_id: userId,
+        type: 'transfer_in',
+        date: todayDate,
+        asset_id: assetIdBySymbol.get('ETH'),
+        amount: 1.75,
+        storage_id: insertedStorage.id,
+      },
+    ])
+
+  if (cryptoTxError) {
+    console.error('Error inserting crypto transactions:', cryptoTxError)
+    process.exit(1)
+  }
+
+  const { error: trackedAccountError } = await supabase
+    .from('tracked_protocol_accounts')
+    .insert({
+      user_id: userId,
+      protocol: 'aave-v3',
+      network: 'ethereum',
+      address: '0x000000000000000000000000000000000000dEaD',
+    })
+
+  if (trackedAccountError) {
+    console.error(
+      'Error inserting tracked protocol account:',
+      trackedAccountError,
+    )
+    process.exit(1)
+  }
+
+  const snapshotBaseDate = addDays(today, -2)
+  const snapshotDates = [0, 1, 2].map((offset) =>
+    addDays(snapshotBaseDate, offset),
+  )
+
+  const portfolioSnapshots = snapshotDates.map((date, index) => ({
+    user_id: userId,
+    snapshot_date: date.toISOString().slice(0, 10),
+    total_value_usd: 18000 + index * 750,
+    spot_value_usd: 14000 + index * 500,
+    aave_supplied_usd: 4000 + index * 250,
+    aave_borrowed_usd: 900 + index * 150,
+    allocations: {
+      bitcoin: {
+        percentage: 65,
+        valueUsd: 11700 + index * 350,
+      },
+      ethereum: {
+        percentage: 15,
+        valueUsd: 2300 + index * 150,
+      },
+      'aave-v3-usdc': {
+        percentage: 20,
+        valueUsd: 4000 + index * 250,
+      },
+    },
+  }))
+
+  const { error: portfolioSnapshotError } = await supabase
+    .from('crypto_portfolio_snapshots')
+    .insert(portfolioSnapshots)
+
+  if (portfolioSnapshotError) {
+    console.error(
+      'Error inserting crypto portfolio snapshots:',
+      portfolioSnapshotError,
+    )
+    process.exit(1)
+  }
+
+  const netWorthSnapshots = snapshotDates.map((date, index) => ({
+    user_id: userId,
+    snapshot_date: date.toISOString().slice(0, 10),
+    bank_balance: 220000000 + index * 8000000,
+    crypto_value_vnd: 436050000 + index * 25500000,
+    spot_crypto_value_vnd: 357000000 + index * 12750000,
+    aave_supplied_value_vnd: 102000000 + index * 6375000,
+    aave_borrowed_value_vnd: 22950000 + index * 3825000,
+    net_crypto_value_vnd: 436050000 + index * 25500000,
+    total_net_worth: 656050000 + index * 33500000,
+    exchange_rate: 25500,
+  }))
+
+  const { error: netWorthSnapshotError } = await supabase
+    .from('net_worth_snapshots')
+    .insert(netWorthSnapshots)
+
+  if (netWorthSnapshotError) {
+    console.error('Error inserting net worth snapshots:', netWorthSnapshotError)
+    process.exit(1)
+  }
+
+  // 8. Summary
   console.log('\n' + '='.repeat(50))
   console.log('Test data seeding complete!')
   console.log('='.repeat(50))

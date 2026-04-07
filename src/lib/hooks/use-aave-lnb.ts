@@ -1,30 +1,26 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import type {AaveLnbBorrowRow, AaveLnbPositionSnapshot, AaveLnbSupplyRow} from '@/lib/aave/fetch-lnb';
 import {
   getKnownAaveEthereumCoinGeckoIds,
   withResolvedLnbAssetIcons,
 } from '@/lib/aave/asset-icons'
 import {
-  fetchAaveLnbSnapshot,
-  type AaveLnbBorrowRow,
-  type AaveLnbPositionSnapshot,
-  type AaveLnbSupplyRow,
+  
+  
+  
+  fetchAaveLnbSnapshot
 } from '@/lib/aave/fetch-lnb'
 import { useCryptoAssets } from '@/lib/hooks/use-crypto-assets'
 import { useCryptoMarkets } from '@/lib/hooks/use-coingecko'
-import {
-  isValidEvmAddress,
-  loadStoredLnbAddress,
-  normalizeAddress,
-  removeStoredLnbAddress,
-  saveStoredLnbAddress,
-} from '@/lib/aave/lnb'
+import { queryKeys } from '@/lib/query-keys'
+import { isValidEvmAddress, normalizeAddress } from '@/lib/aave/lnb'
 
 export type LnbSupplyRow = AaveLnbSupplyRow
 export type LnbBorrowRow = AaveLnbBorrowRow
 export type LnbPositionSnapshot = AaveLnbPositionSnapshot
 
-const EMPTY_POSITION: LnbPositionSnapshot = {
+export const EMPTY_POSITION: LnbPositionSnapshot = {
   healthFactor: null,
   totalCollateralUsd: 0,
   totalBorrowedUsd: 0,
@@ -33,41 +29,14 @@ const EMPTY_POSITION: LnbPositionSnapshot = {
   liquidationThresholdUsd: null,
 }
 
-export function usePersistedLnbAddress() {
-  const [address, setAddress] = useState<string | null>(null)
-  const [hasHydrated, setHasHydrated] = useState(false)
-
-  useEffect(() => {
-    setAddress(loadStoredLnbAddress())
-    setHasHydrated(true)
-  }, [])
-
-  const saveAddress = useCallback((nextAddress: string) => {
-    const normalized = saveStoredLnbAddress(nextAddress)
-    setAddress(normalized)
-    return normalized
-  }, [])
-
-  const clearAddress = useCallback(() => {
-    removeStoredLnbAddress()
-    setAddress(null)
-  }, [])
-
-  return {
-    address,
-    hasHydrated,
-    saveAddress,
-    clearAddress,
-  }
-}
-
 export function useAaveLnb(address: string | null) {
   const normalizedAddress = address ? normalizeAddress(address) : null
-  const hasValidAddress = !!normalizedAddress && isValidEvmAddress(normalizedAddress)
+  const hasValidAddress =
+    !!normalizedAddress && isValidEvmAddress(normalizedAddress)
   const cryptoAssets = useCryptoAssets()
 
   const query = useQuery({
-    queryKey: ['aave-lnb', normalizedAddress],
+    queryKey: queryKeys.crypto.aave.lnb(normalizedAddress),
     queryFn: async () => fetchAaveLnbSnapshot(normalizedAddress!),
     enabled: hasValidAddress,
     staleTime: 60_000,

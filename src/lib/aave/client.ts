@@ -1,4 +1,4 @@
-import { UiPoolDataProvider, ChainId } from '@aave/contract-helpers'
+import { ChainId, UiPoolDataProvider } from '@aave/contract-helpers'
 import { AaveV3Ethereum } from '@bgd-labs/aave-address-book'
 import { ethers } from 'ethers'
 

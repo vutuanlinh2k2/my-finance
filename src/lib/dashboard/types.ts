@@ -12,6 +12,9 @@ export interface DashboardTotals {
   netWorth: number
   bankBalance: number
   cryptoValue: number
+  spotCryptoValue: number
+  aaveSuppliedValue: number
+  aaveBorrowedValue: number
   monthlyIncome: number
   monthlyExpenses: number
 }

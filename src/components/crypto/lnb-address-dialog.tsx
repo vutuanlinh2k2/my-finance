@@ -16,8 +16,8 @@ interface LnbAddressDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   address: string | null
-  onSave: (address: string) => void
-  onRemove: () => void
+  onSave: (address: string) => Promise<unknown>
+  onRemove: () => Promise<unknown>
 }
 
 export function LnbAddressDialog({
@@ -29,6 +29,7 @@ export function LnbAddressDialog({
 }: LnbAddressDialogProps) {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -37,7 +38,7 @@ export function LnbAddressDialog({
     }
   }, [address, open])
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const normalized = normalizeAddress(value)
 
     if (!normalized) {
@@ -50,13 +51,35 @@ export function LnbAddressDialog({
       return
     }
 
-    onSave(normalized)
-    onOpenChange(false)
+    try {
+      setIsSubmitting(true)
+      await onSave(normalized)
+      onOpenChange(false)
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : 'Unable to save address.',
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleRemove = () => {
-    onRemove()
-    onOpenChange(false)
+  const handleRemove = async () => {
+    try {
+      setIsSubmitting(true)
+      await onRemove()
+      onOpenChange(false)
+    } catch (removeError) {
+      setError(
+        removeError instanceof Error
+          ? removeError.message
+          : 'Unable to remove address.',
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -71,7 +94,10 @@ export function LnbAddressDialog({
 
         <div className="space-y-3">
           <div>
-            <label htmlFor="lnb-address" className="mb-1.5 block text-sm font-medium">
+            <label
+              htmlFor="lnb-address"
+              className="mb-1.5 block text-sm font-medium"
+            >
               Wallet Address
             </label>
             <Input
@@ -83,6 +109,7 @@ export function LnbAddressDialog({
               }}
               placeholder="0x..."
               className="h-10 rounded-lg font-mono text-sm"
+              disabled={isSubmitting}
             />
           </div>
 
@@ -90,7 +117,8 @@ export function LnbAddressDialog({
             <p className="text-sm text-destructive">{error}</p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              The address is stored only in your browser via localStorage.
+              The address is stored in your account and used for dashboard and
+              history calculations.
             </p>
           )}
         </div>
@@ -102,6 +130,7 @@ export function LnbAddressDialog({
               variant="ghost"
               onClick={handleRemove}
               className="gap-2 text-destructive hover:text-destructive"
+              disabled={isSubmitting}
             >
               <Trash weight="duotone" className="size-4" />
               Remove
@@ -114,7 +143,9 @@ export function LnbAddressDialog({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>Save Address</Button>
+            <Button onClick={handleSave} disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Address'}
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>

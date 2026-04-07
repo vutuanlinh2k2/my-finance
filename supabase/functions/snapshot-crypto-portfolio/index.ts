@@ -5,6 +5,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2'
+import { fetchAavePositionSnapshot } from '../_shared/aave.ts'
 
 // CoinGecko API configuration
 const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3'
@@ -40,6 +41,11 @@ interface CryptoTransaction {
   to_amount: number | null
 }
 
+interface TrackedProtocolAccount {
+  user_id: string
+  address: string
+}
+
 interface CoinGeckoPriceResponse {
   [coinId: string]: {
     usd: number
@@ -58,6 +64,9 @@ interface SnapshotAllocations {
 interface SnapshotResult {
   userId: string
   totalValueUsd: number
+  spotValueUsd: number
+  aaveSuppliedUsd: number
+  aaveBorrowedUsd: number
   assetCount: number
   success: boolean
   error?: string
@@ -218,53 +227,84 @@ async function createUserSnapshot(
   assets: Array<CryptoAsset>,
   transactions: Array<CryptoTransaction>,
   prices: Map<string, number>,
+  trackedAaveAddress: string | null,
   snapshotDate: string,
 ): Promise<SnapshotResult> {
   try {
-    // Calculate balances and values for each asset
     const assetValues: Array<{ coingeckoId: string; valueUsd: number }> = []
-    let totalValueUsd = 0
+    let spotValueUsd = 0
 
     for (const asset of assets) {
       const balance = calculateAssetBalance(asset.id, transactions)
       const priceUsd = prices.get(asset.coingecko_id) ?? 0
       const valueUsd = balance * priceUsd
 
+      spotValueUsd += valueUsd
+
       if (valueUsd > 0) {
         assetValues.push({
           coingeckoId: asset.coingecko_id,
           valueUsd,
         })
-        totalValueUsd += valueUsd
       }
     }
 
-    // Skip if no portfolio value
-    if (totalValueUsd === 0) {
+    let aaveSuppliedUsd = 0
+    let aaveBorrowedUsd = 0
+
+    if (trackedAaveAddress) {
+      try {
+        const aavePosition = await fetchAavePositionSnapshot(trackedAaveAddress)
+        aaveSuppliedUsd = aavePosition.totalCollateralUsd
+        aaveBorrowedUsd = aavePosition.totalBorrowedUsd
+
+        for (const asset of aavePosition.suppliedAssets) {
+          if (asset.valueUsd > 0) {
+            assetValues.push(asset)
+          }
+        }
+      } catch (error) {
+        console.error(
+          `User ${userId}: Failed to fetch Aave position - ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+        )
+      }
+    }
+
+    const totalValueUsd = spotValueUsd + aaveSuppliedUsd
+
+    if (assetValues.length === 0 && aaveBorrowedUsd === 0) {
       console.log(`User ${userId}: No portfolio value, skipping snapshot`)
       return {
         userId,
         totalValueUsd: 0,
+        spotValueUsd: 0,
+        aaveSuppliedUsd: 0,
+        aaveBorrowedUsd: 0,
         assetCount: 0,
         success: true,
       }
     }
 
-    // Calculate allocations
     const allocations: SnapshotAllocations = {}
     for (const { coingeckoId, valueUsd } of assetValues) {
+      const existingValue = allocations[coingeckoId]?.valueUsd ?? 0
+      const nextValue = existingValue + valueUsd
       allocations[coingeckoId] = {
-        percentage: (valueUsd / totalValueUsd) * 100,
-        valueUsd,
+        percentage: totalValueUsd > 0 ? (nextValue / totalValueUsd) * 100 : 0,
+        valueUsd: nextValue,
       }
     }
 
-    // Insert snapshot (upsert to handle re-runs on same day)
     const { error } = await supabase.from('crypto_portfolio_snapshots').upsert(
       {
         user_id: userId,
         snapshot_date: snapshotDate,
         total_value_usd: totalValueUsd,
+        spot_value_usd: spotValueUsd,
+        aave_supplied_usd: aaveSuppliedUsd,
+        aave_borrowed_usd: aaveBorrowedUsd,
         allocations,
       },
       {
@@ -277,12 +317,17 @@ async function createUserSnapshot(
     }
 
     console.log(
-      `User ${userId}: Snapshot created - $${totalValueUsd.toFixed(2)} (${assetValues.length} assets)`,
+      `User ${userId}: Snapshot created - $${totalValueUsd.toFixed(2)} ` +
+        `(Spot: $${spotValueUsd.toFixed(2)}, Aave supplied: $${aaveSuppliedUsd.toFixed(2)}, ` +
+        `Aave borrowed: $${aaveBorrowedUsd.toFixed(2)})`,
     )
 
     return {
       userId,
       totalValueUsd,
+      spotValueUsd,
+      aaveSuppliedUsd,
+      aaveBorrowedUsd,
       assetCount: assetValues.length,
       success: true,
     }
@@ -293,6 +338,9 @@ async function createUserSnapshot(
     return {
       userId,
       totalValueUsd: 0,
+      spotValueUsd: 0,
+      aaveSuppliedUsd: 0,
+      aaveBorrowedUsd: 0,
       assetCount: 0,
       success: false,
       error: errorMessage,
@@ -359,7 +407,7 @@ Deno.serve(async (req) => {
     const snapshotDate = new Date().toISOString().split('T')[0]
     console.log(`Creating portfolio snapshots for ${snapshotDate}...`)
 
-    // Step 1: Get all unique users who have crypto assets
+    // Step 1: Get all manual crypto assets
     const { data: allAssets, error: assetsError } = await supabase
       .from('crypto_assets')
       .select('id, user_id, coingecko_id, name, symbol')
@@ -368,12 +416,52 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to fetch crypto assets: ${assetsError.message}`)
     }
 
-    if (!allAssets || allAssets.length === 0) {
-      console.log('No crypto assets found, nothing to snapshot')
+    const { data: trackedAccounts, error: trackedAccountsError } =
+      await supabase
+        .from('tracked_protocol_accounts')
+        .select('user_id, address')
+        .eq('protocol', 'aave-v3')
+        .eq('network', 'ethereum')
+
+    if (trackedAccountsError) {
+      throw new Error(
+        `Failed to fetch tracked protocol accounts: ${trackedAccountsError.message}`,
+      )
+    }
+
+    const assetsByUser = new Map<string, Array<CryptoAsset>>()
+    const allCoingeckoIds = new Set<string>()
+
+    for (const asset of allAssets || []) {
+      const userId = asset.user_id
+      if (!assetsByUser.has(userId)) {
+        assetsByUser.set(userId, [])
+      }
+      assetsByUser.get(userId)!.push(asset as CryptoAsset)
+      allCoingeckoIds.add(asset.coingecko_id)
+    }
+
+    const trackedAaveAccountsByUser = new Map<string, string>()
+    for (const account of (trackedAccounts ||
+      []) as Array<TrackedProtocolAccount>) {
+      trackedAaveAccountsByUser.set(account.user_id, account.address)
+    }
+
+    const userIds = Array.from(
+      new Set<string>([
+        ...assetsByUser.keys(),
+        ...trackedAaveAccountsByUser.keys(),
+      ]),
+    )
+
+    if (userIds.length === 0) {
+      console.log(
+        'No crypto assets or tracked Aave accounts found, nothing to snapshot',
+      )
       return new Response(
         JSON.stringify({
           success: true,
-          message: 'No crypto assets found',
+          message: 'No crypto assets or tracked Aave accounts found',
           snapshotsCreated: 0,
           timestamp: new Date().toISOString(),
         }),
@@ -384,21 +472,9 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Group assets by user
-    const assetsByUser = new Map<string, Array<CryptoAsset>>()
-    const allCoingeckoIds = new Set<string>()
-
-    for (const asset of allAssets) {
-      const userId = asset.user_id
-      if (!assetsByUser.has(userId)) {
-        assetsByUser.set(userId, [])
-      }
-      assetsByUser.get(userId)!.push(asset as CryptoAsset)
-      allCoingeckoIds.add(asset.coingecko_id)
-    }
-
-    const userIds = Array.from(assetsByUser.keys())
-    console.log(`Found ${userIds.length} users with crypto assets`)
+    console.log(
+      `Found ${userIds.length} users with manual crypto or tracked Aave`,
+    )
 
     // Step 2: Fetch all transactions for these users
     const { data: allTransactions, error: txError } = await supabase
@@ -433,6 +509,7 @@ Deno.serve(async (req) => {
     for (const userId of userIds) {
       const userAssets = assetsByUser.get(userId) || []
       const userTransactions = transactionsByUser.get(userId) || []
+      const trackedAaveAddress = trackedAaveAccountsByUser.get(userId) ?? null
 
       const result = await createUserSnapshot(
         supabase,
@@ -440,6 +517,7 @@ Deno.serve(async (req) => {
         userAssets,
         userTransactions,
         prices,
+        trackedAaveAddress,
         snapshotDate,
       )
       results.push(result)

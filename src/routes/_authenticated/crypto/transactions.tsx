@@ -10,7 +10,7 @@ import type {
   UnifiedCryptoTransactionFilters,
 } from '@/lib/crypto/types'
 import { useAaveTransactionHistory } from '@/lib/hooks/use-aave-history'
-import { usePersistedLnbAddress } from '@/lib/hooks/use-aave-lnb'
+import { useTrackedAaveAddress } from '@/lib/hooks/use-tracked-aave-address'
 import {
   useAllCryptoTransactions,
   useAllCryptoTransactionsWithDetails,
@@ -63,7 +63,7 @@ const PAGE_SIZE = 10
 function CryptoTransactionsPage() {
   const navigate = useNavigate()
   const search = useSearch({ from: '/_authenticated/crypto/transactions' })
-  const { address, hasHydrated } = usePersistedLnbAddress()
+  const { address, isLoading: isLoadingAddress } = useTrackedAaveAddress()
   const aaveHistoryQuery = useAaveTransactionHistory(address)
 
   // Parse filters from URL
@@ -133,7 +133,7 @@ function CryptoTransactionsPage() {
   const filteredTransactions = useMemo(() => {
     let items: Array<UnifiedCryptoTransaction> = [...manualTransactions]
 
-    if (hasHydrated && aaveHistoryQuery.data) {
+    if (!isLoadingAddress && aaveHistoryQuery.data) {
       items = [...items, ...aaveHistoryQuery.data]
     }
 
@@ -143,11 +143,15 @@ function CryptoTransactionsPage() {
     }
 
     if (filters.startDate) {
-      items = items.filter((transaction) => transaction.date >= filters.startDate!)
+      items = items.filter(
+        (transaction) => transaction.date >= filters.startDate!,
+      )
     }
 
     if (filters.endDate) {
-      items = items.filter((transaction) => transaction.date <= filters.endDate!)
+      items = items.filter(
+        (transaction) => transaction.date <= filters.endDate!,
+      )
     }
 
     return items.sort((a, b) => b.sortTimestamp - a.sortTimestamp)
@@ -156,11 +160,13 @@ function CryptoTransactionsPage() {
     filters.endDate,
     filters.startDate,
     filters.types,
-    hasHydrated,
+    isLoadingAddress,
     manualTransactions,
   ])
 
-  const transactionsData = useMemo<PaginatedResponse<UnifiedCryptoTransaction>>(() => {
+  const transactionsData = useMemo<
+    PaginatedResponse<UnifiedCryptoTransaction>
+  >(() => {
     const total = filteredTransactions.length
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
     const safePage = Math.min(page, totalPages)
@@ -339,7 +345,7 @@ function CryptoTransactionsPage() {
 
   const isLoadingTransactions =
     isLoadingManualTransactions ||
-    (hasHydrated && !!address && aaveHistoryQuery.isPending)
+    (!isLoadingAddress && !!address && aaveHistoryQuery.isPending)
 
   return (
     <div className="flex flex-col gap-6">
@@ -375,7 +381,7 @@ function CryptoTransactionsPage() {
         </div>
       )}
 
-      {hasHydrated && !!address && aaveHistoryQuery.error ? (
+      {!isLoadingAddress && !!address && aaveHistoryQuery.error ? (
         <div className="rounded-lg border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           Aave transaction history could not be loaded, so only your saved
           database transactions are shown right now.

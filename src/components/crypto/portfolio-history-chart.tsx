@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { AllocationHistoryChart } from './allocation-history-chart'
 import { ValueHistoryChart } from './value-history-chart'
-import type { CryptoAsset, PortfolioTimeRange } from '@/lib/crypto/types'
+import type { PortfolioTimeRange } from '@/lib/crypto/types'
 import { cn } from '@/lib/utils'
 import {
   useAllocationHistory,
@@ -19,7 +19,12 @@ const TIME_RANGES: Array<{ value: PortfolioTimeRange; label: string }> = [
 ]
 
 interface PortfolioHistoryChartProps {
-  assets?: Array<CryptoAsset>
+  assets?: Array<{
+    coingeckoId: string
+    name: string
+    symbol: string
+    iconUrl?: string | null
+  }>
   exchangeRate?: number
 }
 

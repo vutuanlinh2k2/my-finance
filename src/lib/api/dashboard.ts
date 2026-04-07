@@ -16,6 +16,10 @@ export interface NetWorthSnapshot {
   snapshotDate: string
   bankBalance: number
   cryptoValueVnd: number
+  spotCryptoValueVnd: number
+  aaveSuppliedValueVnd: number
+  aaveBorrowedValueVnd: number
+  netCryptoValueVnd: number
   totalNetWorth: number
   exchangeRate: number
 }
@@ -113,7 +117,9 @@ export async function fetchNetWorthSnapshots(
 
   let query = supabase
     .from('net_worth_snapshots')
-    .select('id, snapshot_date, bank_balance, crypto_value_vnd, total_net_worth, exchange_rate')
+    .select(
+      'id, snapshot_date, bank_balance, crypto_value_vnd, spot_crypto_value_vnd, aave_supplied_value_vnd, aave_borrowed_value_vnd, net_crypto_value_vnd, total_net_worth, exchange_rate',
+    )
     .order('snapshot_date', { ascending: true })
 
   if (startDate) {
@@ -131,6 +137,10 @@ export async function fetchNetWorthSnapshots(
     snapshotDate: row.snapshot_date,
     bankBalance: row.bank_balance,
     cryptoValueVnd: row.crypto_value_vnd,
+    spotCryptoValueVnd: row.spot_crypto_value_vnd,
+    aaveSuppliedValueVnd: row.aave_supplied_value_vnd,
+    aaveBorrowedValueVnd: row.aave_borrowed_value_vnd,
+    netCryptoValueVnd: row.net_crypto_value_vnd,
     totalNetWorth: row.total_net_worth,
     exchangeRate: row.exchange_rate,
   }))

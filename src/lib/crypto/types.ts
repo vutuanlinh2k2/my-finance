@@ -10,11 +10,7 @@ export type CryptoTransactionType =
   | 'transfer_in'
   | 'transfer_out'
 
-export type AaveTransactionType =
-  | 'deposit'
-  | 'withdraw'
-  | 'borrow'
-  | 'repay'
+export type AaveTransactionType = 'deposit' | 'withdraw' | 'borrow' | 'repay'
 
 export type DisplayCryptoTransactionType =
   | CryptoTransactionType
@@ -258,9 +254,7 @@ export interface ManualCryptoTransaction extends CryptoTransactionWithDetails {
   sortTimestamp: number
 }
 
-export type UnifiedCryptoTransaction =
-  | ManualCryptoTransaction
-  | AaveTransaction
+export type UnifiedCryptoTransaction = ManualCryptoTransaction | AaveTransaction
 
 /**
  * Transaction filter options
@@ -440,6 +434,9 @@ export interface PortfolioSnapshot {
   userId: string
   snapshotDate: string
   totalValueUsd: number
+  spotValueUsd: number
+  aaveSuppliedUsd: number
+  aaveBorrowedUsd: number
   allocations: SnapshotAllocations
   createdAt: string
 }

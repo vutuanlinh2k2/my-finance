@@ -1,10 +1,10 @@
 import { AaveV3Ethereum } from '@bgd-labs/aave-address-book'
+import type { AaveTransaction } from '@/lib/crypto/types'
 import {
   getKnownAaveEthereumATokenCoinGeckoId,
   getKnownAaveEthereumCoinGeckoId,
 } from '@/lib/aave/asset-icons'
 import { normalizeAddress } from '@/lib/aave/lnb'
-import type { AaveTransaction } from '@/lib/crypto/types'
 
 type AaveHistoryType = AaveTransaction['type']
 

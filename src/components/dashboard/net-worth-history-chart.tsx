@@ -10,6 +10,7 @@ import {
 } from 'recharts'
 import { ChartLineUp } from '@phosphor-icons/react'
 import type { NetWorthSnapshot, TimeRange } from '@/lib/api/dashboard'
+import { getChartDomain } from '@/lib/dashboard/net-worth'
 import { cn } from '@/lib/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'
 
@@ -65,7 +66,17 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
         </span>
         <span className="flex items-center gap-1">
           <span className="size-2 rounded-full bg-blue-500" />
-          Crypto: {formatCompact(data.cryptoValueVnd)}
+          Spot: {formatCompact(data.spotCryptoValueVnd)}
+        </span>
+      </div>
+      <div className="mt-1 flex gap-3 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <span className="size-2 rounded-full bg-amber-500" />
+          Aave: {formatCompact(data.aaveSuppliedValueVnd)}
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="size-2 rounded-full bg-rose-500" />
+          Debt: -{formatCompact(data.aaveBorrowedValueVnd)}
         </span>
       </div>
     </div>
@@ -150,11 +161,8 @@ export function NetWorthHistoryChart({
 }
 
 function ChartContent({ data }: { data: Array<NetWorthSnapshot> }) {
-  // Calculate min/max for better Y axis range
   const values = data.map((d) => d.totalNetWorth)
-  const minValue = Math.min(...values)
-  const maxValue = Math.max(...values)
-  const padding = (maxValue - minValue) * 0.1 || maxValue * 0.1
+  const [minDomain, maxDomain] = getChartDomain(values)
 
   return (
     <ResponsiveContainer width="100%" height={280}>
@@ -186,7 +194,7 @@ function ChartContent({ data }: { data: Array<NetWorthSnapshot> }) {
           axisLine={false}
           tickLine={false}
           width={70}
-          domain={[Math.max(0, minValue - padding), maxValue + padding]}
+          domain={[minDomain, maxDomain]}
         />
         <Tooltip content={<CustomTooltip />} />
         <Area

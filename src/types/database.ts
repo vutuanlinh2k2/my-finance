@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.1"
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -95,26 +90,35 @@ export type Database = {
       }
       crypto_portfolio_snapshots: {
         Row: {
+          aave_borrowed_usd: number
+          aave_supplied_usd: number
           allocations: Json
           created_at: string
           id: string
           snapshot_date: string
+          spot_value_usd: number
           total_value_usd: number
           user_id: string
         }
         Insert: {
+          aave_borrowed_usd?: number
+          aave_supplied_usd?: number
           allocations: Json
           created_at?: string
           id?: string
           snapshot_date: string
+          spot_value_usd?: number
           total_value_usd: number
           user_id: string
         }
         Update: {
+          aave_borrowed_usd?: number
+          aave_supplied_usd?: number
           allocations?: Json
           created_at?: string
           id?: string
           snapshot_date?: string
+          spot_value_usd?: number
           total_value_usd?: number
           user_id?: string
         }
@@ -298,32 +302,44 @@ export type Database = {
       }
       net_worth_snapshots: {
         Row: {
+          aave_borrowed_value_vnd: number
+          aave_supplied_value_vnd: number
           bank_balance: number
           created_at: string
           crypto_value_vnd: number
           exchange_rate: number
           id: string
+          net_crypto_value_vnd: number
           snapshot_date: string
+          spot_crypto_value_vnd: number
           total_net_worth: number
           user_id: string
         }
         Insert: {
+          aave_borrowed_value_vnd?: number
+          aave_supplied_value_vnd?: number
           bank_balance?: number
           created_at?: string
           crypto_value_vnd?: number
           exchange_rate?: number
           id?: string
+          net_crypto_value_vnd?: number
           snapshot_date: string
+          spot_crypto_value_vnd?: number
           total_net_worth?: number
           user_id: string
         }
         Update: {
+          aave_borrowed_value_vnd?: number
+          aave_supplied_value_vnd?: number
           bank_balance?: number
           created_at?: string
           crypto_value_vnd?: number
           exchange_rate?: number
           id?: string
+          net_crypto_value_vnd?: number
           snapshot_date?: string
+          spot_crypto_value_vnd?: number
           total_net_worth?: number
           user_id?: string
         }
@@ -410,6 +426,36 @@ export type Database = {
           id?: string
           name?: string
           type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tracked_protocol_accounts: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          network: string
+          protocol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          network: string
+          protocol: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          network?: string
+          protocol?: string
           updated_at?: string
           user_id?: string
         }
@@ -520,7 +566,10 @@ export type Database = {
       get_latest_crypto_snapshots: {
         Args: never
         Returns: {
+          aave_borrowed_usd: number
+          aave_supplied_usd: number
           snapshot_date: string
+          spot_value_usd: number
           total_value_usd: number
           user_id: string
         }[]
@@ -715,3 +764,4 @@ export const Constants = {
     },
   },
 } as const
+

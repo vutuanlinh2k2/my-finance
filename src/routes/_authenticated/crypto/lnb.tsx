@@ -8,10 +8,8 @@ import { LnbHealthBar } from '@/components/crypto/lnb-health-bar'
 import { LnbPositionsTable } from '@/components/crypto/lnb-positions-table'
 import { formatStoredAddress } from '@/lib/aave/lnb'
 import { useExchangeRateValue } from '@/lib/hooks/use-exchange-rate'
-import {
-  useAaveLnb,
-  usePersistedLnbAddress,
-} from '@/lib/hooks/use-aave-lnb'
+import { useTrackedAaveAddress } from '@/lib/hooks/use-tracked-aave-address'
+import { useAaveLnb } from '@/lib/hooks/use-aave-lnb'
 
 export const Route = createFileRoute('/_authenticated/crypto/lnb')({
   component: CryptoLnbPage,
@@ -19,13 +17,23 @@ export const Route = createFileRoute('/_authenticated/crypto/lnb')({
 
 function CryptoLnbPage() {
   const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false)
-  const { address, hasHydrated, saveAddress, clearAddress } =
-    usePersistedLnbAddress()
+  const {
+    address,
+    isLoading: isLoadingAddress,
+    saveAddress,
+    clearAddress,
+  } = useTrackedAaveAddress()
   const { rate: exchangeRate } = useExchangeRateValue()
-  const { hasValidAddress, position, suppliedAssets, borrowedAssets, isLoading, error } =
-    useAaveLnb(address)
+  const {
+    hasValidAddress,
+    position,
+    suppliedAssets,
+    borrowedAssets,
+    isLoading,
+    error,
+  } = useAaveLnb(address)
 
-  const showAddressSkeleton = !hasHydrated
+  const showAddressSkeleton = isLoadingAddress
   const hasPositions = suppliedAssets.length > 0 || borrowedAssets.length > 0
 
   return (
@@ -49,7 +57,7 @@ function CryptoLnbPage() {
         </Button>
       </div>
 
-      {!hasHydrated ? (
+      {isLoadingAddress ? (
         <>
           <LnbSummaryCards
             healthFactor={null}
@@ -101,10 +109,10 @@ function CryptoLnbPage() {
         </div>
       ) : error ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-5 py-4">
-          <h2 className="font-semibold text-destructive">Unable to load Aave data</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {error.message}
-          </p>
+          <h2 className="font-semibold text-destructive">
+            Unable to load Aave data
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
         </div>
       ) : (
         <>
@@ -127,10 +135,12 @@ function CryptoLnbPage() {
 
           {!isLoading && !hasPositions ? (
             <div className="rounded-lg border border-dashed border-border bg-sidebar px-6 py-10 text-center">
-              <h2 className="text-lg font-semibold">No Ethereum Aave V3 positions</h2>
+              <h2 className="text-lg font-semibold">
+                No Ethereum Aave V3 positions
+              </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                This address does not currently have supplied or borrowed assets on
-                Aave V3 Ethereum.
+                This address does not currently have supplied or borrowed assets
+                on Aave V3 Ethereum.
               </p>
             </div>
           ) : null}

@@ -19,6 +19,9 @@ function transformToSnapshot(
     userId: row.user_id,
     snapshotDate: row.snapshot_date,
     totalValueUsd: Number(row.total_value_usd),
+    spotValueUsd: Number(row.spot_value_usd),
+    aaveSuppliedUsd: Number(row.aave_supplied_usd),
+    aaveBorrowedUsd: Number(row.aave_borrowed_usd),
     allocations: row.allocations as PortfolioSnapshot['allocations'],
     createdAt: row.created_at,
   }

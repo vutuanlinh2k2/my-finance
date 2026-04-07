@@ -12,9 +12,9 @@ import {
 import { toast } from 'sonner'
 import { TransactionTypeBadge } from './transaction-type-badge'
 import type {
+  ManualCryptoTransaction,
   PaginatedResponse,
   UnifiedCryptoTransaction,
-  ManualCryptoTransaction,
 } from '@/lib/crypto/types'
 import { formatCryptoAmount, truncateAddress } from '@/lib/crypto/utils'
 import { formatCompact, formatCurrency } from '@/lib/currency'

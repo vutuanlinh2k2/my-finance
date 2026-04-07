@@ -4,12 +4,11 @@ import { Plus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import type { CryptoAsset } from '@/lib/crypto/types'
 import type { CreateCryptoAssetInput } from '@/lib/api/crypto-assets'
+import type {PortfolioAssetRow} from '@/components/crypto';
 import { calculateAssetBalance } from '@/lib/crypto/utils'
 import { getKnownAaveEthereumATokenCoinGeckoId } from '@/lib/aave/asset-icons'
-import {
-  useAaveLnb,
-  usePersistedLnbAddress,
-} from '@/lib/hooks/use-aave-lnb'
+import { useAaveLnb } from '@/lib/hooks/use-aave-lnb'
+import { useTrackedAaveAddress } from '@/lib/hooks/use-tracked-aave-address'
 import {
   useCreateCryptoAsset,
   useCryptoAssets,
@@ -33,9 +32,9 @@ import {
   AddAssetModal,
   AllocationPieChart,
   AssetsTable,
+  
   PortfolioHistoryChart,
-  type PortfolioAssetRow,
-  getAssetColor,
+  getAssetColor
 } from '@/components/crypto'
 
 export const Route = createFileRoute('/_authenticated/crypto/assets')({
@@ -62,7 +61,7 @@ function CryptoAssetsPage() {
   const exchangeRate = useExchangeRateValue()
 
   // Persisted Aave address and live positions
-  const { address, hasHydrated } = usePersistedLnbAddress()
+  const { address, isLoading: isLoadingAddress } = useTrackedAaveAddress()
   const {
     hasValidAddress,
     suppliedAssets,
@@ -159,8 +158,10 @@ function CryptoAssetsPage() {
         marketCapUsd,
         priceChange24h: coinData?.price_change_percentage_24h ?? null,
         priceChange7d: coinData?.price_change_percentage_7d_in_currency ?? null,
-        priceChange30d: coinData?.price_change_percentage_30d_in_currency ?? null,
-        priceChange60d: coinData?.price_change_percentage_60d_in_currency ?? null,
+        priceChange30d:
+          coinData?.price_change_percentage_30d_in_currency ?? null,
+        priceChange60d:
+          coinData?.price_change_percentage_60d_in_currency ?? null,
         priceChange1y: coinData?.price_change_percentage_1y_in_currency ?? null,
         balance,
         valueVnd,
@@ -172,7 +173,9 @@ function CryptoAssetsPage() {
 
   const aaveAssetRows = useMemo<Array<PortfolioAssetRow>>(() => {
     return suppliedAssets.map((asset) => {
-      const aTokenId = getKnownAaveEthereumATokenCoinGeckoId(asset.underlyingAsset)
+      const aTokenId = getKnownAaveEthereumATokenCoinGeckoId(
+        asset.underlyingAsset,
+      )
       const coinData = aTokenId ? aaveMarketDataMap.get(aTokenId) : undefined
       const currentPriceUsd =
         coinData?.current_price ??
@@ -180,7 +183,9 @@ function CryptoAssetsPage() {
       const currentPriceVnd = currentPriceUsd * exchangeRate.rate
       const marketCapUsd = coinData?.market_cap ?? 0
       const name = coinData?.name ?? getAaveTokenName(asset.name)
-      const symbol = (coinData?.symbol ?? getAaveTokenSymbol(asset.symbol)).toUpperCase()
+      const symbol = (
+        coinData?.symbol ?? getAaveTokenSymbol(asset.symbol)
+      ).toUpperCase()
 
       return {
         id: `aave-supply:${asset.underlyingAsset}`,
@@ -194,8 +199,10 @@ function CryptoAssetsPage() {
         marketCapUsd,
         priceChange24h: coinData?.price_change_percentage_24h ?? null,
         priceChange7d: coinData?.price_change_percentage_7d_in_currency ?? null,
-        priceChange30d: coinData?.price_change_percentage_30d_in_currency ?? null,
-        priceChange60d: coinData?.price_change_percentage_60d_in_currency ?? null,
+        priceChange30d:
+          coinData?.price_change_percentage_30d_in_currency ?? null,
+        priceChange60d:
+          coinData?.price_change_percentage_60d_in_currency ?? null,
         priceChange1y: coinData?.price_change_percentage_1y_in_currency ?? null,
         balance: asset.suppliedAmount,
         valueVnd: asset.valueUsd * exchangeRate.rate,
@@ -278,7 +285,7 @@ function CryptoAssetsPage() {
     isLoadingTransactions ||
     isLoadingManualPrices ||
     isLoadingAavePrices ||
-    (hasHydrated && hasValidAddress && isLoadingAave)
+    (!isLoadingAddress && hasValidAddress && isLoadingAave)
 
   return (
     <div className="flex flex-col gap-6">
@@ -300,7 +307,7 @@ function CryptoAssetsPage() {
         </Button>
       </div>
 
-      {hasHydrated && hasValidAddress && aaveError ? (
+      {!isLoadingAddress && hasValidAddress && aaveError ? (
         <div className="rounded-lg border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           Aave positions could not be loaded, so only your manual assets are
           shown right now.
@@ -323,7 +330,22 @@ function CryptoAssetsPage() {
 
         {/* History Charts */}
         <PortfolioHistoryChart
-          assets={manualAssets}
+          assets={[
+            ...manualAssets.map((asset) => ({
+              coingeckoId: asset.coingeckoId,
+              name: asset.name,
+              symbol: asset.symbol,
+              iconUrl: asset.iconUrl,
+            })),
+            ...suppliedAssets.map((asset) => ({
+              coingeckoId:
+                getKnownAaveEthereumATokenCoinGeckoId(asset.underlyingAsset) ??
+                asset.underlyingAsset,
+              name: getAaveTokenName(asset.name),
+              symbol: getAaveTokenSymbol(asset.symbol),
+              iconUrl: asset.iconUrl,
+            })),
+          ]}
           exchangeRate={exchangeRate.rate}
         />
       </div>

@@ -15,12 +15,19 @@ interface UserTotals {
 interface CryptoSnapshot {
   user_id: string
   total_value_usd: number
+  spot_value_usd: number
+  aave_supplied_usd: number
+  aave_borrowed_usd: number
 }
 
 interface SnapshotResult {
   userId: string
   bankBalance: number
   cryptoValueVnd: number
+  spotCryptoValueVnd: number
+  aaveSuppliedValueVnd: number
+  aaveBorrowedValueVnd: number
+  netCryptoValueVnd: number
   totalNetWorth: number
   success: boolean
   error?: string
@@ -60,13 +67,29 @@ async function fetchAllUserBankBalances(
 async function fetchLatestCryptoSnapshots(
   supabase: SupabaseClient,
   snapshotDate: string,
-): Promise<Map<string, number>> {
-  const cryptoValues = new Map<string, number>()
+): Promise<
+  Map<
+    string,
+    {
+      spotValueUsd: number
+      aaveSuppliedUsd: number
+      aaveBorrowedUsd: number
+    }
+  >
+> {
+  const cryptoValues = new Map<
+    string,
+    {
+      spotValueUsd: number
+      aaveSuppliedUsd: number
+      aaveBorrowedUsd: number
+    }
+  >()
 
   // First try to get today's snapshots
   const { data: todaySnapshots, error: todayError } = await supabase
     .from('crypto_portfolio_snapshots')
-    .select('user_id, total_value_usd')
+    .select('user_id, spot_value_usd, aave_supplied_usd, aave_borrowed_usd')
     .eq('snapshot_date', snapshotDate)
 
   if (todayError) {
@@ -77,7 +100,11 @@ async function fetchLatestCryptoSnapshots(
 
   if (todaySnapshots && todaySnapshots.length > 0) {
     for (const snapshot of todaySnapshots) {
-      cryptoValues.set(snapshot.user_id, snapshot.total_value_usd)
+      cryptoValues.set(snapshot.user_id, {
+        spotValueUsd: snapshot.spot_value_usd,
+        aaveSuppliedUsd: snapshot.aave_supplied_usd,
+        aaveBorrowedUsd: snapshot.aave_borrowed_usd,
+      })
     }
     console.log(`Found ${todaySnapshots.length} crypto snapshots for today`)
     return cryptoValues
@@ -102,7 +129,11 @@ async function fetchLatestCryptoSnapshots(
 
   // RPC already returns one row per user (most recent snapshot)
   for (const snapshot of latestSnapshots) {
-    cryptoValues.set(snapshot.user_id, snapshot.total_value_usd)
+    cryptoValues.set(snapshot.user_id, {
+      spotValueUsd: snapshot.spot_value_usd,
+      aaveSuppliedUsd: snapshot.aave_supplied_usd,
+      aaveBorrowedUsd: snapshot.aave_borrowed_usd,
+    })
   }
 
   console.log(`Found ${cryptoValues.size} users with crypto snapshots`)
@@ -135,23 +166,32 @@ async function createUserSnapshot(
   supabase: SupabaseClient,
   userId: string,
   bankBalance: number,
-  cryptoValueUsd: number,
+  cryptoSnapshot: {
+    spotValueUsd: number
+    aaveSuppliedUsd: number
+    aaveBorrowedUsd: number
+  },
   exchangeRate: number,
   snapshotDate: string,
 ): Promise<SnapshotResult> {
   try {
-    // Convert crypto USD value to VND
-    const cryptoValueVnd = cryptoValueUsd * exchangeRate
-    // Total net worth is bank balance (already in VND) + crypto value in VND
-    const totalNetWorth = bankBalance + cryptoValueVnd
+    const spotCryptoValueVnd = cryptoSnapshot.spotValueUsd * exchangeRate
+    const aaveSuppliedValueVnd = cryptoSnapshot.aaveSuppliedUsd * exchangeRate
+    const aaveBorrowedValueVnd = cryptoSnapshot.aaveBorrowedUsd * exchangeRate
+    const netCryptoValueVnd =
+      spotCryptoValueVnd + aaveSuppliedValueVnd - aaveBorrowedValueVnd
+    const totalNetWorth = bankBalance + netCryptoValueVnd
 
-    // Insert snapshot (upsert to handle re-runs on same day)
     const { error } = await supabase.from('net_worth_snapshots').upsert(
       {
         user_id: userId,
         snapshot_date: snapshotDate,
         bank_balance: bankBalance,
-        crypto_value_vnd: cryptoValueVnd,
+        crypto_value_vnd: netCryptoValueVnd,
+        spot_crypto_value_vnd: spotCryptoValueVnd,
+        aave_supplied_value_vnd: aaveSuppliedValueVnd,
+        aave_borrowed_value_vnd: aaveBorrowedValueVnd,
+        net_crypto_value_vnd: netCryptoValueVnd,
         total_net_worth: totalNetWorth,
         exchange_rate: exchangeRate,
       },
@@ -166,13 +206,19 @@ async function createUserSnapshot(
 
     console.log(
       `User ${userId}: Snapshot created - Net worth: ${totalNetWorth.toLocaleString()} VND ` +
-        `(Bank: ${bankBalance.toLocaleString()}, Crypto: ${cryptoValueVnd.toLocaleString()})`,
+        `(Bank: ${bankBalance.toLocaleString()}, Spot: ${spotCryptoValueVnd.toLocaleString()}, ` +
+        `Aave supplied: ${aaveSuppliedValueVnd.toLocaleString()}, ` +
+        `Aave borrowed: ${aaveBorrowedValueVnd.toLocaleString()})`,
     )
 
     return {
       userId,
       bankBalance,
-      cryptoValueVnd,
+      cryptoValueVnd: netCryptoValueVnd,
+      spotCryptoValueVnd,
+      aaveSuppliedValueVnd,
+      aaveBorrowedValueVnd,
+      netCryptoValueVnd,
       totalNetWorth,
       success: true,
     }
@@ -184,6 +230,10 @@ async function createUserSnapshot(
       userId,
       bankBalance: 0,
       cryptoValueVnd: 0,
+      spotCryptoValueVnd: 0,
+      aaveSuppliedValueVnd: 0,
+      aaveBorrowedValueVnd: 0,
+      netCryptoValueVnd: 0,
       totalNetWorth: 0,
       success: false,
       error: errorMessage,
@@ -255,7 +305,10 @@ Deno.serve(async (req) => {
     console.log(`Found ${bankBalances.size} users with transactions`)
 
     // Step 2: Fetch latest crypto snapshots for all users
-    const cryptoValues = await fetchLatestCryptoSnapshots(supabase, snapshotDate)
+    const cryptoValues = await fetchLatestCryptoSnapshots(
+      supabase,
+      snapshotDate,
+    )
 
     // Step 3: Fetch current exchange rate
     const exchangeRate = await fetchExchangeRate(supabase)
@@ -268,7 +321,9 @@ Deno.serve(async (req) => {
     ])
 
     if (allUserIds.size === 0) {
-      console.log('No users found with transactions or crypto, nothing to snapshot')
+      console.log(
+        'No users found with transactions or crypto, nothing to snapshot',
+      )
       return new Response(
         JSON.stringify({
           success: true,
@@ -290,13 +345,17 @@ Deno.serve(async (req) => {
 
     for (const userId of allUserIds) {
       const bankBalance = bankBalances.get(userId) || 0
-      const cryptoValueUsd = cryptoValues.get(userId) || 0
+      const cryptoSnapshot = cryptoValues.get(userId) || {
+        spotValueUsd: 0,
+        aaveSuppliedUsd: 0,
+        aaveBorrowedUsd: 0,
+      }
 
       const result = await createUserSnapshot(
         supabase,
         userId,
         bankBalance,
-        cryptoValueUsd,
+        cryptoSnapshot,
         exchangeRate,
         snapshotDate,
       )

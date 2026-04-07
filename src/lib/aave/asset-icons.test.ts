@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { CoinGeckoMarketCoin } from '@/lib/api/coingecko'
 import type { CryptoAsset } from '@/lib/crypto/types'
+import type { AaveLnbSupplyRow } from '@/lib/aave/fetch-lnb'
 import {
   getKnownAaveEthereumCoinGeckoIds,
   withResolvedLnbAssetIcons,
 } from '@/lib/aave/asset-icons'
-import type { AaveLnbSupplyRow } from '@/lib/aave/fetch-lnb'
 
 function createRow(overrides: Partial<AaveLnbSupplyRow> = {}): AaveLnbSupplyRow {
   return {

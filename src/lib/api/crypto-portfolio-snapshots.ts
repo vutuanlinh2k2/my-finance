@@ -72,6 +72,9 @@ export async function fetchPortfolioSnapshots(
 export async function createPortfolioSnapshot(input: {
   snapshotDate: string
   totalValueUsd: number
+  spotValueUsd?: number
+  aaveSuppliedUsd?: number
+  aaveBorrowedUsd?: number
   allocations: SnapshotAllocations
 }): Promise<PortfolioSnapshotRow> {
   const { data: userData } = await supabase.auth.getUser()
@@ -85,6 +88,9 @@ export async function createPortfolioSnapshot(input: {
       user_id: userData.user.id,
       snapshot_date: input.snapshotDate,
       total_value_usd: input.totalValueUsd,
+      spot_value_usd: input.spotValueUsd ?? input.totalValueUsd,
+      aave_supplied_usd: input.aaveSuppliedUsd ?? 0,
+      aave_borrowed_usd: input.aaveBorrowedUsd ?? 0,
       allocations: input.allocations,
     })
     .select()

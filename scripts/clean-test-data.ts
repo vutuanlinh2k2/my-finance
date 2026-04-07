@@ -63,6 +63,30 @@ async function cleanTestData() {
 
   console.log(`Found test user: ${testUser.id}`)
 
+  await supabase
+    .from('tracked_protocol_accounts')
+    .delete()
+    .eq('user_id', testUser.id)
+  console.log('Deleted tracked protocol accounts')
+
+  await supabase.from('net_worth_snapshots').delete().eq('user_id', testUser.id)
+  console.log('Deleted net worth snapshots')
+
+  await supabase
+    .from('crypto_portfolio_snapshots')
+    .delete()
+    .eq('user_id', testUser.id)
+  console.log('Deleted crypto portfolio snapshots')
+
+  await supabase.from('crypto_transactions').delete().eq('user_id', testUser.id)
+  console.log('Deleted crypto transactions')
+
+  await supabase.from('crypto_assets').delete().eq('user_id', testUser.id)
+  console.log('Deleted crypto assets')
+
+  await supabase.from('crypto_storages').delete().eq('user_id', testUser.id)
+  console.log('Deleted crypto storages')
+
   // Delete transactions first (due to foreign key constraint)
   await supabase.from('transactions').delete().eq('user_id', testUser.id)
   console.log('Deleted transactions')
