@@ -133,17 +133,6 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={currentPath === '/crypto/storage'}
-                        >
-                          <Link to="/crypto/storage">
-                            <Vault weight="duotone" />
-                            <span>Storage</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton
-                          asChild
                           isActive={currentPath === '/crypto/transactions'}
                         >
                           <Link to="/crypto/transactions">
@@ -160,6 +149,17 @@ export function AppSidebar() {
                           <Link to="/crypto/lnb">
                             <ChartBar weight="duotone" />
                             <span>LnB</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={currentPath === '/crypto/storage'}
+                        >
+                          <Link to="/crypto/storage">
+                            <Vault weight="duotone" />
+                            <span>Storage</span>
                           </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
