@@ -570,7 +570,7 @@ const valueVnd = convertUsdToVnd(price * balance, exchangeRate)
 ### Daily Portfolio Snapshot
 
 **Function:** `snapshot-crypto-portfolio`
-**Schedule:** Daily at 00:00 UTC
+**Schedule:** Daily at 00:10 UTC
 
 **Logic:**
 
@@ -586,12 +586,14 @@ const valueVnd = convertUsdToVnd(price * balance, exchangeRate)
 ```toml
 [functions.snapshot-crypto-portfolio]
 enabled = true
-
-[[analytics.cron]]
-name = "snapshot-crypto-portfolio"
-schedule = "0 0 * * *"  # Daily at midnight UTC
-command = "SELECT net.http_post(...)"
+verify_jwt = false
 ```
+
+**Deployment note:**
+
+- Deploy with `supabase functions deploy snapshot-crypto-portfolio --no-verify-jwt`
+- The function validates `Authorization: Bearer <CRON_SECRET>` itself
+- Do not enable Supabase JWT verification for this function, because `CRON_SECRET` is not a JWT
 
 ---
 

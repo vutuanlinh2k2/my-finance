@@ -413,4 +413,17 @@ verify_jwt = true
 #
 [functions.snapshot-crypto-portfolio]
 enabled = true
-verify_jwt = true
+verify_jwt = false
+
+# Edge Function: Snapshot Net Worth
+# Creates daily snapshots of each user's total net worth from bank balance and
+# crypto snapshot data.
+#
+# LOCAL TESTING:
+#   supabase functions serve snapshot-net-worth
+#   curl -X POST http://localhost:54321/functions/v1/snapshot-net-worth \
+#     -H "Authorization: Bearer <CRON_SECRET>"
+#
+[functions.snapshot-net-worth]
+enabled = true
+verify_jwt = false

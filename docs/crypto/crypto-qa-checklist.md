@@ -937,7 +937,8 @@ valueVnd = usdAmount * exchangeRate
 
 - [ ] Edge function exists: `snapshot-crypto-portfolio`
 - [ ] Function enabled in config.toml
-- [ ] Cron schedule: Daily at 00:00 UTC
+- [ ] Function deployed with `verify_jwt = false` / `--no-verify-jwt`
+- [ ] Cron schedule: Daily at 00:10 UTC
 - [ ] CRON_SECRET environment variable configured
 
 ### 18.2 Authorization
@@ -945,6 +946,7 @@ valueVnd = usdAmount * exchangeRate
 - [ ] Function validates Authorization header
 - [ ] Unauthorized requests return 401
 - [ ] Only accepts Bearer token with CRON_SECRET
+- [ ] Function is not behind Supabase JWT verification
 
 ### 18.3 Snapshot Logic
 

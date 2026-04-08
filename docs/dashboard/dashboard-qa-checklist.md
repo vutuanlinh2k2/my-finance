@@ -301,6 +301,7 @@ This checklist covers comprehensive quality assurance testing for the Dashboard 
 
 - [x] **DB-13**: Edge function `snapshot-net-worth` deployed correctly
 - [x] **DB-14**: Function validates CRON_SECRET header
+- [x] **DB-14a**: Function deployed with `verify_jwt = false` / `--no-verify-jwt`
 - [x] **DB-15**: Function processes all users in database
 - [x] **DB-16**: Function handles empty user portfolios
 - [x] **DB-17**: Function handles database errors gracefully
@@ -309,7 +310,7 @@ This checklist covers comprehensive quality assurance testing for the Dashboard 
 ### Cron Job
 
 - [x] **DB-19**: pg_cron job created for daily execution
-- [x] **DB-20**: Job scheduled at appropriate time (midnight)
+- [x] **DB-20**: Job scheduled at appropriate time (00:15 UTC)
 - [x] **DB-21**: Job passes correct CRON_SECRET
 - [x] **DB-22**: Job execution logged in cron history
 - [x] **DB-23**: Job handles edge function errors

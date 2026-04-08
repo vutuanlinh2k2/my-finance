@@ -1163,14 +1163,15 @@ Created a Supabase Edge Function that runs daily to create portfolio snapshots f
 
 - [x] Add to `supabase/config.toml`
 - [x] Set schedule: "10 0 \* \* \*" (00:10 UTC daily)
-- [x] Configure with verify_jwt = true for security
+- [x] Configure with `verify_jwt = false` because the cron job sends a custom `CRON_SECRET` bearer token, not a Supabase JWT
+- [x] Deploy with `supabase functions deploy snapshot-crypto-portfolio --no-verify-jwt`
 
 **Configuration:**
 
 ```toml
 [functions.snapshot-crypto-portfolio]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 ```
 
 #### Step 7.3: Error Handling

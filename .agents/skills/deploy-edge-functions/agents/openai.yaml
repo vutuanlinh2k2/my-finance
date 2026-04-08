@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deploy Edge Functions"
+  short_description: "Deploy this repo's Supabase edge functions"
+  default_prompt: "Use $deploy-edge-functions to deploy one or more Supabase Edge Functions for this repo with the correct project ref and --no-verify-jwt."

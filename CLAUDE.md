@@ -307,6 +307,12 @@ supabase functions new <function-name>
 supabase functions deploy <function-name> --no-verify-jwt --project-ref <project-ref>
 ```
 
+Prefer the project helper script:
+
+```bash
+scripts/deploy-edge-function.sh <function-name> [more-function-names...]
+```
+
 Why: Supabase's system-managed secrets (`SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) use a different format (`sb_publishable_`/`sb_secret_`) that doesn't match JWT tokens. Disabling JWT verification lets our custom authentication logic handle security instead.
 
 ### Cron Jobs
@@ -356,6 +362,7 @@ Custom slash commands live in `.claude/commands/`:
 
 - `/smart-commit` - Analyze changes and create focused atomic commits
 - `/code-review` - Review code changes against a remote branch
+- `/deploy-edge-function` - Deploy one or more Supabase Edge Functions with the repo's standard flags
 - `/update-claude-md` - Update CLAUDE.md based on recent git changes
 
 **Creating a new command:**
